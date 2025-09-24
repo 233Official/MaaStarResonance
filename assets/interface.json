@@ -23,7 +23,7 @@
 		{
 			"name": "B 服",
 			"path": [
-				"{PROJECT_DIR}/resource",
+				"{PROJECT_DIR}/resource/base",
 				"{PROJECT_DIR}/resource_bilibili"
 			]
 		}
