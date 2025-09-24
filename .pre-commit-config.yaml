@@ -7,14 +7,23 @@ repos:
     rev: v9.1.2
     hooks:
       - id: oxipng
+        files: \\.png$
+        types: [file]
         args: ["-q", "-o", "2", "-s", "--ng"]
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
+  - repo: local
+    # 使用 local 定义 Prettier，避免 mirrors-prettier 仓库已归档且缺少稳定 v3 标签的问题
     hooks:
       - id: prettier
-        types_or:
-          - yaml
-          - json
+        name: prettier (yaml+json)
+        entry: prettier
+        language: node
+        # 仅格式化 YAML / JSON，可按需扩展 (e.g. add markdown, javascript)
+        types_or: [yaml, json]
+        pass_filenames: true
+        additional_dependencies:
+          - prettier@3.3.3
+          - prettier-plugin-multiline-arrays@^3.0.0
+        # 如出现 Windows file:// 路径问题，可暂时移除插件或添加 .prettierrc.json 手动指定 plugins
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.13.0
     hooks:

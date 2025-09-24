@@ -1,0 +1,21 @@
+[project]
+name = "maastarresonance"
+version = "0.1.0"
+description = "基于MAAFW的星痕共鸣黑盒测试工具"
+authors = [
+    {name = "233Official",email = "ayusummer233@vip.qq.com"}
+]
+license = {text = "LGPL-3.0"}
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "maafw (>=4.5.3,<5.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
