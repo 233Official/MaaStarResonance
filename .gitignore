@@ -454,3 +454,9 @@ config
 debug
 
 MFA
+
+# scripts 目录
+scripts/config.toml
+
+# MacOS
+.DS_Store
