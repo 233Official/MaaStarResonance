@@ -31,13 +31,17 @@
 	"agent": {
 		"child_exec": "python",
 		"child_args": [
-			"{PROJECT_DIR}/agent/main.py"
+			"{PROJECT_DIR}/../agent/main.py"
 		]
 	},
 	"task": [
 		{
 			"name": "普通任务",
 			"entry": "MyTask1"
+		},
+		{
+			"name": "点击DeepSeek图标",
+			"entry": "点击DeepSeek图标"
 		},
 		{
 			"name": "选项任务",

@@ -2,6 +2,11 @@
 	"MyTask1": {},
 	"MyTask2": {},
 	"MyTask3": {},
+	"点击DeepSeek图标": {
+		"recognition": "TemplateMatch", // 图像模板匹配
+		"template": "deepseek_icon.png", // 匹配素材路径
+		"action": "Click"
+	},
 	"MyTask4": {
 		"recognition": "Custom",
 		"custom_recognition": "my_reco_222",
