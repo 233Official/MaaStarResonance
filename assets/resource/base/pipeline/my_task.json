@@ -1,7 +1,335 @@
 {
-	"MyTask1": {},
-	"MyTask2": {},
-	"MyTask3": {},
+	"点击连接开始": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [
+					491,
+					579,
+					295,
+					40
+				],
+				"expected": [
+					"连接开始"
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": true // 点击识别到的目标位置
+			}
+		},
+		"next": ["点击进入游戏"]
+	},
+	"点击进入游戏": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [
+					1031,
+					604,
+					156,
+					49
+				],
+				"expected": [
+					"进入游戏"
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": true // 点击识别到的目标位置
+			}
+		}
+	},
+	"关闭开屏广告": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [
+					187,
+					592,
+					144,
+					36
+				],
+				"expected": [
+					"不再弹出"
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [
+					1047,
+					141,
+					29,
+					30
+				] // 直接点击右上角关闭按钮
+			}
+		}
+	},
+	"从省电模式唤醒": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [
+					528,
+					629,
+					223,
+					35
+				],
+				"expected": [
+					"省电模式"
+				]
+			}
+		},
+		"action": {
+			"type": "Click"
+		}
+	},
+	"打开一键连招": {
+		"next": [
+			"功能页展示状态下打开一键连招",
+			"切换到功能页并打开一键连招"
+		]
+	},
+	"关闭一键连招": {
+		"next": [
+			"功能页展示状态下关闭一键连招",
+			"切换到功能页并关闭一键连招"
+		]
+	},
+	"功能页展示状态下打开一键连招": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["功能页启用状态白点.png"],
+				"roi": [
+					1208,
+					652,
+					11,
+					12
+				]
+			}
+		},
+		"next": [
+			"一键连招打开状态",
+			"点击一键连招按钮"
+		]
+	},
+	"功能页展示状态下关闭一键连招": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["功能页启用状态白点.png"],
+				"roi": [
+					1208,
+					652,
+					11,
+					12
+				]
+			}
+		},
+		"next": [
+			"一键连招关闭状态",
+			"点击一键连招按钮"
+		]
+	},
+	"切换到功能页并打开一键连招": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["战斗页启用状态白点.png"],
+				"roi": [
+					1193,
+					652,
+					11,
+					11
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [
+					1220,
+					629,
+					22,
+					14
+				] // 点击切换页面按钮
+			}
+		},
+		"next": [
+			"一键连招打开状态",
+			"点击一键连招按钮"
+		]
+	},
+	"切换到功能页并关闭一键连招": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["战斗页启用状态白点.png"],
+				"roi": [
+					1193,
+					652,
+					11,
+					11
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [
+					1220,
+					629,
+					22,
+					14
+				] // 点击切换页面按钮
+			}
+		},
+		"next": [
+			"一键连招关闭状态",
+			"点击一键连招按钮"
+		]
+	},
+	"展示功能页": {
+		"next": [
+			"功能页展示状态",
+			"切换到功能页"
+		]
+	},
+	"功能页展示状态": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["功能页启用状态白点.png"],
+				"roi": [
+					1208,
+					652,
+					11,
+					12
+				]
+			}
+		}
+	},
+	"点击一键连招按钮": {
+		"recognition": {
+			"type": "DirectHit"
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [
+					1163,
+					366,
+					58,
+					42
+				] // 点击一键连招按钮
+			}
+		}
+	},
+	"一键连招打开状态": {
+		"recognition": {
+			"type": "ColorMatch",
+			"param": {
+				"roi": [
+					1193,
+					381,
+					3,
+					3
+				],
+				"method": 4, // RGB 三通道匹配
+				"lower": [
+					127,
+					102,
+					41
+				],
+				"upper": [
+					253,
+					195,
+					88
+				]
+			}
+		}
+	},
+	"一键连招关闭状态": {
+		"recognition": {
+			"type": "ColorMatch",
+			"param": {
+				"roi": [
+					1193,
+					380,
+					5,
+					4
+				],
+				"method": 4, // RGB 三通道匹配
+				"lower": [
+					247,
+					247,
+					246
+				],
+				"upper": [
+					255,
+					255,
+					255
+				]
+			}
+		}
+	},
+	"切换到战斗页": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["功能页启用状态白点.png"],
+				"roi": [
+					1207,
+					652,
+					12,
+					12
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [
+					1195,
+					629,
+					22,
+					14
+				] // 点击切换页面按钮
+			}
+		}
+	},
+	"切换到功能页": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["战斗页启用状态白点.png"],
+				"roi": [
+					1193,
+					652,
+					11,
+					11
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [
+					1220,
+					629,
+					22,
+					14
+				] // 点击切换页面按钮
+			}
+		}
+	},
 	"点击DeepSeek图标": {
 		"recognition": "TemplateMatch", // 图像模板匹配
 		"template": "deepseek_icon.png", // 匹配素材路径

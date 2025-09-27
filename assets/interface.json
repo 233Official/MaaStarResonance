@@ -36,8 +36,8 @@
 	},
 	"task": [
 		{
-			"name": "普通任务",
-			"entry": "MyTask1"
+			"name": "从省电模式唤醒",
+			"entry": "从省电模式唤醒"
 		},
 		{
 			"name": "点击DeepSeek图标",
@@ -45,14 +45,14 @@
 		},
 		{
 			"name": "选项任务",
-			"entry": "MyTask2",
+			"entry": "打开一键连招",
 			"option": [
 				"任务选项1"
 			]
 		},
 		{
 			"name": "参数任务",
-			"entry": "MyTask3",
+			"entry": "点击DeepSeek图标",
 			"option": [
 				"任务选项1"
 			],
