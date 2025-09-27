@@ -31,10 +31,18 @@
 	"agent": {
 		"child_exec": "python",
 		"child_args": [
-			"{PROJECT_DIR}/../agent/main.py"
+			"{PROJECT_DIR}/agent/main.py"
 		]
 	},
 	"task": [
+		{
+			"name": "打开一键连招",
+			"entry": "打开一键连招"
+		},
+		{
+			"name": "关闭一键连招",
+			"entry": "关闭一键连招"
+		},
 		{
 			"name": "从省电模式唤醒",
 			"entry": "从省电模式唤醒"

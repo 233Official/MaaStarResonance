@@ -96,6 +96,15 @@
 			"切换到功能页并打开一键连招"
 		]
 	},
+	"H": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "ClickKey",
+			"param": {
+				"key": 36
+			}
+		}
+	},
 	"关闭一键连招": {
 		"next": [
 			"功能页展示状态下关闭一键连招",
