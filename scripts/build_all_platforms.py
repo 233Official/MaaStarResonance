@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-在本机一键生成多平台产物：
+在本机一键生成多平台产物（当前支持: Windows / macOS / Linux）：
 
 - 按矩阵(os × arch)下载 MaaFramework 预编译包并解压到 deps/
-- 非 Android 平台同时下载并解压 MFAAvalonia 到 MFA/<os>-<arch>/
-- 逐平台调用仓库根目录的 install.py 写入 install/
-- 非 Android 平台将 MFAAvalonia 内容合入 install/（不覆盖已有文件）
+- 下载并解压 MFAAvalonia 到临时目录后合并 (不覆盖已有文件)
+- 调用 install.py 生成 install/
 - 打包为 releases/<tag>/MaaStarResonance-<os>-<arch>-<tag>.zip，并生成 SHA256SUMS.txt
 
 依赖：仅使用 Python 标准库；不需要额外三方包。
 
 用法示例：
-  python scripts/build_all_platforms.py --tag v1.2.3
-  python scripts/build_all_platforms.py --only-os win,linux --only-arch x86_64 --skip-deps
-  GITHUB_TOKEN=xxxxx python scripts/build_all_platforms.py
+    python scripts/build_all_platforms.py --tag v1.2.3
+    python scripts/build_all_platforms.py --only-os win,linux --only-arch x86_64 --skip-deps
+    GITHUB_TOKEN=xxxxx python scripts/build_all_platforms.py
 
-注意：该脚本不进行“编译”，而是复用上游已发布的各平台二进制进行装配与打包，
-与 CI 工作流一致。
+注意：该脚本不进行“编译”，而是复用上游已发布的各平台二进制进行装配与打包。
+
+已移除 Android 支持（历史遗留逻辑已清理）。
 """
 
 from __future__ import annotations
@@ -40,6 +40,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 RELEASES_DIR = REPO_ROOT / "releases"
 SOURCE_COPY_DIR = RELEASES_DIR / "source_code"
 INSTALL_PY = REPO_ROOT / "install.py"
+SUBMODULES_DIR = RELEASES_DIR / "submodules"
 
 
 PLATFORM_MATRIX: List[Tuple[str, str]] = [
@@ -49,8 +50,6 @@ PLATFORM_MATRIX: List[Tuple[str, str]] = [
     ("macos", "x86_64"),
     ("linux", "aarch64"),
     ("linux", "x86_64"),
-    ("android", "aarch64"),
-    ("android", "x86_64"),
 ]
 
 # MFAAvalonia 文件名所需的映射
@@ -127,7 +126,9 @@ def compute_tag(explicit_tag: Optional[str], token: Optional[str]) -> str:
         # 取远端最新发布的 tag
         tag = gh_latest_release_tag("233Official/MaaStarResonance", token) or "v0.0.0"
     # 追加日期与短 SHA，形成类似 Actions 的非发布标记
-    today = _dt.datetime.now().strftime("%y%m%d")
+    # today = _dt.datetime.now().strftime("%y%m%d")
+    # 追加小时分钟，避免同一天多次构建冲突
+    today = _dt.datetime.now().strftime("%y%m%d%H%M")
     tag = f"{tag}-{today}-{git_short_sha()}"
     return tag
 
@@ -147,6 +148,21 @@ def get_latest_release_assets(repo: str, token: Optional[str]) -> List[dict]:
     if not assets:
         fail(f"未在 {repo} 最新发布中找到 assets")
     return assets
+
+
+def get_latest_release_info(repo: str, token: Optional[str]) -> Tuple[str, List[dict]]:
+    """返回 (tag_name, assets)。
+
+    为后续缓存使用提供 tag 名字。"""
+    data = api_get_json(f"https://api.github.com/repos/{repo}/releases/latest", token)
+    tag_raw = data.get("tag_name")
+    if not isinstance(tag_raw, str) or not tag_raw:
+        fail(f"未能获取 {repo} 最新 release tag")
+    tag = str(tag_raw)
+    assets = data.get("assets") or []
+    if not assets:
+        fail(f"未在 {repo} 最新发布中找到 assets")
+    return tag, assets
 
 
 def wildcard_to_regex(pattern: str) -> re.Pattern:
@@ -296,7 +312,9 @@ def sha256_of(file_path: Path) -> str:
 
 
 def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps: bool,
-              keep_archives: bool, keep_staging: bool) -> Optional[Path]:
+              keep_archives: bool, keep_staging: bool,
+              mfd_info: Tuple[str, List[dict]],
+              mfa_info: Optional[Tuple[str, List[dict]]]) -> Optional[Path]:
     log_section(f"构建 {os_name}-{arch}")
     # 为当前目标创建隔离的 staging 目录（位于 source_code 内）
     staging_root = SOURCE_COPY_DIR / ".build" / tag / f"staging-{os_name}-{arch}"
@@ -310,52 +328,63 @@ def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps
     mfa_dir.mkdir(parents=True, exist_ok=True)
     MFD_REPO = "MaaXYZ/MaaFramework"
     MFA_REPO = "SweetSmellFox/MFAAvalonia"
+    mfd_tag, mfd_assets = mfd_info
+    if mfa_info:
+        mfa_tag, mfa_assets = mfa_info
+    else:
+        mfa_tag, mfa_assets = None, []
 
     # 1) 下载/准备 MaaFramework -> deps/bin, deps/share
     if not skip_deps:
-        assets = get_latest_release_assets(MFD_REPO, token)
+        # 查找 MaaFramework 资产（使用预先获取并缓存的列表）
         maa_pattern = f"MAA-{os_name}-{arch}*"
-        maa_asset = find_asset_by_pattern(assets, maa_pattern)
+        maa_asset = find_asset_by_pattern(mfd_assets, maa_pattern)
         if not maa_asset:
             warn(f"未找到 {MFD_REPO} 资产: {maa_pattern}，跳过 {os_name}-{arch}")
             return None
-        archive_path = staging_root / maa_asset["name"]
+        # 缓存路径（基于上游 tag）
+        cache_dir = SUBMODULES_DIR / "MaaFramework" / mfd_tag
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        archive_path = cache_dir / maa_asset["name"]
         if not archive_path.exists():
+            info(f"缓存缺失，下载 MaaFramework 资产到 {archive_path}")
             download(maa_asset["browser_download_url"], archive_path, token)
+        else:
+            info(f"复用已缓存 MaaFramework 资产: {archive_path.name}")
         with tempfile.TemporaryDirectory() as td:
             tmpdir = Path(td)
             safe_unpack(archive_path, tmpdir)
             replace_deps_from_extracted(tmpdir, deps_dir)
-        if not keep_archives:
-            try:
-                archive_path.unlink()
-            except Exception:
-                pass
+        # 不删除缓存文件；即使 keep_archives=False 也保留（缓存语义）
     else:
         info("--skip-deps: 跳过 MaaFramework 下载，期待使用 staging 内已存在的 deps/")
 
     # 2) 非 Android 下载 MFAAvalonia -> MFA/<os>-<arch>/
     mfa_dst_dir: Optional[Path] = None
-    if os_name != "android":
+    if not skip_deps:
         os_token = MFA_OS_MAP[os_name]
         arch_token = MFA_ARCH_MAP[arch]
         mfa_dst_dir = mfa_dir / f"{os_name}-{arch}"
         mfa_dst_dir.mkdir(parents=True, exist_ok=True)
-        mfa_assets = get_latest_release_assets(MFA_REPO, token)
-        mfa_pattern = f"MFAAvalonia-*-{os_token}-{arch_token}*"
-        mfa_asset = find_asset_by_pattern(mfa_assets, mfa_pattern)
-        if mfa_asset:
-            mfa_archive = staging_root / mfa_asset["name"]
-            if not mfa_archive.exists():
-                download(mfa_asset["browser_download_url"], mfa_archive, token)
-            safe_unpack(mfa_archive, mfa_dst_dir)
-            if not keep_archives:
-                try:
-                    mfa_archive.unlink()
-                except Exception:
-                    pass
+        if mfa_tag is None:
+            warn("未获取 MFAAvalonia release 信息，跳过 MFA 部分")
         else:
-            warn(f"未找到 {MFA_REPO} 资产: {mfa_pattern}，将仅生成核心产物")
+            mfa_pattern = f"MFAAvalonia-*-{os_token}-{arch_token}*"
+            mfa_asset = find_asset_by_pattern(mfa_assets, mfa_pattern)
+            if mfa_asset:
+                cache_dir = SUBMODULES_DIR / "MFAAvalonia" / mfa_tag
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                mfa_archive = cache_dir / mfa_asset["name"]
+                if not mfa_archive.exists():
+                    info(f"缓存缺失，下载 MFAAvalonia 资产到 {mfa_archive}")
+                    download(mfa_asset["browser_download_url"], mfa_archive, token)
+                else:
+                    info(f"复用已缓存 MFAAvalonia 资产: {mfa_archive.name}")
+                safe_unpack(mfa_archive, mfa_dst_dir)
+            else:
+                warn(f"未找到 {MFA_REPO} 资产: {mfa_pattern}，将仅生成核心产物")
+    elif skip_deps:
+        info("--skip-deps: 跳过 MFAAvalonia 下载")
 
     # 3) 清理 install/，调用 install.py 生成基础产物
     if install_dir.exists():
@@ -377,8 +406,8 @@ def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps
     if not install_dir.exists():
         fail("staging/install 未生成，install.py 执行可能失败")
 
-    # 4) 非 Android 合并 MFA 到 install/（不覆盖现有文件）
-    if os_name != "android" and mfa_dst_dir and any(mfa_dst_dir.iterdir()):
+    # 4) 合并 MFA 到 install/（不覆盖现有文件）
+    if mfa_dst_dir and any(mfa_dst_dir.iterdir()):
         info("合并 MFA 到 install/ (忽略已存在)")
         copytree_ignore_existing(mfa_dst_dir, install_dir)
 
@@ -397,7 +426,7 @@ def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps
     return Path(archive_file)
 
 
-def write_release_metadata(tag: str, artifacts: List[Path]) -> None:
+def write_release_metadata(tag: str, artifacts: List[Path], upstream: Optional[dict] = None) -> None:
     rel_dir = RELEASES_DIR / tag
     # 写 SHA256SUMS
     lines = []
@@ -416,6 +445,8 @@ def write_release_metadata(tag: str, artifacts: List[Path]) -> None:
             {"file": p.name, "sha256": sha256_of(p)} for p in artifacts
         ],
     }
+    if upstream:
+        meta["upstream"] = upstream
     (rel_dir / "release.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
@@ -445,7 +476,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     ap.add_argument("--github-token", dest="token", help="可选 GitHub Token(提升速率限制)")
     ap.add_argument("--only-os", help="仅构建指定 OS，逗号分隔，例如: win,linux")
     ap.add_argument("--only-arch", help="仅构建指定架构，逗号分隔，例如: x86_64,aarch64")
-    ap.add_argument("--exclude", help="排除的 <os>:<arch>，逗号分隔，例如: android:aarch64")
+    ap.add_argument("--exclude", help="排除的 <os>:<arch>，逗号分隔，例如: win:x86_64")
     return ap.parse_args(argv)
 
 
@@ -484,10 +515,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         warn("没有需要构建的目标")
         return 0
 
+    # 预先获取上游 release 信息（减少重复请求与下载）
+    log_section("获取上游依赖 release 信息（用于缓存）")
+    mfd_info: Tuple[str, List[dict]] = get_latest_release_info("MaaXYZ/MaaFramework", token)
+    mfa_info: Optional[Tuple[str, List[dict]]] = None
+    try:
+        mfa_info = get_latest_release_info("SweetSmellFox/MFAAvalonia", token)
+    except Exception as e:
+        warn(f"获取 MFAAvalonia release 失败: {e} — 将跳过 MFA 部分")
+
     artifacts: List[Path] = []
     for os_name, arch in matrix:
         try:
-            artifact = build_one(os_name, arch, tag, token, args.skip_deps, args.keep_archives, args.keep_staging)
+            artifact = build_one(os_name, arch, tag, token, args.skip_deps, args.keep_archives, args.keep_staging, mfd_info, mfa_info)
             if artifact:
                 artifacts.append(artifact)
         except SystemExit:
@@ -496,7 +536,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             warn(f"构建 {os_name}-{arch} 失败: {e}")
 
     if artifacts:
-        write_release_metadata(tag, artifacts)
+        upstream_meta = {
+            "MaaFramework": {"tag": mfd_info[0]},
+        }
+        if mfa_info:
+            upstream_meta["MFAAvalonia"] = {"tag": mfa_info[0]}
+        write_release_metadata(tag, artifacts, upstream=upstream_meta)
         log_section("完成")
         for p in artifacts:
             info(f"生成: {p}")
