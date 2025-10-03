@@ -1,5 +1,7 @@
 # 虚拟环境
 .venv
+# 归档
+stash
 
 # docs
 docs/node_modules
