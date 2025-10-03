@@ -9,13 +9,6 @@ license = {text = "LGPL-3.0"}
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "maafw (>=4.5.3,<5.0.0)"
+    "maafw>=4.5.5",
+    "pre-commit>=4.3.0",
 ]
-
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
-package-mode = false
