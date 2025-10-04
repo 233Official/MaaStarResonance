@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 import argparse
-import datetime as _dt
 import hashlib
 import json
 import os
@@ -34,13 +33,18 @@ import tempfile
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, Sequence
 from urllib import request, error as urlerror
+from zoneinfo import ZoneInfo
+from datetime import datetime, timezone
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RELEASES_DIR = REPO_ROOT / "releases"
-SOURCE_COPY_DIR = RELEASES_DIR / "source_code"
-INSTALL_PY = REPO_ROOT / "install.py"
+RELEASES_DIR.mkdir(parents=True, exist_ok=True)
+SOURCE_COPY_DST_DIR = RELEASES_DIR / "source_code"
+SOURCE_COPY_DST_DIR.mkdir(parents=True, exist_ok=True)
 SUBMODULES_DIR = RELEASES_DIR / "submodules"
+SUBMODULES_DIR.mkdir(parents=True, exist_ok=True)
+INSTALL_PY = REPO_ROOT / "install.py"
 
 
 PLATFORM_MATRIX: List[Tuple[str, str]] = [
@@ -74,7 +78,9 @@ def fail(msg: str) -> None:
     sys.exit(1)
 
 
-def run(cmd: List[str], cwd: Optional[Path] = None, check: bool = True) -> subprocess.CompletedProcess:
+def run(
+    cmd: List[str], cwd: Optional[Path] = None, check: bool = True
+) -> subprocess.CompletedProcess:
     info(f"$ {' '.join(cmd)}")
     proc = subprocess.run(cmd, cwd=str(cwd) if cwd else None)
     if check and proc.returncode != 0:
@@ -84,7 +90,9 @@ def run(cmd: List[str], cwd: Optional[Path] = None, check: bool = True) -> subpr
 
 def git_short_sha() -> str:
     try:
-        out = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=str(REPO_ROOT))
+        out = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], cwd=str(REPO_ROOT)
+        )
         return out.decode().strip()
     except Exception:
         return "unknown"
@@ -92,7 +100,9 @@ def git_short_sha() -> str:
 
 def git_latest_tag_v() -> Optional[str]:
     try:
-        out = subprocess.check_output(["git", "describe", "--tags", "--match", "v*"], cwd=str(REPO_ROOT))
+        out = subprocess.check_output(
+            ["git", "describe", "--tags", "--match", "v*"], cwd=str(REPO_ROOT)
+        )
         tag = out.decode().strip()
         return tag if tag.startswith("v") else None
     except Exception:
@@ -126,9 +136,9 @@ def compute_tag(explicit_tag: Optional[str], token: Optional[str]) -> str:
         # 取远端最新发布的 tag
         tag = gh_latest_release_tag("233Official/MaaStarResonance", token) or "v0.0.0"
     # 追加日期与短 SHA，形成类似 Actions 的非发布标记
-    # today = _dt.datetime.now().strftime("%y%m%d")
+    # today = datetime.now().strftime("%y%m%d")
     # 追加小时分钟，避免同一天多次构建冲突
-    today = _dt.datetime.now().strftime("%y%m%d%H%M")
+    today = datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%y%m%d%H%M")
     tag = f"{tag}-{today}-{git_short_sha()}"
     return tag
 
@@ -237,7 +247,9 @@ def ensure_ocr_in_source_copy(repo_root: Path, source_copy_dir: Path) -> None:
             shutil.copytree(src, dst, dirs_exist_ok=True)
         else:
             # 明确提示缺失，install.py 将无法继续
-            warn("缺少 assets/MaaCommonAssets/OCR（OCR 模型）。请将其放置于仓库本地后重试。")
+            warn(
+                "缺少 assets/MaaCommonAssets/OCR（OCR 模型）。请将其放置于仓库本地后重试。"
+            )
 
 
 def download(url: str, out_file: Path, token: Optional[str]) -> None:
@@ -265,7 +277,9 @@ def replace_deps_from_extracted(extracted_root: Path, deps_dir: Path) -> None:
     candidates = [extracted_root]
     # 找到第一个包含 bin 或 share 的层次
     found_root = None
-    for base in candidates + list(extracted_root.iterdir() if extracted_root.exists() else []):
+    for base in candidates + list(
+        extracted_root.iterdir() if extracted_root.exists() else []
+    ):
         if not base.exists() or not base.is_dir():
             continue
         if (base / "bin").is_dir() or (base / "share").is_dir():
@@ -311,21 +325,21 @@ def sha256_of(file_path: Path) -> str:
     return h.hexdigest()
 
 
-def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps: bool,
-              keep_archives: bool, keep_staging: bool,
-              mfd_info: Tuple[str, List[dict]],
-              mfa_info: Optional[Tuple[str, List[dict]]]) -> Optional[Path]:
+def build_one(
+    os_name: str,
+    arch: str,
+    tag: str,
+    token: Optional[str],
+    skip_deps: bool,
+    keep_archives: bool,
+    keep_staging: bool,
+    mfd_info: Tuple[str, List[dict]],
+    mfa_info: Optional[Tuple[str, List[dict]]],
+) -> Optional[Path]:
     log_section(f"构建 {os_name}-{arch}")
     # 为当前目标创建隔离的 staging 目录（位于 source_code 内）
-    staging_root = SOURCE_COPY_DIR / ".build" / tag / f"staging-{os_name}-{arch}"
-    work_dir = staging_root / "work"
-    deps_dir = work_dir / "deps"
-    mfa_dir = staging_root / "MFA"
-    install_dir = work_dir / "install"
+    staging_root = RELEASES_DIR / ".build" / tag / f"staging-{os_name}-{arch}"
     staging_root.mkdir(parents=True, exist_ok=True)
-    work_dir.mkdir(parents=True, exist_ok=True)
-    deps_dir.mkdir(parents=True, exist_ok=True)
-    mfa_dir.mkdir(parents=True, exist_ok=True)
     MFD_REPO = "MaaXYZ/MaaFramework"
     MFA_REPO = "SweetSmellFox/MFAAvalonia"
     mfd_tag, mfd_assets = mfd_info
@@ -333,6 +347,25 @@ def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps
         mfa_tag, mfa_assets = mfa_info
     else:
         mfa_tag, mfa_assets = None, []
+
+    # 0) 将 source_code 中的 "assets/**" 和 "**.py" 拷贝到 staging_root
+    for asset in (SOURCE_COPY_DST_DIR / "assets").rglob("*"):
+        if asset.is_file():
+            rel = asset.relative_to(SOURCE_COPY_DST_DIR)
+            target = staging_root / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(asset, target)
+    for py_file in SOURCE_COPY_DST_DIR.rglob("*.py"):
+        if py_file.is_file():
+            rel = py_file.relative_to(SOURCE_COPY_DST_DIR)
+            target = staging_root / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(py_file, target)
+    # 拷贝必要的 README 与 LICENSE 文件
+    for doc in ["README.md", "LICENSE"]:
+        src = SOURCE_COPY_DST_DIR / doc
+        if src.is_file():
+            shutil.copy2(src, staging_root / doc)
 
     # 1) 下载/准备 MaaFramework -> deps/bin, deps/share
     if not skip_deps:
@@ -354,7 +387,9 @@ def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps
         with tempfile.TemporaryDirectory() as td:
             tmpdir = Path(td)
             safe_unpack(archive_path, tmpdir)
-            replace_deps_from_extracted(tmpdir, deps_dir)
+            # replace_deps_from_extracted(tmpdir, deps_dir)
+            # 将解压的 MaaFramework 内容复制到 build 目录的 deps/ 下。
+            shutil.copytree(tmpdir, staging_root / "deps", dirs_exist_ok=True)
         # 不删除缓存文件；即使 keep_archives=False 也保留（缓存语义）
     else:
         info("--skip-deps: 跳过 MaaFramework 下载，期待使用 staging 内已存在的 deps/")
@@ -364,7 +399,7 @@ def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps
     if not skip_deps:
         os_token = MFA_OS_MAP[os_name]
         arch_token = MFA_ARCH_MAP[arch]
-        mfa_dst_dir = mfa_dir / f"{os_name}-{arch}"
+        mfa_dst_dir = staging_root / "MFA"
         mfa_dst_dir.mkdir(parents=True, exist_ok=True)
         if mfa_tag is None:
             warn("未获取 MFAAvalonia release 信息，跳过 MFA 部分")
@@ -386,22 +421,10 @@ def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps
     elif skip_deps:
         info("--skip-deps: 跳过 MFAAvalonia 下载")
 
-    # 3) 清理 install/，调用 install.py 生成基础产物
-    if install_dir.exists():
-        shutil.rmtree(install_dir)
-    # 在工作目录内放置必要文件（来源于源代码拷贝），以便 install.py 的相对路径都落在 work/ 下
-    for fname in ["install.py", "configure.py", "README.md", "LICENSE"]:
-        src = SOURCE_COPY_DIR / fname
-        if src.exists():
-            shutil.copy2(src, work_dir / fname)
-    if (SOURCE_COPY_DIR / "assets").exists():
-        shutil.copytree(SOURCE_COPY_DIR / "assets", work_dir / "assets", dirs_exist_ok=True)
-    if (SOURCE_COPY_DIR / "agent").exists():
-        shutil.copytree(SOURCE_COPY_DIR / "agent", work_dir / "agent", dirs_exist_ok=True)
-
-    # 运行工作目录内的 install.py
+    # 3) 调用 staging_root/install.py 生成基础产物
+    install_dir = staging_root / "install"
     cmd = [sys.executable, "install.py", tag]
-    run(cmd, cwd=work_dir)
+    run(cmd, cwd=staging_root)
 
     if not install_dir.exists():
         fail("staging/install 未生成，install.py 执行可能失败")
@@ -414,7 +437,7 @@ def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps
     # 5) 打包并返回包路径
     (RELEASES_DIR / tag).mkdir(parents=True, exist_ok=True)
     artifact_name = f"MaaStarResonance-{os_name}-{arch}-{tag}"
-    base = (RELEASES_DIR / tag / artifact_name)
+    base = RELEASES_DIR / tag / artifact_name
     archive_file = shutil.make_archive(str(base), "zip", root_dir=str(install_dir))
     # 清理 staging
     if not keep_staging:
@@ -426,7 +449,10 @@ def build_one(os_name: str, arch: str, tag: str, token: Optional[str], skip_deps
     return Path(archive_file)
 
 
-def write_release_metadata(tag: str, artifacts: List[Path], upstream: Optional[dict] = None) -> None:
+def write_release_metadata(
+    tag: str, artifacts: List[Path], upstream: Optional[dict] = None
+) -> None:
+    """在 releases/<tag>/ 下写入 SHA256SUMS.txt 与 release.json。"""
     rel_dir = RELEASES_DIR / tag
     # 写 SHA256SUMS
     lines = []
@@ -437,17 +463,17 @@ def write_release_metadata(tag: str, artifacts: List[Path], upstream: Optional[d
     # 写 release.json（简版）
     meta = {
         "tag": tag,
-        "created_at": _dt.datetime.now().isoformat(),
+        "created_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(),
         "git": {
             "short_sha": git_short_sha(),
         },
-        "artifacts": [
-            {"file": p.name, "sha256": sha256_of(p)} for p in artifacts
-        ],
+        "artifacts": [{"file": p.name, "sha256": sha256_of(p)} for p in artifacts],
     }
     if upstream:
         meta["upstream"] = upstream
-    (rel_dir / "release.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    (rel_dir / "release.json").write_text(
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
 
 def load_github_token_from_config() -> Optional[str]:
@@ -458,6 +484,7 @@ def load_github_token_from_config() -> Optional[str]:
     try:
         # Python 3.11+ 标准库
         import tomllib  # type: ignore
+
         data = tomllib.loads(cfg_path.read_text(encoding="utf-8"))
         token = data.get("github_token")
         if isinstance(token, str) and token.strip():
@@ -469,27 +496,45 @@ def load_github_token_from_config() -> Optional[str]:
 
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="在本机装配并打包多平台产物")
-    ap.add_argument("--tag", dest="tag", help="版本标签，如 v1.2.3；若省略，将自动生成临时标记")
-    ap.add_argument("--skip-deps", action="store_true", help="跳过依赖(MaaFramework/MFAAvalonia)下载")
+    ap.add_argument(
+        "--tag", dest="tag", help="版本标签，如 v1.2.3；若省略，将自动生成临时标记"
+    )
+    ap.add_argument(
+        "--skip-deps",
+        action="store_true",
+        help="跳过依赖(MaaFramework/MFAAvalonia)下载",
+    )
     ap.add_argument("--keep-archives", action="store_true", help="保留下载的压缩包")
-    ap.add_argument("--keep-staging", action="store_true", help="保留 staging 工作目录（默认构建完成后清理）")
-    ap.add_argument("--github-token", dest="token", help="可选 GitHub Token(提升速率限制)")
+    ap.add_argument(
+        "--keep-staging",
+        action="store_true",
+        help="保留 staging 工作目录（默认构建完成后清理）",
+    )
+    ap.add_argument(
+        "--github-token", dest="token", help="可选 GitHub Token(提升速率限制)"
+    )
     ap.add_argument("--only-os", help="仅构建指定 OS，逗号分隔，例如: win,linux")
-    ap.add_argument("--only-arch", help="仅构建指定架构，逗号分隔，例如: x86_64,aarch64")
+    ap.add_argument(
+        "--only-arch", help="仅构建指定架构，逗号分隔，例如: x86_64,aarch64"
+    )
     ap.add_argument("--exclude", help="排除的 <os>:<arch>，逗号分隔，例如: win:x86_64")
     return ap.parse_args(argv)
 
 
-def filter_matrix(only_os: Optional[str], only_arch: Optional[str], exclude: Optional[str]) -> List[Tuple[str, str]]:
+def filter_matrix(
+    only_os: Optional[str], only_arch: Optional[str], exclude: Optional[str]
+) -> List[Tuple[str, str]]:
     matrix = PLATFORM_MATRIX[:]
     if only_os:
-        allowed_os = {x.strip() for x in only_os.split(',') if x.strip()}
+        allowed_os = {x.strip() for x in only_os.split(",") if x.strip()}
         matrix = [m for m in matrix if m[0] in allowed_os]
     if only_arch:
-        allowed_arch = {x.strip() for x in only_arch.split(',') if x.strip()}
+        allowed_arch = {x.strip() for x in only_arch.split(",") if x.strip()}
         matrix = [m for m in matrix if m[1] in allowed_arch]
     if exclude:
-        ex_set = {tuple(x.strip().split(':', 1)) for x in exclude.split(',') if ':' in x}
+        ex_set = {
+            tuple(x.strip().split(":", 1)) for x in exclude.split(",") if ":" in x
+        }
         matrix = [m for m in matrix if m not in ex_set]
     return matrix
 
@@ -497,16 +542,18 @@ def filter_matrix(only_os: Optional[str], only_arch: Optional[str], exclude: Opt
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parse_args(argv)
 
-    # 基础目录
-    RELEASES_DIR.mkdir(parents=True, exist_ok=True)
     # 准备 releases/source_code：基于 .gitignore 复制仓库内容
     log_section("准备源代码副本 releases/source_code")
-    prepare_source_copy(REPO_ROOT, SOURCE_COPY_DIR)
+    prepare_source_copy(REPO_ROOT, SOURCE_COPY_DST_DIR)
     # 补拷 OCR 模型（若有）
-    ensure_ocr_in_source_copy(REPO_ROOT, SOURCE_COPY_DIR)
+    ensure_ocr_in_source_copy(REPO_ROOT, SOURCE_COPY_DST_DIR)
+    # 清理构建目录
+    shutil.rmtree(RELEASES_DIR / ".build", ignore_errors=True)
 
     # 读取 token 优先级：scripts/config.toml > CLI 参数 > 环境变量
-    token = load_github_token_from_config() or args.token or os.environ.get("GITHUB_TOKEN")
+    token = (
+        load_github_token_from_config() or args.token or os.environ.get("GITHUB_TOKEN")
+    )
     tag = compute_tag(args.tag, token)
     log_section(f"版本标记: {tag}")
 
@@ -517,17 +564,29 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     # 预先获取上游 release 信息（减少重复请求与下载）
     log_section("获取上游依赖 release 信息（用于缓存）")
-    mfd_info: Tuple[str, List[dict]] = get_latest_release_info("MaaXYZ/MaaFramework", token)
-    mfa_info: Optional[Tuple[str, List[dict]]] = None
+    maafw_info: Tuple[str, List[dict]] = get_latest_release_info(
+        "MaaXYZ/MaaFramework", token
+    )
+    mfa_avalonia_info: Optional[Tuple[str, List[dict]]] = None
     try:
-        mfa_info = get_latest_release_info("SweetSmellFox/MFAAvalonia", token)
+        mfa_avalonia_info = get_latest_release_info("SweetSmellFox/MFAAvalonia", token)
     except Exception as e:
         warn(f"获取 MFAAvalonia release 失败: {e} — 将跳过 MFA 部分")
 
     artifacts: List[Path] = []
     for os_name, arch in matrix:
         try:
-            artifact = build_one(os_name, arch, tag, token, args.skip_deps, args.keep_archives, args.keep_staging, mfd_info, mfa_info)
+            artifact = build_one(
+                os_name,
+                arch,
+                tag,
+                token,
+                args.skip_deps,
+                args.keep_archives,
+                args.keep_staging,
+                maafw_info,
+                mfa_avalonia_info,
+            )
             if artifact:
                 artifacts.append(artifact)
         except SystemExit:
@@ -537,10 +596,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     if artifacts:
         upstream_meta = {
-            "MaaFramework": {"tag": mfd_info[0]},
+            "MaaFramework": {"tag": maafw_info[0]},
         }
-        if mfa_info:
-            upstream_meta["MFAAvalonia"] = {"tag": mfa_info[0]}
+        if mfa_avalonia_info:
+            upstream_meta["MFAAvalonia"] = {"tag": mfa_avalonia_info[0]}
         write_release_metadata(tag, artifacts, upstream=upstream_meta)
         log_section("完成")
         for p in artifacts:
