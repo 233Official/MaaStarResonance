@@ -1,4 +1,6 @@
 {
+	"version": "v0.0.3",
+	"message": "欢迎语，Client 可以展示给用户。",
 	"controller": [
 		{
 			"name": "安卓端",
@@ -29,7 +31,10 @@
 		}
 	],
 	"agent": {
-		"child_exec": "python",
+		// 使用项目下用 uv 管理的虚拟环境
+		"child_exec": "{PROJECT_DIR}/../.venv/Scripts/python.exe",
+		// 使用项目打包的 embeddable Python
+		// "child_exec": "{PROJECT_DIR}/../python/python.exe",
 		"child_args": [
 			"{PROJECT_DIR}/../agent/main.py"
 		]
