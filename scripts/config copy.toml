@@ -1,1 +1,2 @@
 github_token = "your_github_token_here"
+qiniu_oss_token = "your_qiniu_oss_token_here"

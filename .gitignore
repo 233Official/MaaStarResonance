@@ -4,6 +4,8 @@
 python
 # 归档
 stash
+# 额外资源
+resource
 
 # docs
 docs/node_modules

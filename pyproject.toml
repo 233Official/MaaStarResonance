@@ -11,5 +11,6 @@ requires-python = ">=3.11"
 dependencies = [
     "maafw>=4.5.5",
     "pre-commit>=4.3.0",
+    "toml>=0.10.2",
     "tzdata>=2025.2",
 ]
