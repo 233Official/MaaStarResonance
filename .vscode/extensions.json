@@ -3,6 +3,7 @@
         "ms-python.black-formatter",
         "nekosu.maa-support",
         "davidanson.vscode-markdownlint",
-        "tamasfe.even-better-toml"
+        "tamasfe.even-better-toml",
+        "esbenp.prettier-vscode"
     ]
 }
