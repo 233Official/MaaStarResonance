@@ -46,6 +46,8 @@
     "python.testing.pytestEnabled": true,
     "cSpell.words": [
         "Avalonia",
-        "maafw"
+        "maafw",
+        "venv",
+        "vuepress"
     ]
 }
