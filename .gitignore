@@ -1,5 +1,7 @@
 # 虚拟环境
 .venv
+# embeddable python
+python
 # 归档
 stash
 
