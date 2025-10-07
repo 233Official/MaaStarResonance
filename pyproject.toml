@@ -1,5 +1,5 @@
 [project]
-name = "maastarresonance"
+name = "MaaStarResonance"
 version = "0.1.0"
 description = "基于MAAFW的星痕共鸣黑盒测试工具"
 authors = [
