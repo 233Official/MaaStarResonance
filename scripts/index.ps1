@@ -26,3 +26,17 @@ pwsh ./scripts/new-release.ps1 -Version v0.0.5 -GitHubToken $env:GITHUB_TOKEN -K
 
 # 仅重新打包（不重新构建、不重新下载）
 pwsh ./scripts/new-release.ps1 -Version v0.0.5 -Force -SkipBuild -SkipDeps
+
+# 下载 pip wheel
+pip download pip==<目标版本> -d <本地目录>
+pip download -r pyproject.toml -d resource/wheels
+dependencies = [
+    "maafw>=4.5.5",
+    "pre-commit>=4.3.0",
+    "toml>=0.10.2",
+    "tzdata>=2025.2",
+]
+pip download "maafw>=4.5.5" -d resource/wheels
+pip download "pre-commit>=4.3.0" -d resource/wheels
+pip download "toml>=0.10.2" -d resource/wheels
+pip download "tzdata>=2025.2" -d resource/wheels

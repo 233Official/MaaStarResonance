@@ -46,8 +46,11 @@
 	"python.testing.pytestEnabled": true,
 	"cSpell.words": [
 		"Avalonia",
+		"bilibili",
 		"maafw",
+		"pyproject",
 		"qiniu",
+		"tzdata",
 		"venv",
 		"vuepress"
 	]

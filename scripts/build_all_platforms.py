@@ -37,14 +37,14 @@ from zoneinfo import ZoneInfo
 from datetime import datetime, timezone
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = (Path(__file__) / "..").resolve()
 RELEASES_DIR = REPO_ROOT / "releases"
 RELEASES_DIR.mkdir(parents=True, exist_ok=True)
 SOURCE_COPY_DST_DIR = RELEASES_DIR / "source_code"
 SOURCE_COPY_DST_DIR.mkdir(parents=True, exist_ok=True)
 SUBMODULES_DIR = RELEASES_DIR / "submodules"
 SUBMODULES_DIR.mkdir(parents=True, exist_ok=True)
-INSTALL_PY = REPO_ROOT / "install.py"
+INSTALL_PY = REPO_ROOT / "scripts/install.py"
 
 
 PLATFORM_MATRIX: List[Tuple[str, str]] = [
@@ -231,6 +231,29 @@ def prepare_source_copy(repo_root: Path, dest_dir: Path) -> None:
         elif src.is_file():
             shutil.copy2(src, target)
         # 目录由其中文件复制时自动创建，无需单独处理
+
+    # 读取并修改 assets/interface.json 中的 agent 字段
+    with open(dest_dir / "assets" / "interface.json", "r", encoding="utf-8") as f:
+        interface = json.load(f)
+    interface["agent"]["child_exec"] = "{PROJECT_DIR}/python/python.exe"
+    interface["agent"]["child_args"] = ["{PROJECT_DIR}/agent/main.py"]
+    with open(dest_dir / "assets" / "interface.json", "w", encoding="utf-8") as f:
+        json.dump(interface, f, ensure_ascii=False, indent=4)
+    
+    # 拷贝 resource 目录
+    shutil.copytree(
+        repo_root / "resource",
+        dest_dir / "resource",
+        dirs_exist_ok=True,
+    )
+
+    # 解压 resource\python-3.13.7-embed-amd64.zip 到 python
+    python_embed_zip = dest_dir / "resource" / "python-3.13.7-embed-amd64.zip"
+    python_embed_zip_unzip_dir = dest_dir / "python"
+    if python_embed_zip.exists():
+        shutil.unpack_archive(str(python_embed_zip), extract_dir=str(python_embed_zip_unzip_dir))
+    else:
+        fail(f"未找到 {python_embed_zip}, 请检查本地资源目录是否完整")
 
 
 def ensure_ocr_in_source_copy(repo_root: Path, source_copy_dir: Path) -> None:
@@ -423,7 +446,7 @@ def build_one(
 
     # 3) 调用 staging_root/install.py 生成基础产物
     install_dir = staging_root / "install"
-    cmd = [sys.executable, "install.py", tag]
+    cmd = [sys.executable, "scripts/install.py", tag]
     run(cmd, cwd=staging_root)
 
     if not install_dir.exists():
