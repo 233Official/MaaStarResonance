@@ -4,7 +4,7 @@ import shutil
 import sys
 import json
 
-from scripts.configure import configure_ocr_model
+from configure import configure_ocr_model
 
 
 working_dir = (Path(__file__).parent / "..").resolve()
@@ -76,10 +76,18 @@ def install_agent():
         dirs_exist_ok=True,
     )
 
+# 安装 embeddable python
+def install_embed_python():
+    embed_python_zip_path = working_dir / "resource" / "python-3.13.7-embed-amd64.zip"
+    embed_python_install_path = install_path / "python"
+    # 解压 zip 文件到目标路径
+    shutil.unpack_archive(embed_python_zip_path, embed_python_install_path, 'zip')
+
 if __name__ == "__main__":
     install_deps()
     install_resource()
     install_chores()
     install_agent()
+    install_embed_python()
 
     print(f"Install to {install_path} successfully.")

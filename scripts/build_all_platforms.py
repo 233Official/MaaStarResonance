@@ -37,7 +37,7 @@ from zoneinfo import ZoneInfo
 from datetime import datetime, timezone
 
 
-REPO_ROOT = (Path(__file__) / "..").resolve()
+REPO_ROOT = (Path(__file__).parent / "..").resolve()
 RELEASES_DIR = REPO_ROOT / "releases"
 RELEASES_DIR.mkdir(parents=True, exist_ok=True)
 SOURCE_COPY_DST_DIR = RELEASES_DIR / "source_code"
@@ -233,27 +233,25 @@ def prepare_source_copy(repo_root: Path, dest_dir: Path) -> None:
         # 目录由其中文件复制时自动创建，无需单独处理
 
     # 读取并修改 assets/interface.json 中的 agent 字段
+    ## 先将 assets/interface.json  中的 // 注释全部去掉
+    with open(dest_dir / "assets" / "interface.json", "r", encoding="utf-8") as f:
+        content = f.read()
+    content_no_comments = re.sub(r"//.*?$", "", content, flags=re.MULTILINE)
+    with open(dest_dir / "assets" / "interface.json", "w", encoding="utf-8") as f:
+        f.write(content_no_comments)
     with open(dest_dir / "assets" / "interface.json", "r", encoding="utf-8") as f:
         interface = json.load(f)
     interface["agent"]["child_exec"] = "{PROJECT_DIR}/python/python.exe"
     interface["agent"]["child_args"] = ["{PROJECT_DIR}/agent/main.py"]
     with open(dest_dir / "assets" / "interface.json", "w", encoding="utf-8") as f:
         json.dump(interface, f, ensure_ascii=False, indent=4)
-    
+
     # 拷贝 resource 目录
     shutil.copytree(
         repo_root / "resource",
         dest_dir / "resource",
         dirs_exist_ok=True,
     )
-
-    # 解压 resource\python-3.13.7-embed-amd64.zip 到 python
-    python_embed_zip = dest_dir / "resource" / "python-3.13.7-embed-amd64.zip"
-    python_embed_zip_unzip_dir = dest_dir / "python"
-    if python_embed_zip.exists():
-        shutil.unpack_archive(str(python_embed_zip), extract_dir=str(python_embed_zip_unzip_dir))
-    else:
-        fail(f"未找到 {python_embed_zip}, 请检查本地资源目录是否完整")
 
 
 def ensure_ocr_in_source_copy(repo_root: Path, source_copy_dir: Path) -> None:
@@ -389,6 +387,18 @@ def build_one(
         src = SOURCE_COPY_DST_DIR / doc
         if src.is_file():
             shutil.copy2(src, staging_root / doc)
+
+    # 拷贝 resource 目录
+    res_src = SOURCE_COPY_DST_DIR / "resource"
+    res_dst = staging_root / "resource"
+    if res_src.exists():
+        shutil.copytree(
+            res_src,
+            res_dst,
+            dirs_exist_ok=True,
+        )
+    else:
+        warn("缺少 resource 目录，install.py 可能无法继续")
 
     # 1) 下载/准备 MaaFramework -> deps/bin, deps/share
     if not skip_deps:
