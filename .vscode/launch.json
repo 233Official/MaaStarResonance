@@ -16,6 +16,21 @@
 				"--only-arch",
 				"x86_64"
 			]
+		},
+		{
+			"name": "下载wheels",
+			"type": "debugpy",
+			"request": "launch",
+			"program": "${workspaceFolder}/scripts/download_wheels.py",
+			"console": "integratedTerminal",
+			"args": [
+				"--platform",
+				"win_amd64",
+				"--python-version",
+				"3.13",
+				"--abi",
+				"cp313"
+			]
 		}
 	]
 }

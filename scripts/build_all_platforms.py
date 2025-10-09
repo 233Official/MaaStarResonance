@@ -382,11 +382,12 @@ def build_one(
             target = staging_root / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(py_file, target)
-    # 拷贝必要的 README 与 LICENSE 文件
-    for doc in ["README.md", "LICENSE"]:
+    # 拷贝必要的 README 与 LICENSE 文件以及 pyproject.toml
+    for doc in ["README.md", "LICENSE", "pyproject.toml"]:
         src = SOURCE_COPY_DST_DIR / doc
         if src.is_file():
             shutil.copy2(src, staging_root / doc)
+
 
     # 拷贝 resource 目录
     res_src = SOURCE_COPY_DST_DIR / "resource"
