@@ -1,0 +1,253 @@
+{
+	"检测到并点击确认按钮": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["进入副本的确认按钮.png"],
+				"roi": [
+					1127,
+					644,
+					56,
+					27
+				]
+			}
+		},
+		"action": "Click"
+	},
+	"退出队伍": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "ClickKey",
+			"param": {
+				"key": 37 // I
+			}
+		},
+		"next": [
+			"点击退出队伍按钮并确认退出",
+			"识别到创建队伍按钮并关闭组队页面"
+		]
+	},
+	"识别到创建队伍按钮并关闭组队页面": {
+		// 识别比较慢, 可能要将近十秒
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [
+					1107,
+					641,
+					96,
+					34
+				],
+				"expected": ["创建队伍"]
+			}
+		},
+		"action": "DoNothing",
+		"next": [
+			"ESC"
+		]
+	},
+	"ESC": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "ClickKey",
+			"param": {
+				"key": 111
+			}
+		}
+	},
+	"点击退出队伍按钮并确认退出": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["退出队伍按钮.png"],
+				"roi": [
+					1213,
+					637,
+					43,
+					42
+				]
+			}
+		},
+		"action": "Click",
+		"next": [
+			"确认退出队伍"
+		]
+	},
+	"确认退出队伍": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["退出队伍的确认按钮.png"],
+				"roi": [
+					750,
+					512,
+					89,
+					36
+				]
+			}
+		},
+		"action": "Click",
+		"next": ["ESC"]
+	},
+	"点击战斗胜利的下一步按钮": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["战斗胜利的下一步按钮.png"],
+				"roi": [
+					589,
+					625,
+					82,
+					31
+				]
+			}
+		},
+		"action": "Click"
+	},
+	"E-冲刺": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "ClickKey",
+			"param": {
+				"key": 33 // E
+			}
+		}
+	},
+	"点击离开副本按钮": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["副本的离开按钮.png"],
+				"roi": [
+					908,
+					660,
+					85,
+					31
+				]
+			}
+		},
+		"action": "Click"
+	},
+	"点击就近复活按钮": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["野外就近复活按钮.png"],
+				"roi": [
+					1057,
+					610,
+					43,
+					41
+				]
+			}
+		},
+		"action": "Click"
+	},
+	"常态化自动确认与自动战斗": {
+		"next": [
+			"自动确认然后自动战斗",
+			"从省电模式唤醒"
+		],
+		// 设置 3day = 3 * 24 * 60 * 60 * 1000 ms
+		"timeout": 259200000
+	},
+	"自动确认然后自动战斗": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["进入副本的确认按钮.png"],
+				"roi": [
+					1127,
+					644,
+					56,
+					27
+				]
+			}
+		},
+		"action": "Click",
+		"next": [
+			"识别到进入每日委托副本然后开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认"
+		],
+		// 进入副本需要一定的时间, 一般在 2min 内, 这里需要 2 * 60 * 1000 ms
+		"timeout": 120000
+	},
+	"识别到进入每日委托副本然后开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["副本退出按钮.png"],
+				"roi": [
+					192,
+					21,
+					32,
+					33
+				]
+			}
+		},
+		"action": "DoNothing",
+		"next": [
+			"开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认"
+		],
+		// 进入副本需要一定的时间, 一般在 2min 内, 这里需要 2 * 60 * 1000 ms
+		"timeout": 120000
+	},
+	"开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "run_pipeline_node",
+				"custom_action_param": {
+					"pipeline_node_name": "打开一键连招"
+				}
+			}
+		},
+		"next": [
+			"向前冲刺一次然后自动确认"
+		],
+		// 进入副本需要一定的时间, 一般在 2min 内, 这里需要 2 * 60 * 1000 ms
+		"timeout": 120000
+	},
+	"向前冲刺一次然后自动确认": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "ClickKey",
+			"param": {
+				"key": 33 // E
+			}
+		},
+		"next": [
+			"常态化自动确认与自动战斗"
+		]
+	},
+	"点击每日委托副本退出按钮": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["副本退出按钮.png"],
+				"roi": [
+					192,
+					21,
+					32,
+					33
+				]
+			}
+		},
+		"action": "Click"
+	},
+	"当前在五人队伍中": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["五人队伍的一号位标签.png"],
+				"roi": [
+					1079,
+					72,
+					11,
+					12
+				]
+			}
+		},
+		"action": "DoNothing"
+	}
+}

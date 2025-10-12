@@ -1,0 +1,359 @@
+{
+	"自动协会狩猎": {
+		"next": [
+			"收到并接受邀请",
+			"识别到并点击协会狩猎确认按钮"
+		],
+		"interrupt": ["从省电模式唤醒"],
+		// 3*24*60*60*1000  // 3天
+		"timeout": 259200000
+	},
+	"收到并接受邀请": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["邀请入队同意按钮.png"],
+				"roi": [
+					1201,
+					133,
+					55,
+					52
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [
+					1217,
+					148,
+					27,
+					25
+				]
+			}
+		},
+		// 从点击同意入队按钮到识别到副本确认按钮一般需要等待一段时间
+		"post_wait_freezes": 2000,
+		"next": ["识别到并点击协会狩猎确认按钮"],
+		// 5min 内一般会发起, 所以这里识别超时时间设置为 5min * 60s * 1000ms
+		"timeout": 300000,
+		// 如果 5min 内没识别到副本确认按钮则退出队伍
+		"on_error": [
+			"退出队伍然后继续自动协会狩猎"
+		],
+		// 可能遇到的异常为进入省电模式, 也可能被踢出队伍了
+		"interrupt": [
+			"从省电模式唤醒",
+			"如果被踢出队伍则继续主循环"
+		]
+	},
+	"如果被踢出队伍则继续主循环": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["五人队伍的一号位标签.png"],
+				"roi": [
+					1079,
+					72,
+					11,
+					12
+				]
+			}
+		},
+		// 翻转识别结果, 识别不到五人队伍的一号位标签说明不在队伍里
+		"inverse": true,
+		"action": "DoNothing",
+		"next": ["自动协会狩猎"]
+	},
+	"退出队伍然后继续自动协会狩猎": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "run_pipeline_node",
+				"custom_action_param": {
+					"pipeline_node_name": "退出队伍"
+				}
+			}
+		},
+		"next": ["自动协会狩猎"]
+	},
+	"识别到并点击协会狩猎确认按钮": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["进入副本的确认按钮.png"],
+				"roi": [
+					1127,
+					644,
+					56,
+					27
+				]
+			}
+		},
+		"action": "Click",
+		"next": ["识别到协会狩猎副本退出按钮后开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认"],
+		// 进入副本需要时间,一般不超过 2 分钟 = 2min * 60s * 1000 ms
+		"timeout": 120000,
+		"interrupt": ["从省电模式唤醒"]
+	},
+	"识别到协会狩猎副本退出按钮后开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["副本退出按钮.png"],
+				"roi": [
+					192,
+					21,
+					32,
+					33
+				]
+			}
+		},
+		"action": "DoNothing",
+		"next": [
+			"开启自动战斗并向前冲刺一次然后等待怪物死亡"
+		]
+	},
+	"开启自动战斗并向前冲刺一次然后等待怪物死亡": {
+		"recognition": "DirectHit",
+		"pre_delay": 2000,
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "run_pipeline_node",
+				"custom_action_param": {
+					"pipeline_node_name": "打开一键连招"
+				}
+			}
+		},
+		"next": [
+			"再次开启自动战斗并向前冲刺一次然后等待怪物死亡"
+		]
+	},
+	"再次开启自动战斗并向前冲刺一次然后等待怪物死亡": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "run_pipeline_node",
+				"custom_action_param": {
+					"pipeline_node_name": "打开一键连招"
+				}
+			}
+		},
+		"next": [
+			"向前冲刺一次然后等待怪物死亡"
+		]
+	},
+	"向前冲刺一次然后等待怪物死亡": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "ClickKey",
+			"param": {
+				"key": 33 // E
+			}
+		},
+		"next": [
+			"识别到结算界面并点击战斗胜利的下一步按钮"
+		],
+		// 协会狩猎副本最多 6 min 内会结束, 所以这里等待时间设置为 6 min * 60s * 1000 ms
+		"timeout": 360000,
+		// 异常状态为死亡或者被移除队伍以及省电模式
+		"interrupt": [
+			"从省电模式唤醒",
+			"协会狩猎原地复活",
+			"检测到不在队伍中循环协会狩猎主流程"
+		]
+	},
+	"识别到结算界面并点击战斗胜利的下一步按钮": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["association_hunt/战绩图标.png"],
+				"roi": [
+					375,
+					232,
+					25,
+					18
+				]
+			}
+		},
+		"action": "DoNothing",
+		"next": [
+			"点击战斗胜利的下一步按钮然后离开副本"
+		]
+	},
+	"点击战斗胜利的下一步按钮然后离开副本": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["战斗胜利的下一步按钮.png"],
+				"roi": [
+					589,
+					625,
+					82,
+					31
+				]
+			}
+		},
+		"action": "Click",
+		"next": [
+			"点击副本离开按钮然后继续主循环"
+		],
+		// 没识别到的时候也尝试去识别是否死亡
+		"interrupt": ["协会狩猎原地复活"]
+	},
+	"点击副本离开按钮然后继续主循环": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["副本的离开按钮.png"],
+				"roi": [
+					908,
+					660,
+					85,
+					31
+				]
+			}
+		},
+		"action": "Click",
+		"next": ["自动协会狩猎"]
+	},
+	"协会狩猎原地复活": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["原地复活"],
+				"roi": [
+					950,
+					664,
+					128,
+					29
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [
+					993,
+					610,
+					47,
+					41
+				] // 协会狩猎的原地复活按钮点击区域
+			}
+		}
+	},
+	"检测到不在队伍中循环协会狩猎主流程": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["五人队伍的一号位标签.png"],
+				"roi": [
+					1079,
+					72,
+					11,
+					12
+				]
+			}
+		},
+		// 翻转识别结果, 识别不到五人队伍的一号位标签说明不在队伍里
+		"inverse": true,
+		// 放大招动画时没有ui, 结算时有一段时间也没有UI所以识别到一次后还需要 delay2s 再识别到一次才行, 这里通过在此处延时2s来实现
+		"pre_delay": 2000,
+		"action": "DoNothing",
+		"next": [
+			"识别到死亡状态等待20s点击原地复活",
+			"识别到结算界面并点击战斗胜利的下一步按钮",
+			"再次检测到不在队伍中循环协会狩猎主流程"
+		],
+		// 这里再添加限时 4s 内识别, 避免再次识别占用过多时间
+		"timeout": 4000
+	},
+	"再次检测到不在队伍中循环协会狩猎主流程": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["五人队伍的一号位标签.png"],
+				"roi": [
+					1079,
+					72,
+					11,
+					12
+				]
+			}
+		},
+		// 翻转识别结果, 识别不到五人队伍的一号位标签说明不在队伍里
+		"inverse": true,
+		"action": "DoNothing",
+		// 放大招动画时没有ui, 所以识别到一次后还需要 delay2s 再识别到一次才行
+		"next": ["自动协会狩猎"]
+	},
+	"协会狩猎-打开一键连招测试": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "run_pipeline_node",
+				"custom_action_param": {
+					"pipeline_node_name": "打开一键连招"
+				}
+			}
+		}
+	},
+	"识别到死亡状态等待20s点击原地复活": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": ["association_hunt/原地复活按钮.png"],
+				"roi": [
+					994,
+					609,
+					47,
+					44
+				]
+			}
+		},
+		"action": "DoNothing",
+		"next": ["协会狩猎识别到可以复活时点击复活按钮"],
+		"interrupt": ["从省电模式唤醒"],
+		// 复活要读条 25s
+		"timeout": 30000
+	},
+	"协会狩猎识别到可以复活时点击复活按钮": {
+		"recognition": {
+			"type": "ColorMatch",
+			"param": {
+				"roi": [
+					1013,
+					628,
+					6,
+					5
+				],
+				"lower": [
+					145,
+					83,
+					28
+				],
+				"upper": [
+					155,
+					93,
+					35
+				],
+				"count": 4
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [
+					993,
+					610,
+					47,
+					41
+				] // 协会狩猎的原地复活按钮点击区域
+			}
+		}
+	}
+}
