@@ -6,3 +6,14 @@
 
 <div align="center">
 # MaaStarResonance
+
+---
+
+## TODO
+
+- 全局
+  - [ ] 省电模式唤醒点击位置需要修改
+- 协会狩猎
+  - 锁定与转视角
+
+---
