@@ -87,7 +87,15 @@
 			}
 		},
 		"action": {
-			"type": "Click"
+			"type": "Click",
+			"param": {
+				"target": [
+					591,
+					4,
+					33,
+					17
+				]
+			}
 		}
 	},
 	"打开一键连招": {
