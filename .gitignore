@@ -11,6 +11,8 @@ resource
 # docs
 docs/node_modules
 docs/.vuepress/.temp
+MaaFWDocs
+
 # Prerequisites
 *.d
 
