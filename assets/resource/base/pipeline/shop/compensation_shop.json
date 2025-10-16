@@ -12,7 +12,9 @@
 		"recognition": {
 			"type": "TemplateMatch",
 			"param": {
-				"template": ["商店/补偿商店/赛季中心补偿商店按钮.png"],
+				"template": [
+					"商店/补偿商店/赛季中心补偿商店按钮.png"
+				],
 				"roi": [
 					22,
 					492,
