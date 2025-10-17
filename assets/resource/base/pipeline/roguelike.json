@@ -1,131 +1,93 @@
 {
-	"匹配千梦织灵": {
-		"next": [
-			"匹配千梦织灵-点击匹配按钮"
-		],
-		"interrupt": [
-			"等待10秒"
-		]
-	},
-	"匹配千梦织灵-点击匹配按钮": {
-		"recognition": {
-			"type": "TemplateMatch",
-			"param": {
-				"template": ["roguelike/匹配千梦织灵.png"],
-				"roi": [
-					839,
-					327,
-					182,
-					34
-				]
-			}
-		},
-		"action": "Click",
-		"next": [
-			"等待进入梦境完成"
-		]
-	},
-	"等待10秒": {
-		"pre_wait_freezes": 10000
-	},
-	"等待进入梦境完成": {
-		"pre_wait_freezes": 20000,
-		"recognition": {
-			"type": "TemplateMatch",
-			"param": {
-				"template": ["roguelike/第一轮战斗.png"],
-				"roi": [
-					128,
-					343,
-					83,
-					23
-				]
-			}
-		},
-		"next": [
-			"进入梦境"
-		]
-	},
-	"进入梦境": {
-		"next": [
-			"进入梦境-前进"
-		]
-	},
-	"进入梦境-前进": {
-		"recognition": "DirectHit",
-		"action": {
-			"type": "LongPressKey",
-			"param": {
-				"key": 51,
-				"duration": 2000
-			}
-		},
-		"next": [
-			"进入梦境-点击按钮"
-		]
-	},
-	"进入梦境-点击按钮": {
-		"recognition": {
-			"type": "TemplateMatch",
-			"param": {
-				"template": ["roguelike/进入梦境.png"],
-				"roi": [
-					842,
-					325,
-					123,
-					39
-				]
-			}
-		},
-		"action": "Click"
-	},
-	"选择初始词条-精通": {
-		"next": [
-			"选择初始词条-前进"
-		]
-	},
-	"选择初始词条-前进": {
-		"recognition": "DirectHit",
-		"action": {
-			"type": "LongPressKey",
-			"param": {
-				// 按住键盘上的“W”键
-				"key": 51,
-				"duration": 2000
-			}
-		},
-		"next": [
-			"选择初始词条-向左移动"
-		]
-	},
-	"选择初始词条-向左移动": {
-		"recognition": "DirectHit",
-		"action": {
-			"type": "LongPressKey",
-			"param": {
-				// 按住键盘上的“A”键
-				"key": 29,
-				"duration": 1000
-			}
-		},
-		"next": [
-			"选择初始词条-点击按钮"
-		]
-	},
-	"选择初始词条-点击按钮": {
-		"recognition": {
-			"type": "TemplateMatch",
-			"param": {
-				// "template": ["roguelike/选择初始技能.png"],
-				"template": ["roguelike/选择初始词条.png"],
-				"roi": [
-					840,
-					327,
-					157,
-					37
-				]
-			}
-		},
-		"action": "Click"
-	}
+    "匹配千梦织灵": {
+        "next": ["匹配千梦织灵-点击匹配按钮"],
+        "interrupt": ["等待10秒"]
+    },
+    "匹配千梦织灵-点击匹配按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["roguelike/匹配千梦织灵.png"],
+                "roi": [839, 327, 182, 34]
+            }
+        },
+        "action": "Click",
+        "next": ["等待进入梦境完成"]
+    },
+    "等待10秒": {
+        "pre_wait_freezes": 10000
+    },
+    "等待进入梦境完成": {
+        "pre_wait_freezes": 20000,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["roguelike/第一轮战斗.png"],
+                "roi": [128, 343, 83, 23]
+            }
+        },
+        "next": ["进入梦境"]
+    },
+    "进入梦境": {
+        "next": ["进入梦境-前进"]
+    },
+    "进入梦境-前进": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "LongPressKey",
+            "param": {
+                "key": 51,
+                "duration": 2000
+            }
+        },
+        "next": ["进入梦境-点击按钮"]
+    },
+    "进入梦境-点击按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["roguelike/进入梦境.png"],
+                "roi": [842, 325, 123, 39]
+            }
+        },
+        "action": "Click"
+    },
+    "选择初始词条-精通": {
+        "next": ["选择初始词条-前进"]
+    },
+    "选择初始词条-前进": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "LongPressKey",
+            "param": {
+                // 按住键盘上的“W”键
+                "key": 51,
+                "duration": 2000
+            }
+        },
+        "next": ["选择初始词条-向左移动"]
+    },
+    "选择初始词条-向左移动": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "LongPressKey",
+            "param": {
+                // 按住键盘上的“A”键
+                "key": 29,
+                "duration": 1000
+            }
+        },
+        "next": ["选择初始词条-点击按钮"]
+    },
+    "选择初始词条-点击按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                // "template": ["roguelike/选择初始技能.png"],
+                "template": ["roguelike/选择初始词条.png"],
+                "roi": [840, 327, 157, 37]
+            }
+        },
+        "action": "Click"
+    }
 }

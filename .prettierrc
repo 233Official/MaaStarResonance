@@ -8,7 +8,6 @@
     "plugins": [
         "prettier-plugin-multiline-arrays"
     ],
-    "multilineArraysWrapThreshold": 1,
     "overrides": [
         {
             "files": [
@@ -26,8 +25,21 @@
             ],
             "options": {
                 "parser": "json",
-                "useTabs": true,
+                "useTabs": false,
+                "tabWidth": 4,
                 "bracketSameLine": false
+            }
+        },
+        {
+            "files": ["assets/resource/**/pipeline/**/*.json"],
+            "options": {
+                "multilineArraysWrapThreshold": 5
+            }
+        },
+        {
+            "files": ["assets/interface.json"],
+            "options": {
+                "multilineArraysWrapThreshold": 1
             }
         }
     ]
