@@ -53,5 +53,20 @@
 		"tzdata",
 		"venv",
 		"vuepress"
-	]
+	],
+	"python-envs.pythonProjects": [],
+	"python.defaultInterpreterPath": "./.venv",
+	"python.terminal.activateEnvironment": true,
+	"terminal.integrated.env.osx": {
+		"PATH": "${workspaceFolder}/.venv/bin:${env:PATH}"
+	},
+	"terminal.integrated.env.linux": {
+		"PATH": "${workspaceFolder}/.venv/bin:${env:PATH}"
+	},
+	"terminal.integrated.env.windows": {
+		"PATH": "${workspaceFolder}\\.venv\\Scripts;${env:PATH}"
+	},
+	"git.terminalEnvironment": {
+		"PATH": "${workspaceFolder}/.venv/bin:${workspaceFolder}\\.venv\\Scripts:${env:PATH}"
+	}
 }

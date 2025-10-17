@@ -33,6 +33,8 @@
     "agent": {
         // 使用项目下用 uv 管理的虚拟环境
         "child_exec": "{PROJECT_DIR}/../.venv/Scripts/python.exe",
+        // macOS
+        // "child_exec": "{PROJECT_DIR}/../.venv/bin/python3",
         // 使用项目打包的 embeddable Python
         // "child_exec": "{PROJECT_DIR}/python/python.exe",
         "child_args": [
