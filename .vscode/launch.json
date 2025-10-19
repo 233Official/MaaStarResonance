@@ -1,36 +1,46 @@
 {
-	// 使用 IntelliSense 了解相关属性。
-	// 悬停以查看现有属性的描述。
-	// 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "本地打包-windowsX86",
-			"type": "debugpy",
-			"request": "launch",
-			"program": "${workspaceFolder}/scripts/build_all_platforms.py",
-			"console": "integratedTerminal",
-			"args": [
-				"--only-os",
-				"win",
-				"--only-arch",
-				"x86_64"
-			]
-		},
-		{
-			"name": "下载wheels",
-			"type": "debugpy",
-			"request": "launch",
-			"program": "${workspaceFolder}/scripts/download_wheels.py",
-			"console": "integratedTerminal",
-			"args": [
-				"--platform",
-				"win_amd64",
-				"--python-version",
-				"3.13",
-				"--abi",
-				"cp313"
-			]
-		}
-	]
+    // 使用 IntelliSense 了解相关属性。
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "本地打包-windowsX86",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/build_all_platforms.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--only-os",
+                "win",
+                "--only-arch",
+                "x86_64"
+            ]
+        },
+        {
+            "name": "下载wheels",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/download_wheels.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--platform",
+                "win_amd64",
+                "--python-version",
+                "3.13",
+                "--abi",
+                "cp313"
+            ]
+        },
+        {
+            "name": "调试main",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/agent/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "25bef96-81c3-4e0f-b547-06beaf6d7ab6"
+            ]
+        }
+    ]
 }
