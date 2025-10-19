@@ -7,6 +7,8 @@ stash
 # 额外资源
 resource
 !/assets/resource/
+# MaaDebuger
+.nicegui
 
 # docs
 docs/node_modules
