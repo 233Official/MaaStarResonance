@@ -1,15 +1,11 @@
-<p align="center">
-  <img alt="LOGO" src="https://cdn.jsdelivr.net/gh/MaaAssistantArknights/design@main/logo/maa-logo_512x512.png" width="256" height="256" />
-</p>
-
-----
-
 # MaaStarResonance
 
-----
+![MAA Logo](https://cdn.jsdelivr.net/gh/MaaAssistantArknights/design@main/logo/maa-logo_512x512.png)
+
+---
 
 ## TODO
-  
+
 - 全局
 
   - [ ] 风猪粉猪刷声望
