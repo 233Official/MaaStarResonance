@@ -125,7 +125,7 @@
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "template": ["association_hunt/战绩图标.png"],
+                "template": ["协会狩猎/战绩图标.png"],
                 "roi": [375, 232, 25, 18]
             }
         },
@@ -185,6 +185,7 @@
         "pre_delay": 2000,
         "action": "DoNothing",
         "next": [
+            "识别到死亡状态复活图标加载中等待20s点击原地复活",
             "识别到死亡状态等待20s点击原地复活",
             "识别到结算界面并点击战斗胜利的下一步按钮",
             "再次检测到不在队伍中循环协会狩猎主流程"
@@ -218,11 +219,24 @@
             }
         }
     },
+    "识别到死亡状态复活图标加载中等待20s点击原地复活": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["协会狩猎/复活图标加载中字样图标.png"],
+                "roi": [911, 542, 24, 20]
+            }
+        },
+        "action": "DoNothing",
+        "next": [
+            "识别到死亡状态复活图标加载中等待20s点击原地复活"
+        ]
+    },
     "识别到死亡状态等待20s点击原地复活": {
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "template": ["association_hunt/原地复活按钮.png"],
+                "template": ["协会狩猎/原地复活按钮.png"],
                 "roi": [994, 609, 47, 44]
             }
         },
