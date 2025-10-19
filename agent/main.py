@@ -93,6 +93,8 @@ def main():
         Toolkit.init_option("./")
 
         socket_id = sys.argv[-1]
+        # print(f"sys.argv: {sys.argv}")
+        # print(f"Socket ID: {socket_id}")
 
         AgentServer.start_up(socket_id)
         AgentServer.join()
