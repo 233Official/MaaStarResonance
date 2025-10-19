@@ -157,3 +157,4 @@ class WaitXSecondsAction(CustomAction):
                 f"WaitXSecondsAction 等待 {wait_seconds} 秒失败, 错误: {exc}\n{stack_trace}",
             )
             return CustomAction.RunResult(success=False)
+

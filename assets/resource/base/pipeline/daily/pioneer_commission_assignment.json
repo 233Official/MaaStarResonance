@@ -1,0 +1,76 @@
+// 开拓局委托模块
+// TODO: 目前感觉逻辑和自动协会狩猎差不多, 逻辑只少不多
+{
+    "自动被动开拓局委托": {
+        "next": ["收到并接受邀请", "识别到并点击协会狩猎确认按钮"],
+        "interrupt": ["从省电模式唤醒"],
+        // 整体超时时间半小时, 基本半小时内三轮委托肯定能做完了 = 39min * 60s * 1000ms
+        "timeout": 1800000
+    },
+    "常态化自动确认与自动战斗": {
+        "next": ["自动确认然后自动战斗", "从省电模式唤醒"],
+        // 设置 3day = 3 * 24 * 60 * 60 * 1000 ms
+        "timeout": 259200000
+    },
+    "自动确认然后自动战斗": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["进入副本的确认按钮.png"],
+                "roi": [1127, 644, 56, 27]
+            }
+        },
+        "action": "Click",
+        "next": ["识别到进入每日委托副本然后开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认"],
+        // 进入副本需要一定的时间, 一般在 2min 内, 这里需要 2 * 60 * 1000 ms
+        "timeout": 120000
+    },
+    "识别到进入每日委托副本然后开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["副本退出按钮.png"],
+                "roi": [192, 21, 32, 33]
+            }
+        },
+        "action": "DoNothing",
+        "next": ["开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认"],
+        // 进入副本需要一定的时间, 一般在 2min 内, 这里需要 2 * 60 * 1000 ms
+        "timeout": 120000
+    },
+    "开启自动战斗并向前冲刺一次然后等待怪物死亡接着自动确认": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "run_pipeline_node",
+                "custom_action_param": {
+                    "pipeline_node_name": "打开一键连招"
+                }
+            }
+        },
+        "next": ["向前冲刺一次然后自动确认"],
+        // 进入副本需要一定的时间, 一般在 2min 内, 这里需要 2 * 60 * 1000 ms
+        "timeout": 120000
+    },
+    "向前冲刺一次然后自动确认": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "ClickKey",
+            "param": {
+                "key": 33 // E
+            }
+        },
+        "next": ["常态化自动确认与自动战斗"]
+    },
+    "点击每日委托副本退出按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["副本退出按钮.png"],
+                "roi": [192, 21, 32, 33]
+            }
+        },
+        "action": "Click"
+    }
+}
