@@ -232,6 +232,55 @@ def prepare_source_copy(repo_root: Path, dest_dir: Path) -> None:
             shutil.copy2(src, target)
         # 目录由其中文件复制时自动创建，无需单独处理
 
+    # 修改 agent/main.py 的内容, 将 # init_python_env() 的注释取消掉
+    uncomment_lines = ["# init_python_env()"]
+
+    agent_main = dest_dir / "agent" / "main.py"
+    if agent_main.exists():
+        try:
+            text = agent_main.read_text(encoding="utf-8")
+            new_text = text
+            applied: List[str] = []
+            for commented in uncomment_lines:
+                target = commented.lstrip("#").strip()
+                pattern = rf"^([ \t]*)#\s*{re.escape(target)}"
+                if re.search(pattern, new_text, flags=re.MULTILINE):
+                    new_text = re.sub(
+                        pattern,
+                        rf"\1{target}",
+                        new_text,
+                        flags=re.MULTILINE,
+                    )
+                    applied.append(target)
+            if new_text != text:
+                agent_main.write_text(new_text, encoding="utf-8")
+                info("已取消 agent/main.py 中的注释: " + ", ".join(applied))
+            else:
+                info("agent/main.py 中未找到需要取消的注释")
+        except Exception as e:
+            warn(f"修改 agent/main.py 失败: {e}")
+    else:
+        warn("未找到 agent/main.py，无法取消注释 init_python_env()")
+    agent_main = dest_dir / "agent" / "main.py"
+    if agent_main.exists():
+        try:
+            text = agent_main.read_text(encoding="utf-8")
+            new_text = re.sub(
+                r"^[ \t]*#\s*init_python_env\(\)",
+                "init_python_env()",
+                text,
+                flags=re.MULTILINE,
+            )
+            if new_text != text:
+                agent_main.write_text(new_text, encoding="utf-8")
+                info("已取消 agent/main.py 中的 init_python_env() 注释")
+            else:
+                info("agent/main.py 中未找到被注释的 init_python_env()")
+        except Exception as e:
+            warn(f"修改 agent/main.py 失败: {e}")
+    else:
+        warn("未找到 agent/main.py，无法取消注释 init_python_env()")
+
     # 读取并修改 assets/interface.json 中的 agent 字段
     ## 先将 assets/interface.json  中的 // 注释全部去掉
     with open(dest_dir / "assets" / "interface.json", "r", encoding="utf-8") as f:

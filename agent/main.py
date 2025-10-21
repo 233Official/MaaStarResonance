@@ -1,6 +1,12 @@
 import sys
 import subprocess
 from pathlib import Path
+import traceback
+from time import sleep
+
+CURRENT_DIR = Path(__file__).parent.resolve()
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
 
 PROJECT_ROOT = (Path(__file__).parent / "..").resolve()
 WHEELS_DIR = PROJECT_ROOT / "deps" / "wheels"
@@ -80,28 +86,38 @@ def init_python_env():
         ]
     )
 
-    print("依赖安装完成，请手动关闭程序然后重新启动程序")
+    # 安装完成后让当前进程也能看到刚写进的 site-packages
+    site_packages = (PROJECT_ROOT / "python" / "Lib" / "site-packages").resolve()
+    if site_packages.exists() and str(site_packages) not in sys.path:
+        sys.path.insert(0, str(site_packages))
+    import importlib
+    importlib.invalidate_caches()
+
+    print("Python 依赖安装/更新 已完成")
+
 
 
 def main():
-    if check_req_ready():
-        from maa.agent.agent_server import AgentServer
-        from maa.toolkit import Toolkit
-        import my_action
-        import my_reco
+    print(f"开始安装/更新 Python 依赖")
 
-        Toolkit.init_option("./")
+    # 开发时应当注释下面两行, 编译时自动解除注释
+    # init_python_env()
 
-        socket_id = sys.argv[-1]
-        # print(f"sys.argv: {sys.argv}")
-        # print(f"Socket ID: {socket_id}")
+    from logger import logger
+    from maa.agent.agent_server import AgentServer
+    from maa.toolkit import Toolkit
+    import my_action
+    import my_reco
 
-        AgentServer.start_up(socket_id)
-        AgentServer.join()
-        AgentServer.shut_down()
-    else:
-        print("依赖未安装，开始安装项目依赖...")
-        init_python_env()
+    Toolkit.init_option("./")
+
+    socket_id = sys.argv[-1]
+    # print(f"sys.argv: {sys.argv}")
+    # print(f"Socket ID: {socket_id}")
+
+    AgentServer.start_up(socket_id)
+    AgentServer.join()
+    AgentServer.shut_down()
 
 
 if __name__ == "__main__":
