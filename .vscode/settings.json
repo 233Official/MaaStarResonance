@@ -1,72 +1,84 @@
 {
-	"json.schemas": [
-		{
-			"fileMatch": [
-				"/assets/resource/**/*.json",
-				"/install/resource/**/*.json",
-				"/assets/resource/**/*.jsonc",
-				"/install/resource/**/*.jsonc"
-			],
-			"url": "/deps/tools/pipeline.schema.json"
-		},
-		{
-			"fileMatch": [
-				"/assets/interface.json",
-				"/install/interface.json"
-			],
-			"url": "/deps/tools/interface.schema.json"
-		},
-		{
-			"fileMatch": [
-				"/install/config/maa_pi_config.json"
-			],
-			"url": "/deps/tools/interface_config.schema.json"
-		}
-	],
-	"files.associations": {
-		"**/assets/**/*.json": "jsonc"
-	},
-	"[json][jsonc]": {
-		"editor.formatOnSave": true,
-		"editor.insertSpaces": true,
-		"editor.tabSize": 4,
-		"editor.indentSize": "tabSize"
-	},
-	"[python]": {
-		"editor.defaultFormatter": "ms-python.black-formatter"
-	},
-	"[markdown]": {
-		"editor.formatOnSave": true,
-		"editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
-	},
-	"python.testing.pytestArgs": [
-		"."
-	],
-	"python.testing.unittestEnabled": false,
-	"python.testing.pytestEnabled": true,
-	"cSpell.words": [
-		"Avalonia",
-		"bilibili",
-		"maafw",
-		"pyproject",
-		"qiniu",
-		"tzdata",
-		"venv",
-		"vuepress"
-	],
-	"python-envs.pythonProjects": [],
-	"python.defaultInterpreterPath": "./.venv",
-	"python.terminal.activateEnvironment": true,
-	"terminal.integrated.env.osx": {
-		"PATH": "${workspaceFolder}/.venv/bin:${env:PATH}"
-	},
-	"terminal.integrated.env.linux": {
-		"PATH": "${workspaceFolder}/.venv/bin:${env:PATH}"
-	},
-	"terminal.integrated.env.windows": {
-		"PATH": "${workspaceFolder}\\.venv\\Scripts;${env:PATH}"
-	},
-	"git.terminalEnvironment": {
-		"PATH": "${workspaceFolder}/.venv/bin:${workspaceFolder}\\.venv\\Scripts:${env:PATH}"
-	}
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "/assets/resource/**/*.json",
+                "/install/resource/**/*.json",
+                "/assets/resource/**/*.jsonc",
+                "/install/resource/**/*.jsonc"
+            ],
+            "url": "/deps/tools/pipeline.schema.json"
+        },
+        {
+            "fileMatch": [
+                "/assets/interface.json",
+                "/install/interface.json"
+            ],
+            "url": "/deps/tools/interface.schema.json"
+        },
+        {
+            "fileMatch": [
+                "/install/config/maa_pi_config.json"
+            ],
+            "url": "/deps/tools/interface_config.schema.json"
+        }
+    ],
+    "files.associations": {
+        "**/assets/**/*.json": "jsonc"
+    },
+    "[json][jsonc]": {
+        "editor.formatOnSave": true,
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "editor.indentSize": "tabSize"
+    },
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "[markdown]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+    },
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "cSpell.words": [
+        "Avalonia",
+        "bilibili",
+        "maafw",
+        "pyproject",
+        "qiniu",
+        "tzdata",
+        "venv",
+        "vuepress"
+    ],
+    "python-envs.pythonProjects": [],
+    "python.defaultInterpreterPath": "./.venv",
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.env.osx": {
+        "PATH": "${workspaceFolder}/.venv/bin:${env:PATH}"
+    },
+    "terminal.integrated.env.linux": {
+        "PATH": "${workspaceFolder}/.venv/bin:${env:PATH}"
+    },
+    "terminal.integrated.env.windows": {
+        "PATH": "${workspaceFolder}\\.venv\\Scripts;${env:PATH}"
+    },
+    "git.terminalEnvironment": {
+        "PATH": "${workspaceFolder}/.venv/bin:${workspaceFolder}\\.venv\\Scripts:${env:PATH}"
+    },
+    // 只影响资源管理器视图，VS Code 打开工作区时在列出目录树前会应用过滤；即使不排除也得枚举目录，所以性能差异不大，主要作用是视觉上隐藏
+    "files.exclude": {
+        // "releases/**": true
+    },
+    // 控制全局搜索扫描范围，能减少大目录被索引与搜索时的磁盘 IO，对搜索速度有帮助，但只在执行搜索时生效。
+    "search.exclude": {
+        "releases/**": true
+    },
+    // 影响最大：VS Code 默认用文件系统监视器跟踪所有文件变化，大量生成文件会让监听器高负载。把目录排除后，监听器不会为这些路径建立 watch，从而明显降低 CPU 和内存占用。
+    "files.watcherExclude": {
+        "releases/**": true
+    }
 }
