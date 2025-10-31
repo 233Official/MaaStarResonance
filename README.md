@@ -1,6 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <div align="center">
-<img alt="LOGO" src="(https://github.com/user-attachments/assets/88aa659f-5134-4b28-ba5d-6bc53b03ebcd" width="256" height="256" />
+<img alt="LOGO" src="README.assets/logo.png" width="256" height="256" />
+
 # MaaStarResonance
 
 基于图像识别的星痕共鸣自动化工具
