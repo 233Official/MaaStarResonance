@@ -1,6 +1,43 @@
+<!-- markdownlint-disable MD041 -->
+<div align="center">
+<img alt="LOGO" src="(https://github.com/user-attachments/assets/88aa659f-5134-4b28-ba5d-6bc53b03ebcd" width="256" height="256" />
 # MaaStarResonance
 
-![MAA Logo](https://cdn.jsdelivr.net/gh/MaaAssistantArknights/design@main/logo/maa-logo_512x512.png)
+基于图像识别的星痕共鸣自动化工具
+
+由 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 强力驱动！  
+
+<a href="https://github.com/233Official/MaaStarResonance" target="_blank" style="font-weight: bold;">🔗 本项目 GitHub 仓库</a><br>
+
+</div>
+
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white">
+  <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blueviolet">
+  <img alt="license" src="https://img.shields.io/github/license/MAA1999/M9A">
+  <br>
+  <img alt="commit" src="https://img.shields.io/github/commit-activity/m/233Official/MaaStarResonance">
+  <img alt="stars" src="https://img.shields.io/github/stars/233Official/MaaStarResonance?style=social">
+  <img alt="downloads" src="https://img.shields.io/github/downloads/233Official/MaaStarResonance/total?style=social">
+</p>
+
+---
+
+## 功能列表与使用说明
+
+- [自动协会狩猎](./docs/流程设计/自动协会狩猎/使用须知.md)
+
+---
+
+## 界面预览
+
+![image-20251101012348362](README.assets/image-20251101012348362.png)
+
+---
+
+## Ref
+
+- 项目图标来源: [艾露娜Q版表情包全套高清修复分享｜星痕共鸣｜腾讯频道](https://pd.qq.com/g/pd34199182/post/B_e60f346878db0d001441152189808449200X60)
 
 ---
 
@@ -13,6 +50,8 @@
   - [ ] 顺线刷首领拿装备箱子
 
   - [ ] 钓鱼
+
+    > 暂时不打算做, 有 [Sanheiii/ok-star-resonance: 基于ok-script的星痕共鸣自动工具](https://github.com/Sanheiii/ok-star-resonance) 可以用
 
   - [ ] 怪物图鉴
 
