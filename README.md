@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <div align="center">
-<img alt="LOGO" src="README.assets/logo.png" width="256" height="256" />
+<img alt="LOGO" src="README.assets/logo_transparent.png" width="256" height="256" />
 
 # MaaStarResonance
 
