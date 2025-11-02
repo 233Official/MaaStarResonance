@@ -1,0 +1,10 @@
+# markdownlint configuration
+# https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+
+# MD033/no-inline-html - Inline HTML
+# 允许在 Markdown 中使用内联 HTML（如 <div>, <img> 等）
+MD033: false
+
+# MD041/first-line-heading/first-line-h1 - First line in a file should be a top-level heading
+# 允许第一行不是一级标题（例如可以先放置 HTML 或注释）
+MD041: false
