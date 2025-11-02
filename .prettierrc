@@ -41,6 +41,13 @@
             "options": {
                 "multilineArraysWrapThreshold": 1
             }
+        },
+        {
+            "files": ["*.jsonc"],
+            "options": {
+                "parser": "jsonc",
+                "trailingComma": "none"
+            }
         }
     ]
 }

@@ -8,3 +8,8 @@ MD033: false
 # MD041/first-line-heading/first-line-h1 - First line in a file should be a top-level heading
 # 允许第一行不是一级标题（例如可以先放置 HTML 或注释）
 MD041: false
+
+# MD013/line-length - 限制单行最大长度
+# 与项目的 Prettier printWidth(120) 对齐，避免 README 中长链接/徽章频繁报警
+MD013:
+  line_length: 120
