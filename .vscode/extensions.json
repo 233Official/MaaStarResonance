@@ -4,6 +4,9 @@
         "nekosu.maa-support",
         "davidanson.vscode-markdownlint",
         "tamasfe.even-better-toml",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "github.vscode-github-actions",
+        "ms-vscode.vscode-github-issue-notebooks",
+        "github.vscode-pull-request-github"
     ]
 }
