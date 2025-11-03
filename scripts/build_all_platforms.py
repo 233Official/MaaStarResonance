@@ -431,6 +431,10 @@ def build_one(
             target = staging_root / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(py_file, target)
+    # 额外：复制 agent 目录下的非 .py 资源（如 JSON），避免运行期缺失数据文件
+    agent_src = SOURCE_COPY_DST_DIR / "agent"
+    if agent_src.exists():
+        copytree_ignore_existing(agent_src, staging_root / "agent")
     # 拷贝必要的 README 与 LICENSE 文件以及 pyproject.toml
     for doc in ["README.md", "LICENSE", "pyproject.toml"]:
         src = SOURCE_COPY_DST_DIR / doc

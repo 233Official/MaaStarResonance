@@ -1,0 +1,174 @@
+{
+    "自动挂Lv10茧": {
+        "next": ["传送到西斯莱萨矿场_废弃矿洞_向前冲刺一次再移动2500ms然后点击进入溺梦之地"]
+    },
+    "传送到西斯莱萨矿场_废弃矿洞_向前冲刺一次再移动2500ms然后点击进入溺梦之地": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "run_custom_actions_series",
+                "custom_action_param": {
+                    "actions": [
+                        "从省电模式唤醒",
+                        "点击快捷方式按钮",
+                        "点击正下方的快捷选项"
+                    ],
+                    "interval": 1000
+                }
+            }
+        },
+        "next": ["在传送点向前冲刺一次并向前移动2500ms然后点击进入溺梦之地"]
+    },
+    "在传送点向前冲刺一次并向前移动2500ms然后点击进入溺梦之地": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["浮游之茧/传送点上的查看地图图标.png"],
+                "roi": [840, 334, 27, 21]
+            }
+        },
+        "pre_delay": 3000,
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "run_custom_actions_series",
+                "custom_action_param": {
+                    "actions": [
+                        "E-冲刺"
+                    ],
+                    "interval": 2000
+                }
+            }
+        },
+        "post_delay": 1000,
+        "next": ["打开一键连招然后向前移动2500ms然后进入溺梦之地"]
+    },
+    "打开一键连招然后向前移动2500ms然后进入溺梦之地": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "run_pipeline_node",
+                "custom_action_param": {
+                    "pipeline_node_name": "打开一键连招"
+                }
+            }
+        },
+        "next": ["向前移动2500ms然后进入溺梦之地"]
+    },
+    "向前移动2500ms然后进入溺梦之地": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "move_wsad",
+                "custom_action_param": {
+                    "direction": "前",
+                    "millisecond": 2500
+                }
+            }
+        },
+        "next": ["进入溺梦之地"],
+        "interrupt": ["从省电模式唤醒"],
+        "on_error": ["自动挂Lv10茧"] // 当无法正常进入溺梦之地时, 重试整个流程
+    },
+    "进入溺梦之地": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["浮游之茧/进入溺梦之地图标.png"],
+                "roi": [840, 334, 27, 21]
+            }
+        },
+        "action": "Click",
+        "next": [
+            "等待幻觉值积累满后等待5min重复整个流程"
+        ],
+        "interrupt": ["从省电模式唤醒"],
+        // 1day
+        "timeout": 86400
+    },
+    "等待幻觉值积累满后等待5min重复整个流程": {
+        "next": ["识别到幻觉值积累满后等待5min重复整个流程"],
+        // 耍一天
+        "timeout": 86400
+    },
+    "识别到幻觉值积累满后等待5min重复整个流程": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["浮游之茧/溺梦之地退出按钮图标.png"],
+                "roi": [195, 21, 28, 31]
+            }
+        },
+        "inverse": true, // 识别不到溺梦之地退出按钮说明幻觉值满了被踢出去了
+        "action": {
+            // 沿用了从省电模式唤醒的处理动作
+            "type": "Click",
+            "param": {
+                "target": [591, 4, 33, 17]
+            }
+        },
+        "post_delay": 10000,
+        "next": [
+            "浮游之茧-识别到死亡状态等待5s点击原地复活",
+            "再次识别到幻觉值积累满后等待5min重复整个流程"
+        ],
+        "interrupt": ["从省电模式唤醒"],
+        "on_error": ["等待幻觉值积累满后等待5min重复整个流程"]
+    },
+    "浮游之茧-识别到死亡状态等待5s点击原地复活": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["浮游之茧/复活按钮.png"],
+                "roi": [1055, 615, 46, 36]
+            }
+        },
+        "post_delay": 5000,
+        "next": [
+            "识别到可以复活时点击复活按钮然后继续等待幻觉值积累满后等待5min重复整个流程"
+        ]
+    },
+    "识别到可以复活时点击复活按钮然后继续等待幻觉值积累满后等待5min重复整个流程": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [1075, 629, 6, 5],
+                "lower": [145, 83, 28],
+                "upper": [155, 93, 35],
+                "count": 4
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [1056, 612, 45, 37]
+            }
+        },
+        "next": ["等待幻觉值积累满后等待5min重复整个流程"],
+        // 挂机一天
+        "timeout": 86400
+    },
+    "再次识别到幻觉值积累满后等待5min重复整个流程": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["浮游之茧/溺梦之地退出按钮图标.png"],
+                "roi": [195, 21, 28, 31]
+            }
+        },
+        "inverse": true, // 识别不到溺梦之地退出按钮说明幻觉值满了被踢出去了
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "wait_x_seconds",
+                "custom_action_param": {
+                    "wait_seconds": 300 // 等待 5 分钟
+                }
+            }
+        },
+        "next": ["自动挂Lv10茧"]
+    }
+}

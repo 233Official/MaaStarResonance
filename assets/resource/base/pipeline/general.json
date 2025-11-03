@@ -111,5 +111,33 @@
             }
         },
         "action": "DoNothing"
+    },
+    "点击快捷方式按钮": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [32, 479, 18, 15]
+            }
+        }
+    },
+    "点击正下方的快捷选项": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [576, 501, 125, 36]
+            }
+        }
+    },
+    "按住W键1秒": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "LongPressKey",
+            "param": {
+                "key": 51, // W键
+                "duration": 1000
+            }
+        }
     }
 }

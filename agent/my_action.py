@@ -1,12 +1,13 @@
+from logger import logger
+import traceback
+import time
+
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
 
 from custom_param import CustomActionParam, CustomActionParamError
-from logger import logger
-import traceback
-
-import time
+from key_event import ANDROID_KEY_EVENT_DATA
 
 
 @AgentServer.custom_action("my_action_111")
@@ -134,7 +135,7 @@ class WaitXSecondsAction(CustomAction):
         self,
         context: Context,
         argv: CustomAction.RunArg,
-    ) -> CustomAction.RunResult:
+    ) -> bool:
         params: CustomActionParam | None = None
         wait_seconds = 0
         try:
@@ -142,13 +143,16 @@ class WaitXSecondsAction(CustomAction):
             required = params.require(["wait_seconds"])
             wait_seconds = int(required["wait_seconds"])
             logger.info(f"Waiting for {wait_seconds} seconds...")
+            # 打印倒计时(覆盖式)
+            for remaining in range(wait_seconds, 0, -1):
+                print(f"\r{remaining} seconds remaining...", end="", flush=True)
+                time.sleep(1)
 
-            time.sleep(wait_seconds)
             logger.success(f"Waited for {wait_seconds} seconds successfully")
-            return CustomAction.RunResult(success=True)
+            return True
         except CustomActionParamError as exc:
             logger.error(f"WaitXSecondsAction 参数错误: {exc}")
-            return CustomAction.RunResult(success=False)
+            return False
         except Exception as exc:  # pragma: no cover - 运行时保护
             stack_trace = traceback.format_exc()
             if params:
@@ -156,5 +160,103 @@ class WaitXSecondsAction(CustomAction):
             logger.exception(
                 f"WaitXSecondsAction 等待 {wait_seconds} 秒失败, 错误: {exc}\n{stack_trace}",
             )
-            return CustomAction.RunResult(success=False)
+            return False
 
+
+# 运行一系列自定义动作
+@AgentServer.custom_action("run_custom_actions_series")
+class RunCustomActionsSeriesAction(CustomAction):
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> bool:
+        params: CustomActionParam | None = None
+        actions: list[str] = []
+        interval: int = 1000  # 默认动作衔接等待时间为1000毫秒
+        try:
+            params = CustomActionParam(argv.custom_action_param)
+            required = params.require(["actions", "interval"])
+            actions = required["actions"]
+            interval = int(required["interval"])
+            logger.debug(
+                f"Running custom actions series: {actions} with interval {interval} ms"
+            )
+
+            for action_name in actions:
+                context.run_action(entry=action_name)
+                time.sleep(interval / 1000)
+
+            logger.success(f"成功运行自定义动作系列: {actions}")
+            return True
+        except CustomActionParamError as exc:
+            logger.error(f"RunCustomActionsSeriesAction 参数错误: {exc}")
+            return False
+        except Exception as exc:  # pragma: no cover - 运行时保护
+            stack_trace = traceback.format_exc()
+            if params:
+                actions = params.data.get("actions", [])
+                interval = params.data.get("interval", 1000)
+            logger.exception(
+                f"RunCustomActionsSeriesAction 运行自定义动作系列 {actions} 失败, 错误: {exc}\n{stack_trace}",
+            )
+            return False
+
+
+# 向前(W)/后(S)/左(A)/右(D)移动second秒
+@AgentServer.custom_action("move_wsad")
+class MoveWSADAction(CustomAction):
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> bool:
+        params: CustomActionParam | None = None
+        direction: str = ""
+        millisecond: int = 0
+        try:
+            params = CustomActionParam(argv.custom_action_param)
+            required = params.require(["direction", "millisecond"])
+            direction = required["direction"]
+            millisecond = int(required["millisecond"])
+
+            key_map = {
+                "前": "KEYCODE_W",
+                "左": "KEYCODE_A",
+                "后": "KEYCODE_S",
+                "右": "KEYCODE_D",
+            }
+            key_name = key_map.get(direction)
+            key_code = ANDROID_KEY_EVENT_DATA.get(key_name)
+            if not key_code:
+                raise ValueError(f"Invalid direction: {direction}")
+
+            logger.debug(
+                f"尝试向{direction}移动 {millisecond} 毫秒, key_code: {key_code}, duration: {millisecond} ms"
+            )
+            # 按下按键millisecond毫秒后松开
+            context.run_task(
+                entry="按住W键1秒",
+                pipeline_override={
+                    "按住W键1秒": {
+                        "action": {
+                            "param": {"key": key_code, "duration": millisecond},
+                        }
+                    }
+                },
+            )
+
+            logger.success(f"向{direction}移动 {millisecond} 毫秒成功")
+            return True
+        except CustomActionParamError as exc:
+            logger.error(f"MoveWSADAction 参数错误: {exc}")
+            return False
+        except Exception as exc:  # pragma: no cover - 运行时保护
+            stack_trace = traceback.format_exc()
+            if params:
+                direction = params.data.get("direction", "")
+                millisecond = params.data.get("millisecond", 0)
+            logger.exception(
+                f"MoveWSADAction 移动 {direction} {millisecond} 毫秒失败, 错误: {exc}\n{stack_trace}",
+            )
+            return False
