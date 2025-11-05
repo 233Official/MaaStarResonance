@@ -97,10 +97,10 @@
     },
     "识别到幻觉值积累满后等待5min重复整个流程": {
         "recognition": {
-            "type": "TemplateMatch",
+            "type": "OCR",
             "param": {
-                "template": ["浮游之茧/溺梦之地退出按钮图标.png"],
-                "roi": [195, 21, 28, 31]
+                "expected": ["退出"],
+                "roi": [230, 28, 36, 19]
             }
         },
         "inverse": true, // 识别不到溺梦之地退出按钮说明幻觉值满了被踢出去了
@@ -154,10 +154,10 @@
     },
     "再次识别到幻觉值积累满后等待5min重复整个流程": {
         "recognition": {
-            "type": "TemplateMatch",
+            "type": "OCR",
             "param": {
-                "template": ["浮游之茧/溺梦之地退出按钮图标.png"],
-                "roi": [195, 21, 28, 31]
+                "expected": ["退出"],
+                "roi": [230, 28, 36, 19]
             }
         },
         "inverse": true, // 识别不到溺梦之地退出按钮说明幻觉值满了被踢出去了
