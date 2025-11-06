@@ -139,5 +139,15 @@
                 "duration": 1000
             }
         }
+    },
+    "循环F": {
+        "action": {
+            "type": "ClickKey",
+            "param": {
+                "key": 34 // F
+            }
+        },
+        "post_delay": 1000,
+        "next": ["循环F"]
     }
 }

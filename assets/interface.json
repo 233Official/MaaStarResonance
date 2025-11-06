@@ -51,6 +51,17 @@
             "entry": "自动挂Lv10茧"
         },
         {
+            "name": "简易采集",
+            "entry": "简易采集",
+            "option": [
+                "采集方案"
+            ]
+        },
+        // {
+        //     "name": "循环F",
+        //     "entry": "循环F"
+        // },
+        {
             "name": "自动钓鱼",
             "entry": "自动钓鱼",
             "option": [
@@ -130,6 +141,32 @@
                 {
                     "name": "特制鱼饵",
                     "pipeline_override": {}
+                }
+            ]
+        },
+        "采集方案": {
+            "cases": [
+                {
+                    "name": "专注采集",
+                    "pipeline_override": {
+                        "专注采集": {
+                            "enabled": true
+                        },
+                        "普通采集": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "普通采集",
+                    "pipeline_override": {
+                        "专注采集": {
+                            "enabled": false
+                        },
+                        "普通采集": {
+                            "enabled": true
+                        }
+                    }
                 }
             ]
         },
