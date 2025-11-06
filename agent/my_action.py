@@ -142,13 +142,46 @@ class WaitXSecondsAction(CustomAction):
             params = CustomActionParam(argv.custom_action_param)
             required = params.require(["wait_seconds"])
             wait_seconds = int(required["wait_seconds"])
-            logger.info(f"Waiting for {wait_seconds} seconds...")
-            # 打印倒计时(覆盖式)
-            for remaining in range(wait_seconds, 0, -1):
-                print(f"\r{remaining} seconds remaining...", end="", flush=True)
-                time.sleep(1)
+            total = max(0, wait_seconds)
+            if total <= 0:
+                logger.warning("等待秒数 <= 0，跳过等待")
+                return True
 
-            logger.success(f"Waited for {wait_seconds} seconds successfully")
+            # 计算打印进度的间隔：
+            # - x <= 10: 每 1 秒
+            # - 10 < x < 100: 每 10 秒
+            # - 100 < x < 1000: 每 100 秒
+            # - 以此类推（间隔为小于 x 的最大 10 的幂）
+            def calc_interval(x: int) -> int:
+                if x <= 10:
+                    return 1
+                step = 10
+                while step * 10 < x:
+                    step *= 10
+                return step
+
+            interval = calc_interval(total)
+            if interval == 1:
+                logger.info(f"开始等待 {total} 秒（每秒打印一次）")
+                for remaining in range(total, 0, -1):
+                    logger.info(f"剩余 {remaining} 秒…")
+                    time.sleep(1)
+            else:
+                logger.info(
+                    f"开始等待 {total} 秒（每 {interval} 秒打印一次进度）"
+                )
+                elapsed = 0
+                while elapsed + interval < total:
+                    time.sleep(interval)
+                    elapsed += interval
+                    logger.info(f"已等待 {elapsed}/{total} 秒")
+
+                # 补齐最后不足一个间隔的时间
+                remaining = total - elapsed
+                if remaining > 0:
+                    time.sleep(remaining)
+
+            logger.success(f"已等待 {total} 秒")
             return True
         except CustomActionParamError as exc:
             logger.error(f"WaitXSecondsAction 参数错误: {exc}")
