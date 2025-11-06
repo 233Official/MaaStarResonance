@@ -33,13 +33,13 @@
             ]
         },
         {
-            "name": "调试main",
+            "name": "启动agent",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/agent/main.py",
             "console": "integratedTerminal",
             "args": [
-                "25bef96-81c3-4e0f-b547-06beaf6d7ab6"
+                "2cf5e50c-25ea-4c76-8a0d-d08ad60ece4d"
             ]
         }
     ]
