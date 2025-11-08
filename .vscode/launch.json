@@ -41,6 +41,16 @@
             "args": [
                 "2cf5e50c-25ea-4c76-8a0d-d08ad60ece4d"
             ]
+        },
+        {
+            "name": "Python 调试程序: 当前文件",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         }
     ]
 }
