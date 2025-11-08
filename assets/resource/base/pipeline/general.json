@@ -149,5 +149,14 @@
         },
         "post_delay": 1000,
         "next": ["循环F"]
+    },
+    "通用文字识别": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": "[\\S\\s]*",
+                "roi": [0,0,0,0]
+            }
+        }
     }
 }
