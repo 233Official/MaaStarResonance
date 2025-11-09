@@ -95,7 +95,7 @@ def install_agent():
 
 # 安装 embeddable python(仅适用于 Windows)
 def install_embed_python():
-    if platform == "windows":
+    if platform == "win":
         embed_python_install_path = install_path / "python"
         print(f"当前平台为 {platform} {arch}, 运行 embeddable python 安装")
         embed_python_zip_path = (
