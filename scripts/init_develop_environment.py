@@ -3,9 +3,15 @@ from pathlib import Path
 import platform
 from agent.logger import logger
 import shutil
+import sys
 
 CURRENT_DIR = Path(__file__).parent.resolve()
 PROJECT_ROOT = (Path(__file__).parent / "..").resolve()
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 
 
 # 识别当前系统环境
