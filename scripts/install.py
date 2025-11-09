@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+import re
 
 REPO_ROOT = (Path(__file__).parent / "..").resolve()
 if str(REPO_ROOT) not in sys.path:
@@ -55,6 +56,13 @@ def install_resource():
         working_dir / "assets" / "interface.json",
         install_path,
     )
+
+    ## 先将 assets/interface.json  中的 // 注释全部去掉
+    with open(install_path / "assets" / "interface.json", "r", encoding="utf-8") as f:
+        content = f.read()
+    content_no_comments = re.sub(r"//.*?$", "", content, flags=re.MULTILINE)
+    with open(install_path / "assets" / "interface.json", "w", encoding="utf-8") as f:
+        f.write(content_no_comments)
 
     with open(install_path / "interface.json", "r", encoding="utf-8") as f:
         interface = json.load(f)
