@@ -102,12 +102,12 @@ jobs:
           echo "Archive cleanup command executed for MFAAvalonia."
 
       # 缓存 resource 目录下的所有资源文件,以便后续 Action 运行时可以直接使用缓存的资源文件, 避免重复下载浪费时间和流量
-      - name: Cache Resources
-        uses: actions/cache@v4
-        id: resource-cache
-        with:
-          path: ./resource
-          key: resource
+      # - name: Cache Resources
+      #   uses: actions/cache@v4
+      #   id: resource-cache
+      #   with:
+      #     path: ./resource
+      #     key: resource
 
       # 下载不同系统的 embeddable python zip 包放在 ./resource/embeddable_python_zip 目录下
       - name: Download embeddable Python
@@ -121,8 +121,10 @@ jobs:
           mkdir -p "${EMBEDDABLE_PYTHON_DIR}"
           if [[ "${{ matrix.os }}" == "win" ]]; then
             if [[ "${{ matrix.arch }}" == "x86_64" ]]; then
+              echo "Downloading embeddable Python for Windows x86_64..."
               PYTHON_URL="https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-amd64.zip"
             else
+              echo "Downloading embeddable Python for Windows ARM64..."
               PYTHON_URL="https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-arm64.zip"
             fi
             echo "Downloading embeddable Python from ${PYTHON_URL}..."
