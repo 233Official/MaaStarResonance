@@ -129,7 +129,7 @@ jobs:
       # 缓存 resource 目录下的所有资源文件,以便后续 Action 运行时可以直接使用缓存的资源文件, 避免重复下载浪费时间和流量
       - name: Cache Resources
         uses: actions/cache@v4
-        id: resource-cache
+        id: resource-cache-python-embeddable-zip-and-get-pip
         with:
           path: |
             resource/embeddable_python_zip
@@ -138,7 +138,7 @@ jobs:
 
       # 下载不同系统的 embeddable python zip 包放在 ./resource/embeddable_python_zip 目录下
       - name: Download embeddable Python
-        if: steps.resource-cache.outputs.cache-hit != 'true'
+        if: steps.resource-cache-python-embeddable-zip-and-get-pip.outputs.cache-hit != 'true'
         shell: bash
         # https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-amd64.zip
         # https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-win32.zip
@@ -162,7 +162,7 @@ jobs:
           
       # 下载 get-pip.py 到 ./resource/get-pip.py
       - name: Download get-pip.py
-        # if: steps.resource-cache.outputs.cache-hit != 'true'
+        if: steps.resource-cache-python-embeddable-zip-and-get-pip.outputs.cache-hit != 'true'
         shell: bash
         run: |
           curl -L -o ./resource/get-pip.py https://bootstrap.pypa.io/get-pip.py
