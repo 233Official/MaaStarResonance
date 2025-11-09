@@ -64,17 +64,10 @@ jobs:
     steps:
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
-      - name: Cache Windows wheels
-        uses: actions/cache@v4
-        id: wheels-cache
-        with:
-          path: resource/wheels/win-x64
-          key: resource_wheels_win-${{ hashFiles('pyproject.toml') }}
-  
       - name: Download wheels
-        if: steps.wheels-cache.outputs.cache-hit != 'true'
+        working-directory: ${{ github.workspace }}
         shell: pwsh
         run: |
           python scripts/download_wheels.py `
@@ -82,10 +75,7 @@ jobs:
             --python-version 3.13 `
             --abi cp313 `
             --dest resource/wheels/win-x64
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheels-win-x64
-          path: resource/wheels/win-x64
+
 
 
   install:
