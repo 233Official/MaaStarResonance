@@ -136,7 +136,7 @@ jobs:
         if: steps.resource-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L -o ./resource/get-pip.py
+          curl -L -o ./resource/get-pip.py https://bootstrap.pypa.io/get-pip.py
 
       # 根据项目 pyproject.toml 下载离线的 Python Wheels 包到 ./resource/wheels 目录下
       - name: Download Windows Python Wheels
