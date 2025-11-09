@@ -62,13 +62,17 @@ jobs:
   prepare-wheels:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Cache Windows wheels
         uses: actions/cache@v4
         id: wheels-cache
         with:
           path: resource/wheels/win-x64
           key: resource_wheels_win-${{ hashFiles('pyproject.toml') }}
+  
       - name: Download wheels
         if: steps.wheels-cache.outputs.cache-hit != 'true'
         shell: pwsh
