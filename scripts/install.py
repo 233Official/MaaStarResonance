@@ -98,6 +98,10 @@ def install_embed_python():
     if platform == "win":
         embed_python_install_path = install_path / "python"
         print(f"当前平台为 {platform} {arch}, 运行 embeddable python 安装")
+        # 打印 working_dir/resource/embeddable_python_zip 下的所有文件
+        print("以下是可用的 embeddable python zip 文件:")
+        for file in (working_dir / "resource/embeddable_python_zip").iterdir():
+            print(f" - {file.name}")
         embed_python_zip_path = (
             working_dir
             / f"resource/embeddable_python_zip"
