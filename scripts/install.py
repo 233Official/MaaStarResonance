@@ -138,7 +138,7 @@ def install_embed_python():
 # 拷贝 python wheels 以及 get-pip.py 和 pyproject.toml
 def copy_python_wheels():
     # 目前只对 Windows x64 下载了 wheels
-    if platform != "win" or arch != "x64":
+    if platform != "win" or arch != "x86_64":
         print(f"当前平台为 {platform} {arch}, 跳过 wheels 拷贝步骤")
         return
     wheels_source_path = working_dir / "resource" / "wheels" / "win-x64"
