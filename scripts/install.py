@@ -96,12 +96,9 @@ def install_agent():
     if agent_main.exists():
         try:
             text = agent_main.read_text(encoding="utf-8")
-            new_text = re.sub(
-                r"^[ \t]*#\s*init_python_env\(\)",
-                "init_python_env()",
-                text,
-                flags=re.MULTILINE,
-            )
+            pattern = r"^([ \t]*)#\s*init_python_env\(\)"
+            replacement = r"\1init_python_env()"
+            new_text = re.sub(pattern, replacement, text, flags=re.MULTILINE)
             if new_text != text:
                 agent_main.write_text(new_text, encoding="utf-8")
                 print("已取消 agent/main.py 中的 init_python_env() 注释")
