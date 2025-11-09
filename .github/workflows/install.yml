@@ -147,7 +147,9 @@ jobs:
 
       - name: Install
         shell: bash
+        # 需要先安装 loguru, 否则 install.py 里面的 logger 会报错
         run: |
+          pip install loguru
           python scripts/install.py ${{ needs.meta.outputs.tag }} ${{ matrix.os }} ${{ matrix.arch }}
 
           if [[ "${{ matrix.os }}" != "android" ]]; then
