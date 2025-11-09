@@ -59,6 +59,47 @@ jobs:
       is_release: ${{ steps.set_tag.outputs.is_release }}
       is_prerelease: ${{ steps.set_tag.outputs.is_prerelease }}
 
+  prepare-wheels:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - name: win-x64
+            runner: windows-latest
+            platform: win_amd64
+            python_version: "3.13"
+            abi: cp313
+          - name: mac-x64
+            runner: macos-latest
+            platform: macosx_12_0_x86_64
+            python_version: "3.13"
+            abi: cp313
+          - name: linux-x64
+            runner: ubuntu-latest
+            platform: manylinux2014_x86_64
+            python_version: "3.13"
+            abi: cp313
+    steps:
+      - name: Cache Resources
+        uses: actions/cache@v4
+        id: resource-cache
+        with:
+          path: ./resource/wheels
+          key: resource_wheels
+      - uses: actions/checkout@v4
+      - name: Download wheels
+        shell: bash
+        run: |
+          python scripts/download_wheels.py \
+            --platform ${{ matrix.platform }} \
+            --python-version ${{ matrix.python_version }} \
+            --abi ${{ matrix.abi }} \
+            --dest resource/wheels
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.name }}
+          path: resource/wheels
+
   install:
     needs: meta
     runs-on: macos-latest
@@ -135,17 +176,17 @@ jobs:
           
       # 下载 get-pip.py 到 ./resource/get-pip.py
       - name: Download get-pip.py
-        if: steps.resource-cache.outputs.cache-hit != 'true'
+        # if: steps.resource-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           curl -L -o ./resource/get-pip.py https://bootstrap.pypa.io/get-pip.py
 
       # 根据项目 pyproject.toml 下载离线的 Python Wheels 包到 ./resource/wheels 目录下
-      - name: Download Windows Python Wheels
-        if: steps.resource-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          python scripts/download_wheels.py  --platform win_amd64 --python-version 3.13 --abi cp313 --dest ./resource/wheels
+      # - name: Download Windows Python Wheels
+      #   # if: steps.resource-cache.outputs.cache-hit != 'true'
+      #   shell: bash
+      #   run: |
+      #     python scripts/download_wheels.py  --platform win_amd64 --python-version 3.13 --abi cp313 --dest ./resource/wheels  --extra "colorama>=0.4.6"
 
       - name: Install
         shell: bash
