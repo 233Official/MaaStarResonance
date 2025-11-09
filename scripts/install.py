@@ -7,6 +7,8 @@ import json
 from init_develop_environment import check_ocr_model_directory
 
 REPO_ROOT = (Path(__file__).parent / "..").resolve()
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 working_dir = (Path(__file__).parent / "..").resolve()
 install_path = working_dir / Path("install")
