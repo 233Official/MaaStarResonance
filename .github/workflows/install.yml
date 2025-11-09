@@ -66,6 +66,8 @@ jobs:
         with:
           python-version: '3.13'
 
+      - uses: actions/checkout@v4
+
       - name: Download wheels
         working-directory: ${{ github.workspace }}
         shell: pwsh
