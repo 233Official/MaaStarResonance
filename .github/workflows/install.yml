@@ -85,7 +85,7 @@ jobs:
 
 
   install:
-    needs: meta
+    needs: [meta, prepare-wheels]
     runs-on: macos-latest
     strategy:
       matrix:
