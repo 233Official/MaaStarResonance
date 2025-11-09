@@ -78,6 +78,10 @@ jobs:
             --abi cp313 `
             --dest resource/wheels/win-x64
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-win-x64
+          path: resource/wheels/win-x64
 
 
   install:
@@ -123,12 +127,12 @@ jobs:
           echo "Archive cleanup command executed for MFAAvalonia."
 
       # 缓存 resource 目录下的所有资源文件,以便后续 Action 运行时可以直接使用缓存的资源文件, 避免重复下载浪费时间和流量
-      # - name: Cache Resources
-      #   uses: actions/cache@v4
-      #   id: resource-cache
-      #   with:
-      #     path: ./resource
-      #     key: resource
+      - name: Cache Resources
+        uses: actions/cache@v4
+        id: resource-cache
+        with:
+          path: ./resource
+          key: resource
 
       # 下载不同系统的 embeddable python zip 包放在 ./resource/embeddable_python_zip 目录下
       - name: Download embeddable Python
@@ -167,6 +171,14 @@ jobs:
       #   shell: bash
       #   run: |
       #     python scripts/download_wheels.py  --platform win_amd64 --python-version 3.13 --abi cp313 --dest ./resource/wheels  --extra "colorama>=0.4.6"
+
+      - name: Download wheels artifact
+        if: matrix.os == 'win' && matrix.arch == 'x86_64'
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-win-x64
+          path: resource/wheels/win-x64
+
 
       - name: Install
         shell: bash
