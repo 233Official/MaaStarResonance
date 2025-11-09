@@ -98,14 +98,11 @@ def install_embed_python():
     if platform != "windows":
         embed_python_install_path = install_path / "python"
         print(f"当前平台为 {platform} {arch}, 运行 embeddable python 安装")
-        if arch == "x86_64":
-            embed_python_zip_path = (
-                working_dir / "resource/embeddable_python_zip" / "python-3.13.7-embed-amd64.zip"
-            )
-        else:
-            embed_python_zip_path = (
-                working_dir / "resource/embeddable_python_zip" / "python-3.13.7-embed-arm64.zip"
-            )
+        embed_python_zip_path = (
+            working_dir
+            / f"resource/embeddable_python_zip"
+            / f"python-3.13.7-embed-{arch}.zip"
+        )
         # 解压 zip 文件到目标路径
         shutil.unpack_archive(embed_python_zip_path, embed_python_install_path, "zip")
         # 修改 install_path / "python/python313._pth" 文件, 添加一行 "import site" 以及"..\agent"
