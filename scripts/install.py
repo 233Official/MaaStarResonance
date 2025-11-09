@@ -91,6 +91,26 @@ def install_agent():
         install_path / "agent",
         dirs_exist_ok=True,
     )
+    # 取消 agent/main.py 中的 init_python_env 调用
+    agent_main = install_path / "agent" / "main.py"
+    if agent_main.exists():
+        try:
+            text = agent_main.read_text(encoding="utf-8")
+            new_text = re.sub(
+                r"^[ \t]*#\s*init_python_env\(\)",
+                "init_python_env()",
+                text,
+                flags=re.MULTILINE,
+            )
+            if new_text != text:
+                agent_main.write_text(new_text, encoding="utf-8")
+                print("已取消 agent/main.py 中的 init_python_env() 注释")
+            else:
+                print("agent/main.py 中未找到被注释的 init_python_env()")
+        except Exception as e:
+            print(f"修改 agent/main.py 失败: {e}")
+    else:
+        print("未找到 agent/main.py，无法取消注释 init_python_env()")
 
 
 # 安装 embeddable python(仅适用于 Windows)
