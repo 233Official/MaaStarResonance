@@ -141,7 +141,7 @@ def copy_python_wheels():
     if platform != "win" or arch != "x64":
         print(f"当前平台为 {platform} {arch}, 跳过 wheels 拷贝步骤")
         return
-    wheels_source_path = working_dir / "resource" / "wheels"
+    wheels_source_path = working_dir / "resource" / "wheels" / "win-x64"
     wheels_target_path = install_path / "deps" / "wheels"
     shutil.copytree(wheels_source_path, wheels_target_path, dirs_exist_ok=True)
 
