@@ -101,10 +101,54 @@ jobs:
           rm -f "${ARCHIVE_FILE_PATH}"
           echo "Archive cleanup command executed for MFAAvalonia."
 
+      # 缓存 resource 目录下的所有资源文件,以便后续 Action 运行时可以直接使用缓存的资源文件, 避免重复下载浪费时间和流量
+      - name: Cache Resources
+        uses: actions/cache@v4
+        id: resource-cache
+        with:
+          path: ./resource
+          key: resource
+
+      # 下载不同系统的 embeddable python zip 包放在 ./resource/embeddable_python_zip 目录下
+      - name: Download embeddable Python
+        if: steps.resource-cache.outputs.cache-hit != 'true'
+        shell: bash
+        # https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-amd64.zip
+        # https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-win32.zip
+        # https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-arm64.zip
+        run: |
+          EMBEDDABLE_PYTHON_DIR="./resource/embeddable_python_zip"
+          mkdir -p "${EMBEDDABLE_PYTHON_DIR}"
+          if [[ "${{ matrix.os }}" == "win" ]]; then
+            if [[ "${{ matrix.arch }}" == "x86_64" ]]; then
+              PYTHON_URL="https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-amd64.zip"
+            else
+              PYTHON_URL="https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-arm64.zip"
+            fi
+            echo "Downloading embeddable Python from ${PYTHON_URL}..."
+            curl -L -o "${EMBEDDABLE_PYTHON_DIR}/python-3.13.7-embed-${{ matrix.arch }}.zip" "${PYTHON_URL}"
+          else
+            echo "便携版Python目前仅支持Windows系统, 对于${{ matrix.os }}系统将跳过下载步骤."
+          fi
+          
+      # 下载 get-pip.py 到 ./resource/get-pip.py
+      - name: Download get-pip.py
+        if: steps.resource-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L -o ./resource/get-pip.py
+
+      # 根据项目 pyproject.toml 下载离线的 Python Wheels 包到 ./resource/wheels 目录下
+      - name: Download Windows Python Wheels
+        if: steps.resource-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          python scripts/download_wheels.py  --platform win_amd64 --python-version 3.13 --abi cp313 --dest ./resource/wheels
+
       - name: Install
         shell: bash
         run: |
-          python ./install.py ${{ needs.meta.outputs.tag }}
+          python scripts/install.py ${{ needs.meta.outputs.tag }} ${{ matrix.os }} ${{ matrix.arch }}
 
           if [[ "${{ matrix.os }}" != "android" ]]; then
             if [ -d "MFA" ]; then
@@ -116,7 +160,7 @@ jobs:
             fi
           else
             echo "Skipping copy MFA for Android."
-          fi
+          fi 
 
       - uses: actions/upload-artifact@v4
         with:

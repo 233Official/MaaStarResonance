@@ -4,18 +4,21 @@ import shutil
 import sys
 import json
 
-from configure import configure_ocr_model
+from init_develop_environment import check_ocr_model_directory
 
+REPO_ROOT = (Path(__file__).parent / "..").resolve()
 
 working_dir = (Path(__file__).parent / "..").resolve()
 install_path = working_dir / Path("install")
 version = len(sys.argv) > 1 and sys.argv[1] or "v0.0.1"
+platform = len(sys.argv) > 2 and sys.argv[2] or "windows"
+arch = len(sys.argv) > 3 and sys.argv[3] or "x64"
 
 
 def install_deps():
     if not (working_dir / "deps" / "bin").exists():
-        print("Please download the MaaFramework to \"deps\" first.")
-        print("请先下载 MaaFramework 到 \"deps\"。")
+        print('Please download the MaaFramework to "deps" first.')
+        print('请先下载 MaaFramework 到 "deps"。')
         sys.exit(1)
 
     shutil.copytree(
@@ -38,7 +41,7 @@ def install_deps():
 
 def install_resource():
 
-    configure_ocr_model()
+    check_ocr_model_directory()
 
     shutil.copytree(
         working_dir / "assets" / "resource",
@@ -54,6 +57,8 @@ def install_resource():
         interface = json.load(f)
 
     interface["version"] = version
+    interface["agent"]["child_exec"] = "{PROJECT_DIR}/python/python.exe"
+    interface["agent"]["child_args"] = ["{PROJECT_DIR}/agent/main.py"]
 
     with open(install_path / "interface.json", "w", encoding="utf-8") as f:
         json.dump(interface, f, ensure_ascii=False, indent=4)
@@ -69,34 +74,38 @@ def install_chores():
         install_path,
     )
 
+
 def install_agent():
     shutil.copytree(
         working_dir / "agent",
         install_path / "agent",
         dirs_exist_ok=True,
     )
-    # # 为 agent/main.py 取消 line69 的注释
-    # main_py_path = install_path / "agent" / "main.py"
-    # with open(main_py_path, "r", encoding="utf-8") as f:
-    #     lines = f.readlines()
-    # with open(main_py_path, "w", encoding="utf-8") as f:
-    #     for line in lines:
-    #         if line.strip() == "# init_python_env()":
-    #             f.write("init_python_env()\n")
-    #         else:
-    #             f.write(line)
 
-# 安装 embeddable python
+
+# 安装 embeddable python(仅适用于 Windows)
 def install_embed_python():
-    embed_python_zip_path = working_dir / "resource" / "python-3.13.7-embed-amd64.zip"
-    embed_python_install_path = install_path / "python"
-    # 解压 zip 文件到目标路径
-    shutil.unpack_archive(embed_python_zip_path, embed_python_install_path, 'zip')
-    # 修改 install_path / "python/python313._pth" 文件, 添加一行 "import site" 以及"..\agent"
-    pth_file_path = embed_python_install_path / "python313._pth"
-    with open(pth_file_path, "a", encoding="utf-8") as f:
-        f.write("\nimport site\n")
-        f.write(r"..\agent")
+    if platform != "windows":
+        embed_python_install_path = install_path / "python"
+        print(f"当前平台为 {platform} {arch}, 运行 embeddable python 安装")
+        if arch == "x86_64":
+            embed_python_zip_path = (
+                working_dir / "resource/python" / "python-3.13.7-embed-amd64.zip"
+            )
+        else:
+            embed_python_zip_path = (
+                working_dir / "resource/python" / "python-3.13.7-embed-arm64.zip"
+            )
+        # 解压 zip 文件到目标路径
+        shutil.unpack_archive(embed_python_zip_path, embed_python_install_path, "zip")
+        # 修改 install_path / "python/python313._pth" 文件, 添加一行 "import site" 以及"..\agent"
+        pth_file_path = embed_python_install_path / "python313._pth"
+        with open(pth_file_path, "a", encoding="utf-8") as f:
+            f.write("\nimport site\n")
+            f.write(r"..\agent")
+    else:
+        print(f"当前平台为 {platform} {arch}, 暂不支持 embeddable python 安装")
+
 
 # 拷贝 python wheels 以及 get-pip.py 和 pyproject.toml
 def copy_python_wheels():
@@ -111,6 +120,7 @@ def copy_python_wheels():
     pyproject_source_path = working_dir / "pyproject.toml"
     pyproject_target_path = install_path / "pyproject.toml"
     shutil.copy2(pyproject_source_path, pyproject_target_path)
+
 
 if __name__ == "__main__":
     install_deps()
