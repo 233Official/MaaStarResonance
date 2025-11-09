@@ -131,8 +131,10 @@ jobs:
         uses: actions/cache@v4
         id: resource-cache
         with:
-          path: ./resource
-          key: resource
+          path: |
+            resource/embeddable_python_zip
+            resource/get-pip.py
+          key: resource_embeddable_python_zip
 
       # 下载不同系统的 embeddable python zip 包放在 ./resource/embeddable_python_zip 目录下
       - name: Download embeddable Python
