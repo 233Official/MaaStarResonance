@@ -60,45 +60,29 @@ jobs:
       is_prerelease: ${{ steps.set_tag.outputs.is_prerelease }}
 
   prepare-wheels:
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - name: win-x64
-            runner: windows-latest
-            platform: win_amd64
-            python_version: "3.13"
-            abi: cp313
-          - name: mac-x64
-            runner: macos-latest
-            platform: macosx_12_0_x86_64
-            python_version: "3.13"
-            abi: cp313
-          - name: linux-x64
-            runner: ubuntu-latest
-            platform: manylinux2014_x86_64
-            python_version: "3.13"
-            abi: cp313
+    runs-on: windows-latest
     steps:
-      - name: Cache Resources
-        uses: actions/cache@v4
-        id: resource-cache
-        with:
-          path: ./resource/wheels
-          key: resource_wheels
       - uses: actions/checkout@v4
+      - name: Cache Windows wheels
+        uses: actions/cache@v4
+        id: wheels-cache
+        with:
+          path: resource/wheels/win-x64
+          key: resource_wheels_win-${{ hashFiles('pyproject.toml') }}
       - name: Download wheels
-        shell: bash
+        if: steps.wheels-cache.outputs.cache-hit != 'true'
+        shell: pwsh
         run: |
-          python scripts/download_wheels.py \
-            --platform ${{ matrix.platform }} \
-            --python-version ${{ matrix.python_version }} \
-            --abi ${{ matrix.abi }} \
-            --dest resource/wheels
+          python scripts/download_wheels.py `
+            --platform win_amd64 `
+            --python-version 3.13 `
+            --abi cp313 `
+            --dest resource/wheels/win-x64
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.name }}
-          path: resource/wheels
+          name: wheels-win-x64
+          path: resource/wheels/win-x64
+
 
   install:
     needs: meta
