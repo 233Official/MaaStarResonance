@@ -11,7 +11,6 @@ import shutil
 from init_develop_environment import check_ocr_model_directory
 
 
-
 working_dir = (Path(__file__).parent / "..").resolve()
 install_path = working_dir / Path("install")
 version = len(sys.argv) > 1 and sys.argv[1] or "v0.0.1"
@@ -58,10 +57,10 @@ def install_resource():
     )
 
     ## 先将 assets/interface.json  中的 // 注释全部去掉
-    with open(install_path / "assets" / "interface.json", "r", encoding="utf-8") as f:
+    with open(install_path / "interface.json", "r", encoding="utf-8") as f:
         content = f.read()
     content_no_comments = re.sub(r"//.*?$", "", content, flags=re.MULTILINE)
-    with open(install_path / "assets" / "interface.json", "w", encoding="utf-8") as f:
+    with open(install_path / "interface.json", "w", encoding="utf-8") as f:
         f.write(content_no_comments)
 
     with open(install_path / "interface.json", "r", encoding="utf-8") as f:
