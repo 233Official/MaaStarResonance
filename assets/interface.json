@@ -1,6 +1,6 @@
 {
-    "version": "v0.2.0",
-    "message": "Beta版本, 仅供内部测试使用",
+    "version": "v0.3.0",
+    "message": "早期开发版本,欢迎反馈问题与建议",
     "controller": [
         {
             "name": "安卓端",
