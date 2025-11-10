@@ -36,6 +36,8 @@ from urllib import request, error as urlerror
 from zoneinfo import ZoneInfo
 from datetime import datetime, timezone
 
+from scripts.install import _strip_interface_json_comments
+
 
 REPO_ROOT = (Path(__file__).parent / "..").resolve()
 RELEASES_DIR = REPO_ROOT / "releases"
@@ -283,11 +285,8 @@ def prepare_source_copy(repo_root: Path, dest_dir: Path) -> None:
 
     # 读取并修改 assets/interface.json 中的 agent 字段
     ## 先将 assets/interface.json  中的 // 注释全部去掉
-    with open(dest_dir / "assets" / "interface.json", "r", encoding="utf-8") as f:
-        content = f.read()
-    content_no_comments = re.sub(r"//.*?$", "", content, flags=re.MULTILINE)
-    with open(dest_dir / "assets" / "interface.json", "w", encoding="utf-8") as f:
-        f.write(content_no_comments)
+    _strip_interface_json_comments(dest_dir / "assets" / "interface.json")
+
     with open(dest_dir / "assets" / "interface.json", "r", encoding="utf-8") as f:
         interface = json.load(f)
     interface["agent"]["child_exec"] = "{PROJECT_DIR}/python/python.exe"
