@@ -95,7 +95,7 @@
         使用 scripts 目录下的开发环境初始化脚本检查与初始化环境:
 
         ```bash
-        python -m scripts.init_develop_environment 
+        uv run scripts/init_develop_environment.py
         ```
 
         ![image-20251108170954377](QuickStart.assets/image-20251108170954377.png)
