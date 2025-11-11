@@ -2,47 +2,18 @@
     "简易采集": {
         "next": [
             "专注采集",
-            "普通采集",
-            "无物可采"
+            "普通采集"
         ],
-        "timeout": 86400000,
+        "timeout": 3000, // 3s内如果没识别到采集选项就算超时
+        "on_error": ["无物可采"],
         "interrupt": ["从省电模式唤醒"]
     },
     "无物可采": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": ["采集/采字样.png"],
-                "roi": [822, 211, 250, 347]
-            }
-        },
-        "inverse": true, // 无法识别到采集字样则判定为无物可采
-        "next": [
-            "无物可采-省电模式",
-            "确实无物可采"
-        ]
-    },
-    "无物可采-省电模式": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [528, 629, 223, 35],
-                "expected": ["省电模式"]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [591, 4, 33, 17]
-            }
-        },
-        "next": ["无物可采"]
-    },
-    "确实无物可采": {
-        "post_delay": 25000, // 作物重生大概要25s
+        "post_delay": 25000, // 作物重生需要大概 25s
         "next": ["简易采集"]
     },
     "专注采集": {
+        "enabled": true,
         "recognition": {
             "type": "TemplateMatch",
             "param": {
@@ -55,6 +26,7 @@
         "next": ["简易采集"]
     },
     "普通采集": {
+        "enabled": true,
         "recognition": {
             "type": "TemplateMatch",
             "param": {
