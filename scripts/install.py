@@ -61,9 +61,26 @@ def _strip_interface_json_comments(path: Path) -> None:
 
 working_dir = (Path(__file__).parent / "..").resolve()
 install_path = working_dir / Path("install")
-version = len(sys.argv) > 1 and sys.argv[1] or "v0.0.1"
-platform = len(sys.argv) > 2 and sys.argv[2] or "windows"
-arch = len(sys.argv) > 3 and sys.argv[3] or "x64"
+if len(sys.argv) > 1:
+    version = sys.argv[1]
+    print(f"[install] 使用传入的版本号: {version}")
+else:
+    version = "v0.0.1"
+    print(f"[install] 未传入版本号，使用默认值: {version}")
+
+if len(sys.argv) > 2:
+    platform = sys.argv[2]
+    print(f"[install] 使用传入的平台标识: {platform}")
+else:
+    platform = "windows"
+    print(f"[install] 未传入平台标识，使用默认值: {platform}")
+
+if len(sys.argv) > 3:
+    arch = sys.argv[3]
+    print(f"[install] 使用传入的体系结构: {arch}")
+else:
+    arch = "x86_64"
+    print(f"[install] 未传入体系结构，使用默认值: {arch}")
 
 
 def install_deps():

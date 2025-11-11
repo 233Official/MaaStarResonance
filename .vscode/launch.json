@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "本地打包-windowsX86",
+            "name": "本地打包-windowsx86_64",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/scripts/build_all_platforms.py",
@@ -29,7 +29,9 @@
                 "--python-version",
                 "3.13",
                 "--abi",
-                "cp313"
+                "cp313",
+                "--dest",
+                "${workspaceFolder}/resource/wheels/win-x64"
             ]
         },
         {

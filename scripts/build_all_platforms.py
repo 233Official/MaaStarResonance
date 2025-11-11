@@ -36,6 +36,12 @@ from urllib import request, error as urlerror
 from zoneinfo import ZoneInfo
 from datetime import datetime, timezone
 
+# Ensure repo root is on sys.path so `python scripts/*.py` works outside package context.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_REPO_ROOT_FOR_IMPORT = _SCRIPT_DIR.parent
+if str(_REPO_ROOT_FOR_IMPORT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT_FOR_IMPORT))
+
 from scripts.install import _strip_interface_json_comments
 
 
@@ -509,7 +515,7 @@ def build_one(
 
     # 3) 调用 staging_root/install.py 生成基础产物
     install_dir = staging_root / "install"
-    cmd = [sys.executable, "scripts/install.py", tag]
+    cmd = [sys.executable, "scripts/install.py", tag, os_name, arch]
     run(cmd, cwd=staging_root)
 
     if not install_dir.exists():
