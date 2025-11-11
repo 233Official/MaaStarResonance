@@ -1,6 +1,6 @@
 [project]
 name = "MaaStarResonance"
-version = "0.3.0"
+version = "0.3.1"
 description = "基于MAAFW的星痕共鸣黑盒测试工具"
 authors = [
     {name = "233Official",email = "ayusummer233@outlook.com"},
@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 dependencies = [
     "loguru>=0.7.3",
     "maafw>=4.5.5",
+    "pip>=25.3",
     "pre-commit>=4.3.0",
     "rapidfuzz>=3.14.3",
     "toml>=0.10.2",
