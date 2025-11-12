@@ -86,40 +86,100 @@ jobs:
 
   install:
     needs: [meta, prepare-wheels]
-    runs-on: macos-latest
     strategy:
+      # 矩阵分平台构建
       matrix:
-        os: [win, macos, linux, android]
-        arch: [aarch64, x86_64]
+        include:
+          - os: windows-latest
+            platform: win
+            arch: x86_64
+          - os: windows-latest
+            platform: win
+            arch: aarch64
+          - os: macos-latest
+            platform: macos
+            arch: x86_64
+          - os: macos-latest
+            platform: macos
+            arch: aarch64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x86_64
+          - os: ubuntu-latest
+            platform: linux
+            arch: aarch64
+          - os: ubuntu-latest
+            platform: android
+            arch: x86_64
+          - os: ubuntu-latest
+            platform: android
+            arch: aarch64
       fail-fast: false
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
 
+      # 下载 MaaFramework Release
       - name: Download MaaFramework
         uses: robinraju/release-downloader@v1
         with:
           repository: MaaXYZ/MaaFramework
-          fileName: "MAA-${{ matrix.os }}-${{ matrix.arch }}*"
+          fileName: "MAA-${{ matrix.platform }}-${{ matrix.arch }}*"
           latest: true
           out-file-path: "deps"
           extract: true
 
+      # Win平台：下载 MFAAvalonia 源码
+      - name: Checkout MFAAvalonia source
+        if: matrix.platform == 'win'
+        uses: actions/checkout@v4
+        with:
+          repository: SweetSmellFox/MFAAvalonia
+          path: MFA-src
+
+      # Win平台：替换图标文件
+      - name: Replace MFAAvalonia icon
+        if: matrix.platform == 'win'
+        run: |
+          cp assets/logo.ico MFA-src/MFAAvalonia/Assets/logo.ico
+          echo "已替换 Windows 版 MFAAvalonia 的 logo.ico"
+
+      # Win平台：设置 .NET 版本
+      - name: Setup .NET
+        if: matrix.platform == 'win'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      # Win平台：编译修改过的 MFAAvalonia
+      - name: Build MFAAvalonia
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          cd MFA-src
+          dotnet publish -c Release -r win-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }} --self-contained true
+          cd ..
+          New-Item -ItemType Directory -Force -Path MFA | Out-Null
+          Copy-Item -Path "MFA-src/bin/AnyCPU/Release/win-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}/publish/*" -Destination "MFA" -Recurse -Force
+      
+      # 非Win平台：直接下载对应平台的 MFAAvalonia 完整包
       - name: Download MFAAvalonia
-        if: matrix.os != 'android'
+        if: matrix.platform != 'android' && matrix.platform != 'win'
         id: download_mfa
         uses: robinraju/release-downloader@v1
         with:
           repository: SweetSmellFox/MFAAvalonia
-          fileName: "MFAAvalonia-*-${{ (matrix.os == 'win' && 'win') || (matrix.os == 'macos' && 'osx') || (matrix.os == 'linux' && 'linux') }}-${{ (matrix.arch == 'x86_64' && 'x64') || (matrix.arch == 'aarch64' && 'arm64') }}*"
+          fileName: "MFAAvalonia-*-${{ matrix.platform == 'macos' && 'osx' || matrix.platform }}-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}*"
           latest: true
           out-file-path: "MFA"
           extract: true
-
+      
+      # 非 Windows 平台清理无用压缩包
       - name: Clean up MFAAvalonia archive
-        if: matrix.os != 'android'
+        if: matrix.platform != 'android' && matrix.platform != 'win'
         shell: bash
         run: |
           ARCHIVE_FILE_PATH="${{ fromJson(steps.download_mfa.outputs.downloaded_files)[0] }}"
@@ -134,7 +194,7 @@ jobs:
           path: |
             resource/embeddable_python_zip
             resource/get-pip.py
-          key: resource-cache-${{ matrix.os }}-${{ matrix.arch }}-v0.3.0
+          key: resource-cache-${{ matrix.platform }}-${{ matrix.arch }}-v0.3.0
 
       # 下载不同系统的 embeddable python zip 包放在 ./resource/embeddable_python_zip 目录下
       - name: Download embeddable Python
@@ -146,7 +206,7 @@ jobs:
         run: |
           EMBEDDABLE_PYTHON_DIR="./resource/embeddable_python_zip"
           mkdir -p "${EMBEDDABLE_PYTHON_DIR}"
-          if [[ "${{ matrix.os }}" == "win" ]]; then
+          if [[ "${{ matrix.platform }}" == "win" ]]; then
             if [[ "${{ matrix.arch }}" == "x86_64" ]]; then
               echo "Downloading embeddable Python for Windows x86_64..."
               PYTHON_URL="https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-amd64.zip"
@@ -157,7 +217,7 @@ jobs:
             echo "Downloading embeddable Python from ${PYTHON_URL}..."
             curl -L -o "${EMBEDDABLE_PYTHON_DIR}/python-3.13.7-embed-${{ matrix.arch }}.zip" "${PYTHON_URL}"
           else
-            echo "便携版Python目前仅支持Windows系统, 对于${{ matrix.os }}系统将跳过下载步骤."
+            echo "便携版Python目前仅支持Windows系统, 对于${{ matrix.platform }}系统将跳过下载步骤."
           fi
           
       # 下载 get-pip.py 到 ./resource/get-pip.py
@@ -175,7 +235,7 @@ jobs:
       #     python scripts/download_wheels.py  --platform win_amd64 --python-version 3.13 --abi cp313 --dest ./resource/wheels  --extra "colorama>=0.4.6"
 
       - name: Download wheels artifact
-        if: matrix.os == 'win' && matrix.arch == 'x86_64'
+        if: matrix.platform == 'win' && matrix.arch == 'x86_64'
         uses: actions/download-artifact@v4
         with:
           name: wheels-win-x64
@@ -184,16 +244,22 @@ jobs:
 
       - name: Install
         shell: bash
+        env:
+          PYTHONIOENCODING: utf-8
         # 需要先安装 loguru, 否则 install.py 里面的 logger 会报错
         run: |
           pip install loguru
-          python scripts/install.py ${{ needs.meta.outputs.tag }} ${{ matrix.os }} ${{ matrix.arch }}
+          python scripts/install.py ${{ needs.meta.outputs.tag }} ${{ matrix.platform }} ${{ matrix.arch }}
 
-          if [[ "${{ matrix.os }}" != "android" ]]; then
+          if [[ "${{ matrix.platform }}" != "android" ]]; then
             if [ -d "MFA" ]; then
               echo "Copying MFA files to install directory..."
               mkdir -p install
-              rsync -av --ignore-existing MFA/ install/
+              if [[ "$RUNNER_OS" == "Windows" ]]; then
+                pwsh -Command "Copy-Item -Path MFA/* -Destination install -Recurse -Force"
+              else
+                rsync -av --ignore-existing MFA/ install/
+              fi
             else
               echo "MFA directory not found, skipping copy."
             fi
@@ -203,7 +269,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: MaaStarResonance-${{ matrix.os }}-${{ matrix.arch }}
+          name: MaaStarResonance-${{ matrix.platform }}-${{ matrix.arch }}
           path: "install"
 
   changelog:
