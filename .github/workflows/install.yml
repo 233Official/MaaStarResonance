@@ -154,7 +154,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Win平台：编译修改过的 MFAAvalonia）
+      # Win平台：编译修改过的 MFAAvalonia
       - name: Build MFAAvalonia
         if: matrix.platform == 'win'
         shell: pwsh
