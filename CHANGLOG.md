@@ -2,6 +2,18 @@
 
 ---
 
+## v0.4.0
+
+- Feat
+  - 为打包后的MFAA添加自定义图标
+  - 更新项目 uv pyproject.toml 中的 maafw 到 `>=5.0.1`
+
+- Docs
+
+  更新 README 展示图片
+
+---
+
 ## v0.3.1
 
 - Perf

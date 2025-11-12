@@ -26,7 +26,7 @@
 
 ## 界面预览
 
-![image-20251101012348362](README.assets/image-20251101012348362.png)
+![image-20251112164337819](README.assets/image-20251112164337819.png)
 
 ---
 

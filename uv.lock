@@ -88,7 +88,7 @@ wheels = [
 
 [[package]]
 name = "maastarresonance"
-version = "0.3.1"
+version = "0.4.0"
 source = { virtual = "." }
 dependencies = [
     { name = "loguru" },
@@ -103,7 +103,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "maafw", specifier = ">=4.5.5" },
+    { name = "maafw", specifier = ">=5.0.1" },
     { name = "pip", specifier = ">=25.3" },
     { name = "pre-commit", specifier = ">=4.3.0" },
     { name = "rapidfuzz", specifier = ">=3.14.3" },
