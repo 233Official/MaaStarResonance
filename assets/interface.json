@@ -3,21 +3,21 @@
     "url": "https://github.com/233Official/MaaStarResonance",
     "mirrorchyan_rid": "MaaStarResonance",
     "mirrorchyan_multiplatform": true,
-    "version": "v0.3.0",
+    "version": "v0.4.1",
     "message": "早期开发版本,欢迎反馈问题与建议",
     "controller": [
         {
             "name": "安卓端",
             "type": "Adb"
-        },
-        {
-            "name": "桌面端",
-            "type": "Win32",
-            "win32": {
-                "class_regex": ".*",
-                "window_regex": "星痕共鸣"
-            }
         }
+        // {
+        //     "name": "桌面端",
+        //     "type": "Win32",
+        //     "win32": {
+        //         "class_regex": ".*",
+        //         "window_regex": "星痕共鸣"
+        //     }
+        // }
     ],
     "resource": [
         {
@@ -25,14 +25,14 @@
             "path": [
                 "{PROJECT_DIR}/resource/base"
             ]
-        },
-        {
-            "name": "B 服",
-            "path": [
-                "{PROJECT_DIR}/resource/base",
-                "{PROJECT_DIR}/resource/resource_bilibili"
-            ]
         }
+        // {
+        //     "name": "B 服",
+        //     "path": [
+        //         "{PROJECT_DIR}/resource/base",
+        //         "{PROJECT_DIR}/resource/resource_bilibili"
+        //     ]
+        // }
     ],
     "agent": {
         // 使用项目下用 uv 管理的虚拟环境
@@ -66,7 +66,7 @@
         //     "entry": "循环F"
         // },
         {
-            "name": "自动钓鱼",
+            "name": "自动钓鱼（暂未实现）",
             "entry": "自动钓鱼",
             "option": [
                 "鱼竿选择",
