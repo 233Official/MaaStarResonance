@@ -98,13 +98,13 @@ class DecisionRouterAction(CustomAction):
         # else:
         #     judge_succeeded = False
 
-        judge_detail = context.run_recognition(
+        judge_detail: RecognitionDetail = context.run_recognition(
             entry=judge_node,
             image=argv.reco_detail.raw_image,
         )
         logger.debug(f"[DecisionRouterAction] judge_detail: {judge_detail}")
-        # 匹配失败的话 judge_detail 会是 None, 否则会是 RecognitionDetail 对象
-        judge_succeeded = bool(judge_detail)
+        # 匹配失败的话 RecognitionDetail.hit: bool 会是 False
+        judge_succeeded = bool(judge_detail.hit)
 
         target_node = success_node if judge_succeeded else failure_node
         logger.debug(f"[DecisionRouterAction] target_node: {target_node}")
@@ -324,8 +324,8 @@ class TeleportPointAction(CustomAction):
 
             # 2. 是否已经打开地图了
             img = context.tasker.controller.post_screencap().wait().get()
-            is_open_map = context.run_recognition("图片识别是否已经打开地图", img)
-            if not is_open_map:
+            is_open_map: RecognitionDetail = context.run_recognition("图片识别是否已经打开地图", img)
+            if not is_open_map.hit:
                 logger.exception("无法打开地图，请检查是否在剧情中或其他异常情况！")
                 return False
 
@@ -342,6 +342,9 @@ class TeleportPointAction(CustomAction):
                     "通用文字识别": {"expected": dest_map, "roi": [13, 288, 246, 341]}
                 },
             )
+            if not ocr_result.hit:
+                logger.exception("无法识别到地图名字！")
+                return False
             # 获得最好结果坐标
             item = ocr_result.best_result
             rect = Rect(*item.box)
@@ -377,11 +380,11 @@ class TeleportPointAction(CustomAction):
 
             # 6. 判断是否可以直接传送
             img = context.tasker.controller.post_screencap().wait().get()
-            is_direct_tp = context.run_recognition(
+            is_direct_tp: RecognitionDetail = context.run_recognition(
                 "图片识别传送点是否可以直接传送", img
             )
 
-            if not is_direct_tp:
+            if not is_direct_tp.hit:
                 # 6.5 继续选择传送点
                 logger.info("没有传送按钮，可能是图标重合，继续选择")
                 img = context.tasker.controller.post_screencap().wait().get()
@@ -395,7 +398,7 @@ class TeleportPointAction(CustomAction):
                         }
                     },
                 )
-                if not ocr_result:
+                if not ocr_result.hit:
                     logger.exception(f"无法识别到传送点名字")
                     return False
                 # 匹配图标名优先用别称
@@ -421,7 +424,7 @@ class TeleportPointAction(CustomAction):
                 is_direct_tp = context.run_recognition(
                     "图片识别传送点是否可以直接传送", img
                 )
-                if not is_direct_tp:
+                if not is_direct_tp.hit:
                     logger.exception("传送失败：无法找到传送按钮")
                     return False
 
