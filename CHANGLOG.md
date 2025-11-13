@@ -6,7 +6,7 @@
 
 - Feat
   - 为打包后的MFAA添加自定义图标
-  - 更新项目 uv pyproject.toml 中的 maafw 到 `>=5.0.1`
+  - 更新项目 uv pyproject.toml 中的 maafw 到 `>=5.0.3`
 
 - Docs
 
