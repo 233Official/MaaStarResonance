@@ -1,0 +1,32 @@
+{
+    "检查当前状态": {
+        "next": ["省电模式唤醒", "点击继续钓鱼", "点击钓鱼按钮", "检测抛竿按钮"]
+    },
+    "省电模式唤醒": {
+        "next": ["点击继续钓鱼", "点击钓鱼按钮", "检测抛竿按钮"],
+        "recognition": "OCR",
+        "roi": [483, 583, 312, 129],
+        "expected": "省电模式中，轻触可唤醒",
+        "action": "Click"
+    },
+    "点击继续钓鱼": {
+        "next": ["检测抛竿按钮"],
+        "recognition": "OCR",
+        "roi": [964, 585, 192, 132],
+        "expected": "继续钓鱼",
+        "action": "Click"
+    },
+    "点击钓鱼按钮": {
+        "next": ["检测抛竿按钮"],
+        "recognition": "OCR",
+        "roi": [822, 277, 149, 135],
+        "expected": "钓鱼",
+        "action": "Click"
+    },
+    "检测抛竿按钮": {
+        "recognition": "TemplateMatch",
+        "roi": [1084, 514, 150, 143],
+        "template": "自动钓鱼/casting_button.png",
+        "green_mask": true
+    }
+}

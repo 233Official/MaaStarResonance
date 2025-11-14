@@ -1,0 +1,68 @@
+{
+    "检查配件状况": {
+        "interrupt": ["完成配件检查"],
+        "next": ["点击添加鱼饵", "点击添加鱼竿"],
+        "timeout": 2000
+    },
+    "点击添加鱼饵": {
+        "interrupt": ["完成配件检查"],
+        "next": ["点击使用鱼饵"],
+        "post_delay": 500,
+        "timeout": 2000,
+        "recognition": "TemplateMatch",
+        "roi": [135, 607, 63, 60],
+        "template": "自动钓鱼/add_icon.png",
+        "green_mask": true,
+        "action": "Click"
+    },
+    "点击使用鱼饵": {
+        "interrupt": ["完成配件检查"],
+        "next": ["点击添加鱼竿"],
+        "timeout": 2000,
+        "recognition": "OCR",
+        "roi": [548, 213, 151, 126],
+        "expected": "使用",
+        "action": "Click"
+    },
+    "点击添加鱼竿": {
+        "interrupt": ["完成配件检查"],
+        "next": ["点击使用鱼竿"],
+        "post_delay": 500,
+        "timeout": 2000,
+        "recognition": "TemplateMatch",
+        "roi": [232, 605, 65, 66],
+        "template": "自动钓鱼/add_icon.png",
+        "green_mask": true,
+        "action": "Click"
+    },
+    "点击使用鱼竿": {
+        "next": ["完成配件检查"],
+        "timeout": 2000,
+        "recognition": "OCR",
+        "roi": [642, 207, 165, 138],
+        "expected": "使用",
+        "action": "Click",
+        "target": [727, 275, 1, 1]
+    },
+    "完成配件检查": {
+        "action": "StopTask"
+    },
+    "检查当前是否在收线": {
+        "recognition": "TemplateMatch",
+        "roi": [425, 574, 47, 47],
+        "template": "自动钓鱼/reeling_icon.png",
+        "green_mask": true
+    },
+    "检查向左箭头": {
+        "recognition": "TemplateMatch",
+        "roi": [340, 320, 300, 80],
+        "template": "自动钓鱼/bow_left.png",
+        "green_mask": true
+    },
+    "检查向右箭头": {
+        "recognition": "TemplateMatch",
+        "roi": [640, 320, 300, 80],
+        "template": "自动钓鱼/bow_right.png",
+        "green_mask": true
+    }
+}
