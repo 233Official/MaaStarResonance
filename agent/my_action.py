@@ -453,19 +453,21 @@ class TeleportPointAction(CustomAction):
 class AutoFishingAction(CustomAction):
 
     def __init__(self):
+        super().__init__()
         self._isReelingIn = False
         self._currentBowDirection = None
         self._lastBowDirectionChangeTime = 0
         # 定义触控通道常量
-        self.REEL_IN_CONTACT = 0
-        self.BOWING_CONTACT = 1
+        self.REEL_IN_CONTACT: int = 0
+        self.BOWING_CONTACT: int = 1
 
-    async def run(
+    def run(
         self,
-        context: Context
+        context: Context,
+        _: CustomAction.RunArg,
     ) -> bool:
         """
-        自动钓鱼-自动收线
+        自动钓鱼 - 自动收线
         """
         try:
             if self._isReelingIn:
@@ -473,7 +475,7 @@ class AutoFishingAction(CustomAction):
                 return False
 
             # 启动收线
-            result = await self.startReelIn(context)
+            result = self.startReelIn(context)
             if not result:
                 logger.error("收线失败")
                 return False
@@ -481,55 +483,60 @@ class AutoFishingAction(CustomAction):
             self._isReelingIn = True
             logger.info("开始收线")
 
-            # 等 3 秒开始检测（使用异步睡眠，不阻塞事件循环）
-            await asyncio.sleep(3)
+            # 等 3 秒开始检测
+            time.sleep(3)
 
-            try:
-                await asyncio.wait_for(self._reelLoop(context), timeout=60)
-            except asyncio.TimeoutError:
-                logger.warning("收线流程已超过60秒！")
-                self._isReelingIn = False
-                self._currentBowDirection = None
-                await self.stopReelIn(context)
-                await self.stopBow(context)
-                return False
+            start_time = time.time()
+            while True:
+                if (time.time() - start_time) > 60:
+                    logger.warning("收线流程已超过60秒！")
+                    self._isReelingIn = False
+                    self._currentBowDirection = None
+                    self.stopReelIn(context)
+                    self.stopBow(context)
+                    return False
+
+                if not self._reelLoop(context):
+                    break
+
+                time.sleep(0.1)  # 避免循环过快
 
             # 收尾清理
             self._isReelingIn = False
             self._currentBowDirection = None
-            await self.stopReelIn(context)
-            await self.stopBow(context)
+            self.stopReelIn(context)
+            self.stopBow(context)
             logger.info("收线结束")
             return True
+
         except Exception as exc:
             stack_trace = traceback.format_exc()
             logger.exception(
                 f"run pipeline node AutoFishing failed, error: {exc}\n{stack_trace}",
             )
             return False
-    
-    async def _reelLoop(self, context: Context):
+
+    def _reelLoop(self, context: Context) -> bool:
         """
-        钓鱼循环逻辑（用于超时限制）
+        钓鱼循环逻辑
         """
-        while True:
-            # 异步截图
-            screencap_result = await context.tasker.controller.post_screencap().wait()
-            img: numpy.ndarray = screencap_result.get()
+        # 截图
+        screencap_result = context.tasker.controller.post_screencap().wait()
+        img: numpy.ndarray = screencap_result.get()
 
-            # 获取方向
-            bow_direction = await self.getBowDirection(context, img)
-            await self.updateBowState(context, bow_direction)
+        # 获取方向
+        bow_direction = self.getBowDirection(context, img)
+        self.updateBowState(context, bow_direction)
 
-            # 检查是否还在收线 TODO：可能有广告弹窗或者月卡领取图标
-            is_reeling = await self.checkIfReeling(context, img)
-            if not is_reeling:
-                logger.info("收线停止，获取不到收线图标")
-                break
+        # 检查是否还在收线
+        is_reeling = self.checkIfReeling(context, img)
+        if not is_reeling:
+            logger.info("收线停止，获取不到收线图标")
+            return False
 
-            await asyncio.sleep(0.1)  # 避免循环过快
+        return True
 
-    async def checkIfReeling(self, context: Context, img: numpy.ndarray) -> bool:
+    def checkIfReeling(self, context: Context, img: numpy.ndarray) -> bool:
         """
         检查当前是否在收线
         """
@@ -541,7 +548,7 @@ class AutoFishingAction(CustomAction):
         logger.debug(f"检测是否在收线: {is_reeling}")
         return is_reeling
 
-    async def getBowDirection(self, context: Context, img: numpy.ndarray) -> str | None:
+    def getBowDirection(self, context: Context, img: numpy.ndarray) -> str | None:
         """
         获取箭头方向（left/right 或 None）
         """
@@ -558,7 +565,7 @@ class AutoFishingAction(CustomAction):
         else:
             return None
 
-    async def updateBowState(self, context: Context, bow_direction: str | None):
+    def updateBowState(self, context: Context, bow_direction: str | None):
         """
         根据检测到的箭头方向更新拉弓方向状态
         """
@@ -568,7 +575,7 @@ class AutoFishingAction(CustomAction):
             if self._currentBowDirection is None and \
                (current_time - self._lastBowDirectionChangeTime) > 1:
                 logger.info(f"开始拉弓方向: {bow_direction}")
-                if not await self.startBow(context, bow_direction):
+                if not self.startBow(context, bow_direction):
                     logger.error("拉弓失败！")
                     return
                 self._currentBowDirection = bow_direction
@@ -578,42 +585,38 @@ class AutoFishingAction(CustomAction):
             elif self._currentBowDirection != bow_direction and \
                  (current_time - self._lastBowDirectionChangeTime) > 1:
                 logger.info(f"拉弓方向变更: {bow_direction}, 取消当前拉弓动作")
-                if not await self.stopBow(context):
-                    logger.error("拉弓失败！")
+                if not self.stopBow(context):
+                    logger.error("停止拉弓失败！")
                     return
                 self._currentBowDirection = None
                 self._lastBowDirectionChangeTime = current_time
 
-    async def startReelIn(self, context: Context) -> bool:
+    def startReelIn(self, context: Context) -> bool:
         """
         开始收线动作
         """
-        result = await context.tasker.controller.post_touch_down(
-            self.REEL_IN_CONTACT, 1160, 585, 1
-        ).wait()
+        result = context.tasker.controller.post_touch_down(1160, 585, self.REEL_IN_CONTACT, 1).wait()
         return result.succeeded
 
-    async def stopReelIn(self, context: Context) -> bool:
+    def stopReelIn(self, context: Context) -> bool:
         """
         停止收线动作
         """
-        result = await context.tasker.controller.post_touch_up(self.REEL_IN_CONTACT).wait()
+        result = context.tasker.controller.post_touch_up(self.REEL_IN_CONTACT).wait()
         return result.succeeded
 
-    async def startBow(self, context: Context, direction: str) -> bool:
+    def startBow(self, context: Context, direction: str) -> bool:
         """
         开始箭头转向动作
         """
         x = 150 if direction == "left" else 320
         y = 530
-        result = await context.tasker.controller.post_touch_down(
-            self.BOWING_CONTACT, x, y, 1
-        ).wait()
+        result = context.tasker.controller.post_touch_down(x, y, self.BOWING_CONTACT, 1).wait()
         return result.succeeded
 
-    async def stopBow(self, context: Context) -> bool:
+    def stopBow(self, context: Context) -> bool:
         """
         停止箭头转向动作
         """
-        result = await context.tasker.controller.post_touch_up(self.BOWING_CONTACT).wait()
+        result = context.tasker.controller.post_touch_up(self.BOWING_CONTACT).wait()
         return result.succeeded
