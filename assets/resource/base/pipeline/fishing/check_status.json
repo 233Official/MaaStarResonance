@@ -4,7 +4,7 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [872,329,55,31],
+                "roi": [872, 329, 55, 31],
                 "expected": ["钓鱼"]
             }
         }
@@ -14,7 +14,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": "自动钓鱼/抛竿按钮.png",
-                "roi": [1084,514,150,143],
+                "roi": [1084, 514, 150, 143],
                 "threshold": 0.65,
                 "green_mask": true
             }
@@ -36,7 +36,7 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [964,585,192,132],
+                "roi": [964, 585, 192, 132],
                 "expected": ["继续钓鱼"]
             }
         }
@@ -47,7 +47,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": "自动钓鱼/添加配件按钮.png",
-                "roi": [232,605,65,66],
+                "roi": [232, 605, 65, 66],
                 "green_mask": true
             }
         }
@@ -57,7 +57,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": "自动钓鱼/添加配件按钮.png",
-                "roi": [135,607,63,60],
+                "roi": [135, 607, 63, 60],
                 "green_mask": true
             }
         }
@@ -67,7 +67,7 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [498,466,102,32],
+                "roi": [498, 466, 102, 32],
                 "expected": ["前往购买"]
             }
         }
@@ -76,7 +76,7 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [396,464,102,32],
+                "roi": [396, 464, 102, 32],
                 "expected": ["前往购买"]
             }
         }
@@ -87,7 +87,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": "自动钓鱼/收竿按钮.png",
-                "roi": [425,574,47,47],
+                "roi": [425, 574, 47, 47],
                 "green_mask": true
             }
         }
@@ -97,7 +97,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": "自动钓鱼/向左箭头.png",
-                "roi": [430,315,315,90],
+                "roi": [430, 315, 315, 90],
                 "green_mask": true
             }
         }
@@ -107,7 +107,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": "自动钓鱼/向右箭头.png",
-                "roi": [560,315,315,90],
+                "roi": [560, 315, 315, 90],
                 "green_mask": true
             }
         }
