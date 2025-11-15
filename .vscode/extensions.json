@@ -8,9 +8,10 @@
         "github.vscode-github-actions",
         "ms-vscode.vscode-github-issue-notebooks",
         "github.vscode-pull-request-github",
-        "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-python.debugpy",
-        "uvdream.git-commit-lint-vscode"
+        "uvdream.git-commit-lint-vscode",
+        "seatonjiang.gitmoji-vscode",
+        "ms-python.isort"
     ]
 }
