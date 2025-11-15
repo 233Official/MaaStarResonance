@@ -555,8 +555,13 @@ class AutoFishingAction(CustomAction):
         bow_left_task: RecognitionDetail = context.run_recognition("检查向左箭头", img)
         bow_right_task: RecognitionDetail = context.run_recognition("检查向右箭头", img)
 
-        bow_left_score = bow_left_task.best_result.score
-        bow_right_score = bow_right_task.best_result.score
+        # 最好的识别结果
+        bow_left_best = bow_left_task.best_result
+        bow_right_best = bow_right_task.best_result
+
+        # 判断左右
+        bow_left_score = bow_left_best.score if bow_left_best else 0
+        bow_right_score = bow_right_best.score if bow_right_best else 0
 
         if bow_left_score > bow_right_score:
             return "left"
