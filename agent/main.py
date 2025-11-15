@@ -107,6 +107,7 @@ def main():
     from maa.agent.agent_server import AgentServer
     from maa.toolkit import Toolkit
     import my_action
+    import fishing_action
     import my_reco
 
     Toolkit.init_option("./")

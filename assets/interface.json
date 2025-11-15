@@ -64,18 +64,12 @@
                 "采集方案"
             ]
         },
-        // {
-        //     "name": "循环F",
-        //     "entry": "循环F"
-        // },
         {
-            "name": "自动钓鱼（暂未实现）",
+            "name": "自动钓鱼",
             "entry": "自动钓鱼",
             "option": [
-                "鱼竿选择",
-                "鱼饵选择",
-                "购买鱼竿",
-                "购买鱼饵"
+                "自动购买鱼竿选择",
+                "自动购买鱼饵选择"
             ]
         }
         // {
@@ -89,65 +83,62 @@
         // {
         //     "name": "从省电模式唤醒",
         //     "entry": "从省电模式唤醒"
-        // },
-        // {
-        //     "name": "点击DeepSeek图标",
-        //     "entry": "点击DeepSeek图标"
-        // },
-        // {
-        //     "name": "选项任务",
-        //     "entry": "打开一键连招",
-        //     "option": [
-        //         "任务选项1"
-        //     ]
-        // },
-        // {
-        //     "name": "参数任务",
-        //     "entry": "点击DeepSeek图标",
-        //     "option": [
-        //         "任务选项1"
-        //     ],
-        //     "pipeline_override": {}
-        // },
-        // {
-        //     "name": "带Custom的任务",
-        //     "entry": "MyTask4"
         // }
     ],
     "option": {
-        // "鱼竿选择",
-        // "鱼饵选择",
-        // "购买鱼竿",
-        // "购买鱼饵"
-        "鱼竿选择": {
+        "自动购买鱼竿选择": {
             "cases": [
                 {
                     "name": "普通鱼竿",
-                    "pipeline_override": {}
+                    "pipeline_override": {
+                        "选择需要购买的鱼竿": {
+                            "roi": [806,158,80,25]
+                        }
+                    }
                 },
                 {
                     "name": "强韧鱼竿",
-                    "pipeline_override": {}
+                    "pipeline_override": {
+                        "选择需要购买的鱼竿": {
+                            "roi": [1012,160,80,23]
+                        }
+                    }
                 },
                 {
                     "name": "柔韧鱼竿",
-                    "pipeline_override": {}
+                    "pipeline_override": {
+                        "选择需要购买的鱼竿": {
+                            "roi": [187,418,77,26]
+                        }
+                    }
                 }
             ]
         },
-        "鱼饵选择": {
+        "自动购买鱼饵选择": {
             "cases": [
                 {
                     "name": "普通鱼饵",
-                    "pipeline_override": {}
+                    "pipeline_override": {
+                        "选择需要购买的鱼饵": {
+                            "roi": [188,158,77,25]
+                        }
+                    }
                 },
                 {
                     "name": "不空军鱼饵",
-                    "pipeline_override": {}
+                    "pipeline_override": {
+                        "选择需要购买的鱼饵": {
+                            "roi": [385,159,96,25]
+                        }
+                    }
                 },
                 {
                     "name": "特制鱼饵",
-                    "pipeline_override": {}
+                    "pipeline_override": {
+                        "选择需要购买的鱼饵": {
+                            "roi": [599,157,78,26]
+                        }
+                    }
                 }
             ]
         },
@@ -176,67 +167,6 @@
                     }
                 }
             ]
-        },
-        "购买鱼竿": {
-            "cases": [
-                {
-                    "name": "No",
-                    "pipeline_override": {
-                        "BuyFishingRod": {
-                            "enabled": false
-                        }
-                    }
-                },
-                {
-                    "name": "Yes",
-                    "pipeline_override": {
-                        "BuyFishingRod": {
-                            "enabled": true
-                        }
-                    }
-                }
-            ]
-        },
-        "购买鱼饵": {
-            "cases": [
-                {
-                    "name": "No",
-                    "pipeline_override": {
-                        "BuyFishingBait": {
-                            "enabled": false
-                        }
-                    }
-                },
-                {
-                    "name": "Yes",
-                    "pipeline_override": {
-                        "BuyFishingBait": {
-                            "enabled": true
-                        }
-                    }
-                }
-            ]
         }
-
-        // "任务选项1": {
-        //     "cases": [
-        //         {
-        //             "name": "文本1",
-        //             "pipeline_override": {
-        //                 "OcrTask": {
-        //                     "text": "文本1"
-        //                 }
-        //             }
-        //         },
-        //         {
-        //             "name": "文本2",
-        //             "pipeline_override": {
-        //                 "OcrTask": {
-        //                     "text": "文本2"
-        //                 }
-        //             }
-        //         }
-        //     ]
-        // }
     }
 }

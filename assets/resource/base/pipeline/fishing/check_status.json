@@ -1,68 +1,115 @@
 {
-    "检查配件状况": {
-        "interrupt": ["完成配件检查"],
-        "next": ["点击添加鱼饵", "点击添加鱼竿"],
-        "timeout": 2000
+    // 首次钓鱼：检测进入钓鱼按钮 和 检测抛竿按钮 至少得有一个检测成功 | 不然没法钓鱼
+    "检测进入钓鱼按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [872,329,55,31],
+                "expected": ["钓鱼"]
+            }
+        }
     },
-    "点击添加鱼饵": {
-        "interrupt": ["完成配件检查"],
-        "next": ["点击使用鱼饵"],
-        "post_delay": 500,
-        "timeout": 2000,
-        "recognition": "TemplateMatch",
-        "roi": [135, 607, 63, 60],
-        "template": "自动钓鱼/add_icon.png",
-        "green_mask": true,
-        "action": "Click"
+    "检测抛竿按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/抛竿按钮.png",
+                "roi": [1084,514,150,143],
+                "threshold": 0.65,
+                "green_mask": true
+            }
+        }
     },
-    "点击使用鱼饵": {
-        "interrupt": ["完成配件检查"],
-        "next": ["点击添加鱼竿"],
-        "timeout": 2000,
-        "recognition": "OCR",
-        "roi": [548, 213, 151, 126],
-        "expected": "使用",
-        "action": "Click"
+    "检测鱼鱼是否上钩": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "count": 16,
+                "method": 40,
+                "lower": [12, 250, 207],
+                "upper": [24, 255, 255],
+                "roi": [620, 357, 34, 32]
+            }
+        }
     },
-    "点击添加鱼竿": {
-        "interrupt": ["完成配件检查"],
-        "next": ["点击使用鱼竿"],
-        "post_delay": 500,
-        "timeout": 2000,
-        "recognition": "TemplateMatch",
-        "roi": [232, 605, 65, 66],
-        "template": "自动钓鱼/add_icon.png",
-        "green_mask": true,
-        "action": "Click"
+    "检测继续钓鱼": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [964,585,192,132],
+                "expected": ["继续钓鱼"]
+            }
+        }
     },
-    "点击使用鱼竿": {
-        "next": ["完成配件检查"],
-        "timeout": 2000,
-        "recognition": "OCR",
-        "roi": [642, 207, 165, 138],
-        "expected": "使用",
-        "action": "Click",
-        "target": [727, 275, 1, 1]
+    // 点击添加鱼竿 和 点击添加鱼饵 都检测失败 | 才说明可以正常钓鱼
+    "检测是否需要添加鱼竿": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/添加配件按钮.png",
+                "roi": [232,605,65,66],
+                "green_mask": true
+            }
+        }
     },
-    "完成配件检查": {
-        "action": "StopTask"
+    "检测是否需要添加鱼饵": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/添加配件按钮.png",
+                "roi": [135,607,63,60],
+                "green_mask": true
+            }
+        }
     },
+    // 判断是否需要买鱼竿和鱼饵
+    "检测是否需要购买鱼竿": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [498,466,102,32],
+                "expected": ["前往购买"]
+            }
+        }
+    },
+    "检测是否需要购买鱼饵": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [396,464,102,32],
+                "expected": ["前往购买"]
+            }
+        }
+    },
+    // 钓鱼时的检查
     "检查当前是否在收线": {
-        "recognition": "TemplateMatch",
-        "roi": [425, 574, 47, 47],
-        "template": "自动钓鱼/reeling_icon.png",
-        "green_mask": true
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/收竿按钮.png",
+                "roi": [425,574,47,47],
+                "green_mask": true
+            }
+        }
     },
     "检查向左箭头": {
-        "recognition": "TemplateMatch",
-        "roi": [340, 320, 300, 80],
-        "template": "自动钓鱼/bow_left.png",
-        "green_mask": true
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/向左箭头.png",
+                "roi": [340,320,300,80],
+                "green_mask": true
+            }
+        }
     },
     "检查向右箭头": {
-        "recognition": "TemplateMatch",
-        "roi": [640, 320, 300, 80],
-        "template": "自动钓鱼/bow_right.png",
-        "green_mask": true
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/向右箭头.png",
+                "roi": [640,320,300,80],
+                "green_mask": true
+            }
+        }
     }
 }

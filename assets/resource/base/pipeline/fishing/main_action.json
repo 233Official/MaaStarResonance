@@ -1,0 +1,137 @@
+{
+    // 总入口
+    "启动自动钓鱼入口": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "AutoFishing"
+            }
+        }
+    },
+    // 钓鱼按钮
+    "点击进入钓鱼按钮": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [890,341,16,9]
+            }
+        }
+    },
+    "点击抛竿按钮": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [1160,585,1,1]
+            }
+        }
+    },
+    "点击继续钓鱼按钮": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [964,585,192,132]
+            }
+        }
+    },
+    // 添加配件
+    "点击添加鱼竿": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [232,605,65,66]
+            }
+        }
+    },
+    "点击添加鱼饵": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [135,607,63,60]
+            }
+        }
+    },
+    // 购买配件
+    "点击前往购买鱼竿页面": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [498,466,102,32]
+            }
+        }
+    },
+    "点击前往购买鱼饵页面": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [396,464,102,32]
+            }
+        }
+    },
+    "点击钓鱼配件最大数量按钮": {
+        "post_delay": 1000,
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [1029,475,26,21]
+            }
+        }
+    },
+    "点击钓鱼配件购买按钮": {
+        "post_delay": 1000,
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [783,603,53,26]
+            }
+        }
+    },
+    "选择并购买需要的鱼竿": {
+        "post_delay": 1000,
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [806,158,80,25]
+            }
+        }
+    },
+    "选择并购买需要的鱼饵": {
+        "post_delay": 1000,
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [188,158,77,25]
+            }
+        }
+    },
+    // 使用鱼竿和鱼饵
+    "点击使用鱼竿": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [642,207,165,138],
+                "expected": ["使用"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [727,275,1,1]
+            }
+        }
+    },
+    "点击使用鱼饵": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [548,213,151,126],
+                "expected": ["使用"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [628,273,1,1]
+            }
+        }
+    }
+}
