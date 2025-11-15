@@ -97,7 +97,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": "自动钓鱼/向左箭头.png",
-                "roi": [340,320,300,80],
+                "roi": [430,315,315,90],
                 "green_mask": true
             }
         }
@@ -107,7 +107,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": "自动钓鱼/向右箭头.png",
-                "roi": [640,320,300,80],
+                "roi": [560,315,315,90],
                 "green_mask": true
             }
         }

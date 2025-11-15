@@ -3,6 +3,7 @@ from logger import logger
 import traceback
 import time
 
+from maa.library import Library
 from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail, ActionDetail
 from maa.custom_action import CustomAction
@@ -16,12 +17,6 @@ class AutoFishingAction(CustomAction):
         super().__init__()
         # 当前钓鱼次数
         self.fishing_count = 1
-        # 是否正在拉竿
-        self._isReelingIn = False
-        # 当前箭头方向
-        self._currentBowDirection = None
-        # 上次箭头方向变化时间
-        self._lastBowDirectionChangeTime = 0
         # 收竿触控通道常量
         self.REEL_IN_CONTACT = 0
         # 方向触控通道常量
@@ -43,10 +38,13 @@ class AutoFishingAction(CustomAction):
         # 2. 首次钓鱼：检测进入钓鱼按钮 和 检测抛竿按钮 至少得有一个检测成功 | 不然没法钓鱼
         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
         fishing_result: RecognitionDetail = context.run_recognition("检测进入钓鱼按钮", img)
-        if not fishing_result.hit:
-            logger.warning('没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将检测抛竿按钮')
-        _: ActionDetail = context.run_action("点击进入钓鱼按钮")
-        time.sleep(3)
+        if fishing_result.hit:
+            logger.info("正在进入钓鱼台，等待5秒...")
+            _: ActionDetail = context.run_action("点击进入钓鱼按钮")
+            time.sleep(5)
+        else:
+            logger.warning('没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将直接检测抛竿按钮')
+
 
         # 第二重抛竿按钮检测
         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
@@ -158,7 +156,8 @@ class AutoFishingAction(CustomAction):
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
                 is_continue_fishing: RecognitionDetail = context.run_recognition("检测继续钓鱼", img)
                 if is_continue_fishing.hit:
-                    logger.info("检测到继续钓鱼按钮，将开始下一次钓鱼")
+                    logger.info("检测到继续钓鱼按钮，2秒后将开始下一次钓鱼")
+                    time.sleep(2)
                     _: ActionDetail = context.run_action("点击继续钓鱼按钮")
                     time.sleep(2)
 
@@ -175,28 +174,29 @@ class AutoFishingAction(CustomAction):
         钓鱼循环逻辑（收线和方向键并行处理）
         """
         # ------- 情况检测 -------
-        not_reeling_count = 0  # 连续检测到不在收线的次数
+        not_reeling_count = 0       # 连续检测到不在收线的次数
         not_reeling_threshold = 15  # 阈值，例如连续几次不在收线才退出
 
         # ------- 收线状态 -------
-        reel_mode = "no_arrow"  # no_arrow:没箭头按住, arrow_cycle:有箭头按3停0.5循环
-        pressing_reel = False
-        reel_pause_until = 0  # 暂停结束时间戳
-        reel_press_until = 0  # 按住结束时间戳
+        pressing_reel = False       # 是否在按收线键
+        cycle_start = None          # 当前节奏循环起点时间（第一次进来为空）
+        pause_duration = 0.1        # 停 0.1 秒
+        press_duration = 3.0        # 按 3 秒
+        arrow_present_last = False  # 前一次是否有箭头
 
         # ------- 方向状态 -------
-        bow_pressing = False
-        bow_release_time = 0  # 方向松开时间戳
-        current_bow_dir = None
+        bow_pressing = False        # 是否再按方向键
+        bow_release_time = 0        # 方向松开时间戳
+        current_bow_dir = None      # 当前
 
         while True:
             img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-
             # 获取箭头方向
             bow_direction = self.getBowDirection(context, img)
-            logger.info(f"当前箭头方向：{bow_direction}")
+            if bow_direction:
+                logger.info(f"当前箭头方向：{bow_direction}")
 
-            # 检查是否还在钓鱼 | 第一次进来不检测
+            # 检查是否还在钓鱼
             is_reeling_icon = self.checkIfReeling(context, img)
             if not is_reeling_icon:
                 not_reeling_count += 1
@@ -218,85 +218,77 @@ class AutoFishingAction(CustomAction):
             now = time.time()
 
             # ========= 收线逻辑 =========
-            if bow_direction is None:
-                # 没箭头：一直按收线
+            if cycle_start is None and bow_direction is None:
+                # 第一次进来且无箭头 → 一直按
                 if not pressing_reel:
-                    logger.info("收线按钮-普通模式：一直按收线")
                     self.startReelIn(context)
                     pressing_reel = True
-                reel_mode = "no_arrow"
-            else:
-                if reel_mode != "arrow_cycle":
-                    # 第一次进入有箭头模式 → 停0.5秒
+                # 不进入循环模式
+            elif bow_direction is not None and not arrow_present_last:
+                # 第一次出现箭头：进入循环，先停一下
+                if pressing_reel:
+                    self.stopReelIn(context)
+                    pressing_reel = False
+                cycle_start = now  # 重置循环起点
+                arrow_present_last = True
+                logger.info("箭头出现 -> 立即停一下开始循环模式")
+            elif bow_direction is not None and arrow_present_last and current_bow_dir != bow_direction:
+                # 箭头方向变化（或箭头再次出现） → 立即停一下，然后重置循环
+                if pressing_reel:
+                    self.stopReelIn(context)
+                    pressing_reel = False
+                cycle_start = now
+                logger.info("箭头方向变化 -> 立即停一下重置循环")
+            elif bow_direction is None and arrow_present_last:
+                # 箭头消失但已经在循环模式中，继续节奏，不退出
+                arrow_present_last = False
+
+            # 循环模式的按停逻辑（仅当 cycle_start 有值）
+            if cycle_start is not None:
+                elapsed = (now - cycle_start) % (press_duration + pause_duration)
+                if elapsed < press_duration:
+                    if not pressing_reel:
+                        self.startReelIn(context)
+                        pressing_reel = True
+                        logger.debug("循环模式：开始收线")
+                else:
                     if pressing_reel:
-                        logger.info("收线按钮-有箭头模式：第一次进入 → 停0.5秒")
                         self.stopReelIn(context)
                         pressing_reel = False
-                    reel_pause_until = now + 0.5
-                    reel_mode = "arrow_cycle"
-                else:
-                    if now < reel_pause_until:
-                        # 暂停阶段
-                        if pressing_reel:
-                            logger.info("收线按钮-有箭头模式：停0.5秒")
-                            self.stopReelIn(context)
-                            pressing_reel = False
-                    else:
-                        if not pressing_reel:
-                            # 开始按
-                            logger.info("收线按钮-有箭头模式：按住3秒")
-                            self.startReelIn(context)
-                            pressing_reel = True
-                            reel_press_until = now + 3.0
-                        elif pressing_reel and now >= reel_press_until:
-                            # 停止按
-                            logger.info("收线按钮-有箭头模式：停0.5秒")
-                            self.stopReelIn(context)
-                            pressing_reel = False
-                            reel_pause_until = now + 0.5
+                        logger.debug("循环模式：停止收线")
 
             # ========= 方向逻辑 =========
-            if bow_direction is None:
-                # 没箭头: 松开方向
-                if bow_pressing:
-                    logger.info("方向键-普通模式：松开方向")
-                    self.stopBow(context)
-                    bow_pressing = False
-                current_bow_dir = None
-            else:
+            if bow_direction is not None:
                 if current_bow_dir != bow_direction:
-                    # 方向第一次出现或变化
                     if bow_pressing:
-                        logger.info("方向键-有箭头模式：先松开方向")
                         self.stopBow(context)
                     if self.startBow(context, bow_direction):
-                        logger.info("方向键-有箭头模式：再转向3秒")
                         bow_pressing = True
-                        bow_start_time = now
                         bow_release_time = now + 3.0
                         current_bow_dir = bow_direction
+                        logger.info("方向键按下 3 秒")
                     else:
                         bow_pressing = False
                 else:
-                    # 同一方向按了 >=3秒则松开
                     if bow_pressing and now >= bow_release_time:
-                        logger.info("方向键-有箭头模式：松开方向")
                         self.stopBow(context)
                         bow_pressing = False
+                        logger.info("方向键松开")
+            else:
+                if bow_pressing and now >= bow_release_time:
+                    self.stopBow(context)
+                    bow_pressing = False
 
-            # 每100ms刷新一次状态
-            time.sleep(0.1)
+            # 刷新状态检测
+            time.sleep(pause_duration)
 
     def checkIfReeling(self, context: Context, img: numpy.ndarray) -> bool:
         """
         检查当前是否在收线
         """
-        recognition_task: RecognitionDetail = context.run_recognition(
-            "检查当前是否在收线", img
-        )
+        recognition_task: RecognitionDetail = context.run_recognition("检查当前是否在收线", img)
         filtered_list = recognition_task.filterd_results
         is_reeling = len(filtered_list) > 0
-        logger.debug(f"检测是否在收线: {is_reeling}")
         return is_reeling
 
     def getBowDirection(self, context: Context, img: numpy.ndarray) -> str | None:
