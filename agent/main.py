@@ -113,6 +113,7 @@ def main():
     print("已导入 agent-钓鱼 模块")
     import my_reco
     _ = my_reco
+    print("已导入 agent-my_reco 模块")
 
     from general import general
     _ = general
