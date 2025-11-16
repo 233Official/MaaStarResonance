@@ -80,5 +80,6 @@
     // 影响最大：VS Code 默认用文件系统监视器跟踪所有文件变化，大量生成文件会让监听器高负载。把目录排除后，监听器不会为这些路径建立 watch，从而明显降低 CPU 和内存占用。
     "files.watcherExclude": {
         "releases/**": true
-    }
+    },
+    "python.analysis.typeCheckingMode": "basic"
 }

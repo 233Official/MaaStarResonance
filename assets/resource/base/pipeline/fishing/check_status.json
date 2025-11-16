@@ -1,0 +1,114 @@
+{
+    // 首次钓鱼：检测进入钓鱼按钮 和 检测抛竿按钮 至少得有一个检测成功 | 不然没法钓鱼
+    "检测进入钓鱼按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [872, 329, 55, 31],
+                "expected": ["钓鱼"]
+            }
+        }
+    },
+    "检测抛竿按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/抛竿按钮.png",
+                "roi": [1084, 514, 150, 143],
+                "threshold": 0.65,
+                "green_mask": true
+            }
+        }
+    },
+    "检测鱼鱼是否上钩": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "count": 16,
+                "method": 40,
+                "lower": [12, 250, 207],
+                "upper": [24, 255, 255],
+                "roi": [620, 357, 34, 32]
+            }
+        }
+    },
+    "检测继续钓鱼": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1014, 639, 94, 27],
+                "expected": ["继续钓鱼"]
+            }
+        }
+    },
+    // 点击添加鱼竿 和 点击添加鱼饵 都检测失败 | 才说明可以正常钓鱼
+    "检测是否需要添加鱼竿": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/添加配件按钮.png",
+                "roi": [232, 605, 65, 66],
+                "green_mask": true
+            }
+        }
+    },
+    "检测是否需要添加鱼饵": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/添加配件按钮.png",
+                "roi": [135, 607, 63, 60],
+                "green_mask": true
+            }
+        }
+    },
+    // 判断是否需要买鱼竿和鱼饵
+    "检测是否需要购买鱼竿": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [498, 466, 102, 32],
+                "expected": ["前往购买"]
+            }
+        }
+    },
+    "检测是否需要购买鱼饵": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [396, 464, 102, 32],
+                "expected": ["前往购买"]
+            }
+        }
+    },
+    // 钓鱼时的检查
+    "检测是否在抛竿界面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [51, 612, 32, 16],
+                "expected": ["等级"]
+            }
+        }
+    },
+    "检查向左箭头": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/向左箭头.png",
+                "roi": [430, 315, 315, 90],
+                "green_mask": true
+            }
+        }
+    },
+    "检查向右箭头": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "自动钓鱼/向右箭头.png",
+                "roi": [560, 315, 315, 90],
+                "green_mask": true
+            }
+        }
+    }
+}
