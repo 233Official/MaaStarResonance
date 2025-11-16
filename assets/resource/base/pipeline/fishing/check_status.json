@@ -82,13 +82,12 @@
         }
     },
     // 钓鱼时的检查
-    "检查当前是否在收线": {
+    "检测是否在抛竿界面": {
         "recognition": {
-            "type": "TemplateMatch",
+            "type": "OCR",
             "param": {
-                "template": "自动钓鱼/收竿按钮.png",
-                "roi": [425, 574, 47, 47],
-                "green_mask": true
+                "roi": [51, 612, 32, 16],
+                "expected": ["等级"]
             }
         }
     },

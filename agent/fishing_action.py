@@ -161,22 +161,22 @@ class AutoFishingAction(CustomAction):
                 if not need_next:
                     break
 
-                # 6. 开始收线：没箭头一直按，有箭头按3秒停0.5秒再继续按3秒停0.5秒，但是如果显示了箭头就立刻停0.5秒，再按3秒停0.5秒 | 方向键：没箭头不动，有箭头按3秒后停止不按
-                need_next = self._reelLoop(context)
+                # 6. 开始收线循环
+                need_next = self.reel_loop(context)
                 # 没有下一次了，说明钓鱼被强制结束了
                 if not need_next:
                     break
                 self.fishing_count += 1
-                time.sleep(3)
+                time.sleep(4)
 
-                # 7. 本次钓鱼完成，检测并点击继续钓鱼按钮进行第二次钓鱼
+                # 7. 本次钓鱼完成，再次检测并点击继续钓鱼按钮进行第二次钓鱼
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
                 is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
                 if is_continue_fishing and is_continue_fishing.hit:
-                    logger.info("检测到继续钓鱼按钮，4秒后将开始下一次钓鱼")
-                    time.sleep(4)
+                    logger.info("检测到继续钓鱼按钮，将开始下一轮钓鱼")
+                    time.sleep(1)
                     context.run_action("点击继续钓鱼按钮")
-                    time.sleep(4)
+                time.sleep(1)
 
 
             except Exception as exc:
@@ -187,7 +187,7 @@ class AutoFishingAction(CustomAction):
         logger.warning("[FishingTask] 自动钓鱼已结束！")
         return True
 
-    def _reelLoop(self, context: Context) -> bool:
+    def reel_loop(self, context: Context) -> bool:
         """
         钓鱼循环逻辑：
         1. 初始状态 -> 一直收线 | 目前改为开始也直接进循环模式，好像更稳定
@@ -200,11 +200,10 @@ class AutoFishingAction(CustomAction):
         """
 
         # ========== 可配置参数 ==========
-        press_duration_reel = 2.6  # 收线按压时长
-        release_duration_reel = 0.4  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
-        press_duration_bow = 2.6  # 方向按压时长
-        loop_interval = 0.2  # 循环检测间隔 | 太短影响性能，太长影响收线和推出检测
-        not_reeling_threshold = 15  # 退出收线检测阈值 | 循环检测间隔 x 退出收线检测阈值 = 不在钓鱼推出的容许时间
+        press_duration_reel = 2.8  # 收线按压时长
+        release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
+        press_duration_bow = 2.8  # 方向按压时长
+        loop_interval = 0.1  # 循环检测间隔 | 太短影响性能，太长影响收线
 
         # ========== 状态变量 ==========
         is_reel_pressed = False  # 当前收线键状态
@@ -213,19 +212,13 @@ class AutoFishingAction(CustomAction):
         arrow_detect_cache: list[str | None] = [None, None]  # 用于方向确认的缓存
         is_bow_pressed = False  # 当前方向键状态
         bow_release_time = 0  # 当前方向松开的时间
-        not_reeling_count = 0  # 不在钓鱼的计数
 
         while self.check_running(context):
             img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
 
-            # 检查是否还在钓鱼
+            # 检查是否还在收线
             if not self.check_if_reeling(context, img):
-                not_reeling_count += 1
-            else:
-                not_reeling_count = 0
-
-            if not_reeling_count >= not_reeling_threshold:
-                logger.info("钓鱼结束，清理状态...")
+                logger.info("当前已不在收线状态，等待一会检测继续钓鱼按钮...")
                 if is_reel_pressed:
                     self.stop_reel_in(context)
                 if is_bow_pressed:
@@ -309,12 +302,14 @@ class AutoFishingAction(CustomAction):
         """
         检查当前是否在收线
         """
-        recognition_task: RecognitionDetail | None = context.run_recognition("检查当前是否在收线", img)
-        if not recognition_task:
+        recognition_task: RecognitionDetail | None = context.run_recognition("检测是否在抛竿界面", img)
+        is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
+
+        # 有任何一个检测到了说明就不在收线了
+        if (recognition_task and recognition_task.hit) or (is_continue_fishing and is_continue_fishing.hit):
             return False
-        filtered_list = recognition_task.filterd_results
-        is_reeling = len(filtered_list) > 0
-        return is_reeling
+        else:
+            return True
 
     @staticmethod
     def get_bow_direction(context: Context, img: numpy.ndarray, score_threshold: float = 0.6,
