@@ -55,6 +55,7 @@ class AutoFishingAction(CustomAction):
         elif fishing_result and not fishing_result.hit and reeling_result and not reeling_result.hit:
             logger.exception('没有检测到进入钓鱼台按钮，也没有检测到抛竿按钮，请检查是否在钓鱼地点！')
             return False
+        del fishing_result, img
         time.sleep(3)
 
         # 开始钓鱼循环
@@ -66,6 +67,7 @@ class AutoFishingAction(CustomAction):
                 rod_result: RecognitionDetail | None = context.run_recognition("检测是否需要添加鱼竿", img)
                 # 需要添加鱼竿
                 if rod_result and rod_result.hit:
+                    del rod_result, img
                     logger.info("检测到：需要添加鱼竿")
                     context.run_action("点击添加鱼竿")
                     time.sleep(1)
@@ -74,6 +76,7 @@ class AutoFishingAction(CustomAction):
                     buy_rod_result: RecognitionDetail | None = context.run_recognition("检测是否需要购买鱼竿", img)
                     # 需要购买鱼竿
                     if buy_rod_result and buy_rod_result.hit:
+                        del buy_rod_result, img
                         logger.info("检测到：鱼竿不足，需要购买")
                         context.run_action("点击前往购买鱼竿页面")
                         # 在3秒等待前在判断一下
@@ -92,6 +95,7 @@ class AutoFishingAction(CustomAction):
                         # 购买完再次检测后点击添加按钮
                         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
                         context.run_recognition("检测是否需要添加鱼竿", img)
+                        del img
                         context.run_action("点击添加鱼竿")
                         time.sleep(1)
                     # 点击使用鱼竿
@@ -103,6 +107,7 @@ class AutoFishingAction(CustomAction):
                 bait_result: RecognitionDetail | None = context.run_recognition("检测是否需要添加鱼饵", img)
                 # 需要添加鱼饵
                 if bait_result and bait_result.hit:
+                    del bait_result, img
                     logger.info("检测到：需要添加鱼饵")
                     context.run_action("点击添加鱼饵")
                     time.sleep(1)
@@ -111,6 +116,7 @@ class AutoFishingAction(CustomAction):
                     buy_bait_result: RecognitionDetail | None = context.run_recognition("检测是否需要购买鱼饵", img)
                     # 需要购买鱼饵
                     if buy_bait_result and buy_bait_result.hit:
+                        del buy_bait_result, img
                         logger.info("检测到：鱼饵不足，需要购买")
                         context.run_action("点击前往购买鱼饵页面")
                         # 在3秒等待前在判断一下
@@ -131,6 +137,7 @@ class AutoFishingAction(CustomAction):
                         # 购买完再次检测后点击添加按钮
                         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
                         context.run_recognition("检测是否需要添加鱼饵", img)
+                        del img
                         context.run_action("点击添加鱼饵")
                         time.sleep(1)
                     # 点击使用鱼饵
@@ -153,6 +160,7 @@ class AutoFishingAction(CustomAction):
                     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
                     is_hooked: RecognitionDetail | None = context.run_recognition("检测鱼鱼是否上钩", img)
                     if is_hooked and is_hooked.hit:
+                        del is_hooked, img
                         logger.info("鱼鱼上钩了！")
                         break
                     time.sleep(0.1)
@@ -173,10 +181,11 @@ class AutoFishingAction(CustomAction):
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
                 is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
                 if is_continue_fishing and is_continue_fishing.hit:
+                    del is_continue_fishing, img
                     logger.info("检测到继续钓鱼按钮，将开始下一轮钓鱼")
                     time.sleep(1)
                     context.run_action("点击继续钓鱼按钮")
-                time.sleep(1)
+                time.sleep(2)
 
 
             except Exception as exc:
@@ -203,7 +212,7 @@ class AutoFishingAction(CustomAction):
         press_duration_reel = 2.8  # 收线按压时长
         release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
         press_duration_bow = 2.8  # 方向按压时长
-        loop_interval = 0.1  # 循环检测间隔 | 太短影响性能，太长影响收线
+        loop_interval = 0.05  # 循环检测间隔 | 太短影响性能，太长影响收线
 
         # ========== 状态变量 ==========
         is_reel_pressed = False  # 当前收线键状态
@@ -219,6 +228,7 @@ class AutoFishingAction(CustomAction):
             # 检查是否还在收线
             if not self.check_if_reeling(context, img):
                 logger.info("当前已不在收线状态，等待一会检测继续钓鱼按钮...")
+                del img
                 if is_reel_pressed:
                     self.stop_reel_in(context)
                 if is_bow_pressed:
@@ -227,6 +237,7 @@ class AutoFishingAction(CustomAction):
 
             # 获取箭头方向（原始）
             detected_arrow = self.get_bow_direction(context, img)
+            del img
 
             # 更新方向缓存
             arrow_detect_cache.pop(0)
@@ -306,10 +317,11 @@ class AutoFishingAction(CustomAction):
         is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
 
         # 有任何一个检测到了说明就不在收线了
+        in_reel = True
         if (recognition_task and recognition_task.hit) or (is_continue_fishing and is_continue_fishing.hit):
-            return False
-        else:
-            return True
+            in_reel =  False
+        del recognition_task, is_continue_fishing
+        return in_reel
 
     @staticmethod
     def get_bow_direction(context: Context, img: numpy.ndarray, score_threshold: float = 0.6,
@@ -333,20 +345,21 @@ class AutoFishingAction(CustomAction):
 
         # 阈值过滤
         if bow_left_score < score_threshold and bow_right_score < score_threshold:
-            # logger.debug("箭头分数均低于阈值，视为无箭头")
+            del bow_left_score, bow_right_score, bow_left_task, bow_right_task
             return None
 
         # 差异过滤
         if abs(bow_left_score - bow_right_score) < min_score_diff:
-            # logger.debug("箭头分数差小于最小差异值，视为无箭头")
+            del bow_left_score, bow_right_score, bow_left_task, bow_right_task
             return None
 
+        bow_direction = None
         if bow_left_score >= score_threshold and bow_left_score > bow_right_score:
-            return "left"
+            bow_direction = "left"
         elif bow_right_score >= score_threshold and bow_right_score > bow_left_score:
-            return "right"
-        else:
-            return None
+            bow_direction = "right"
+        del bow_left_score, bow_right_score, bow_left_task, bow_right_task
+        return bow_direction
 
     def start_reel_in(self, context: Context) -> bool:
         """
