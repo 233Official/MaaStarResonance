@@ -128,6 +128,8 @@ class AutoFishingAction(CustomAction):
                         context.run_action("点击钓鱼配件最大数量按钮")
                         time.sleep(1)
                         context.run_action("点击钓鱼配件购买按钮")
+                        time.sleep(1)
+                        context.run_action("点击确认购买按钮")
                         logger.info("200个鱼饵购买完成，返回钓鱼界面")
                         time.sleep(1)
                         # ESC

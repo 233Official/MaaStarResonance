@@ -85,6 +85,15 @@
             }
         }
     },
+    "点击确认购买按钮": {
+        "post_delay": 1000,
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [797, 529, 23, 14]
+            }
+        }
+    },
     "选择并购买需要的鱼竿": {
         "post_delay": 1000,
         "action": {
