@@ -305,9 +305,6 @@ class TeleportPointAction(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> bool:
-        params: CustomActionParam | None = None
-        dest_map = ""
-        dest_tele_point = ""
 
         try:
             params = CustomActionParam(argv.custom_action_param)
@@ -438,9 +435,5 @@ class TeleportPointAction(CustomAction):
             return False
         except Exception as exc:  # pragma: no cover - 运行时保护
             stack_trace = traceback.format_exc()
-            if not pipeline_node_name and params:
-                pipeline_node_name = params.data.get("pipeline_node_name", "")
-            logger.exception(
-                f"run pipeline node {pipeline_node_name} failed, error: {exc}\n{stack_trace}",
-            )
+            logger.exception(f"TeleportPoint failed, error: {exc}\n{stack_trace}")
             return False
