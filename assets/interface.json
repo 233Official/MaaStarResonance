@@ -92,7 +92,18 @@
                     "name": "普通鱼竿",
                     "pipeline_override": {
                         "选择并购买需要的鱼竿": {
-                            "roi": [806,158,80,25]
+                            "post_delay": 1000,
+                            "action": {
+                                "type": "Click",
+                                "param": {
+                                    "target": [
+                                        806,
+                                        158,
+                                        80,
+                                        25
+                                    ]
+                                }
+                            }
                         }
                     }
                 },
@@ -100,7 +111,18 @@
                     "name": "强韧鱼竿",
                     "pipeline_override": {
                         "选择并购买需要的鱼竿": {
-                            "roi": [1012,160,80,23]
+                            "post_delay": 1000,
+                            "action": {
+                                "type": "Click",
+                                "param": {
+                                    "target": [
+                                        1012,
+                                        160,
+                                        80,
+                                        23
+                                    ]
+                                }
+                            }
                         }
                     }
                 },
@@ -108,7 +130,18 @@
                     "name": "柔韧鱼竿",
                     "pipeline_override": {
                         "选择并购买需要的鱼竿": {
-                            "roi": [187,418,77,26]
+                            "post_delay": 1000,
+                            "action": {
+                                "type": "Click",
+                                "param": {
+                                    "target": [
+                                        187,
+                                        418,
+                                        77,
+                                        26
+                                    ]
+                                }
+                            }
                         }
                     }
                 }
@@ -120,7 +153,18 @@
                     "name": "普通鱼饵",
                     "pipeline_override": {
                         "选择并购买需要的鱼饵": {
-                            "roi": [188,158,77,25]
+                            "post_delay": 1000,
+                            "action": {
+                                "type": "Click",
+                                "param": {
+                                    "target": [
+                                        188,
+                                        158,
+                                        77,
+                                        25
+                                    ]
+                                }
+                            }
                         }
                     }
                 },
@@ -128,7 +172,18 @@
                     "name": "不空军鱼饵",
                     "pipeline_override": {
                         "选择并购买需要的鱼饵": {
-                            "roi": [385,159,96,25]
+                            "post_delay": 1000,
+                            "action": {
+                                "type": "Click",
+                                "param": {
+                                    "target": [
+                                        385,
+                                        159,
+                                        96,
+                                        25
+                                    ]
+                                }
+                            }
                         }
                     }
                 },
@@ -136,7 +191,18 @@
                     "name": "特制鱼饵",
                     "pipeline_override": {
                         "选择并购买需要的鱼饵": {
-                            "roi": [599,157,78,26]
+                            "post_delay": 1000,
+                            "action": {
+                                "type": "Click",
+                                "param": {
+                                    "target": [
+                                        599,
+                                        157,
+                                        78,
+                                        26
+                                    ]
+                                }
+                            }
                         }
                     }
                 }

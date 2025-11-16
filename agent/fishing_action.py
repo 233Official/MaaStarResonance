@@ -45,12 +45,11 @@ class AutoFishingAction(CustomAction):
         else:
             logger.warning('没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将直接检测抛竿按钮')
 
-
         # 第二重抛竿按钮检测
         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
         reeling_result: RecognitionDetail | None = context.run_recognition("检测抛竿按钮", img)
         if fishing_result and fishing_result.hit and reeling_result and not reeling_result.hit:
-            logger.exception('已进入钓鱼台，但是没有检测到抛竿按钮，未知原因！')  # TODO 是否需要通过循环检测保证稳定性
+            logger.exception('已进入钓鱼台，但是没有检测到抛竿按钮，未知原因！')
             return False
         elif fishing_result and not fishing_result.hit and reeling_result and not reeling_result.hit:
             logger.exception('没有检测到进入钓鱼台按钮，也没有检测到抛竿按钮，请检查是否在钓鱼地点！')
@@ -187,7 +186,6 @@ class AutoFishingAction(CustomAction):
                     context.run_action("点击继续钓鱼按钮")
                 time.sleep(2)
 
-
             except Exception as exc:
                 stack_trace = traceback.format_exc()
                 logger.exception(f"自动钓鱼出现未知错误: {exc}\n{stack_trace}",)
@@ -212,15 +210,16 @@ class AutoFishingAction(CustomAction):
         press_duration_reel = 2.8  # 收线按压时长
         release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
         press_duration_bow = 2.8  # 方向按压时长
-        loop_interval = 0.05  # 循环检测间隔 | 太短影响性能，太长影响收线
+        loop_interval = 0.1  # 循环检测间隔 | 太短影响性能，太长影响收线
+        arrow_cooldown = 0.5  # 箭头方向冷却时间（秒），冷却期内不再检测
 
         # ========== 状态变量 ==========
         is_reel_pressed = False  # 当前收线键状态
         cycle_start_time = None  # 节奏循环开始时间
         last_arrow_direction = None  # 最近确认的箭头方向
-        arrow_detect_cache: list[str | None] = [None, None]  # 用于方向确认的缓存
         is_bow_pressed = False  # 当前方向键状态
         bow_release_time = 0  # 当前方向松开的时间
+        arrow_last_detect_time = 0  # 上次确认箭头的时间戳
 
         while self.check_running(context):
             img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
@@ -235,21 +234,15 @@ class AutoFishingAction(CustomAction):
                     self.stop_bow(context)
                 return True
 
-            # 获取箭头方向（原始）
-            detected_arrow = self.get_bow_direction(context, img)
-            del img
+            now = time.time()
 
-            # 更新方向缓存
-            arrow_detect_cache.pop(0)
-            arrow_detect_cache.append(detected_arrow)
-
-            # 连续两次识别一致才确认方向
-            if arrow_detect_cache[0] is not None and arrow_detect_cache[0] == arrow_detect_cache[1]:
-                confirmed_arrow = arrow_detect_cache[0]
+            # 冷却期内跳过箭头检测
+            if now - arrow_last_detect_time >= arrow_cooldown:
+                confirmed_arrow = self.get_bow_direction(context, img)
             else:
                 confirmed_arrow = None
 
-            now = time.time()
+            del img
 
             # ===== 收线逻辑 =====
             if cycle_start_time is None and confirmed_arrow is None:
@@ -266,6 +259,7 @@ class AutoFishingAction(CustomAction):
                     is_reel_pressed = False
                 cycle_start_time = now
                 last_arrow_direction = confirmed_arrow
+                arrow_last_detect_time = now
                 logger.info(f"首次箭头方向确认：{confirmed_arrow} -> 开始循环模式")
 
                 # 按方向键
@@ -282,6 +276,7 @@ class AutoFishingAction(CustomAction):
                     time.sleep(release_duration_reel)
                     cycle_start_time = time.time()
                     last_arrow_direction = confirmed_arrow
+                    arrow_last_detect_time = now
                     logger.info(f"方向变化为 {confirmed_arrow} -> 重置循环模式")
                 # 按方向键
                 if self.start_bow(context, confirmed_arrow):
