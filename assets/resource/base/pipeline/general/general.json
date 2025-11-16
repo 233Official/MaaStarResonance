@@ -1,0 +1,20 @@
+{
+    "图片识别是否在主页面": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/主页面任务图标.png"],
+                "roi": [22, 218, 26, 23]
+            }
+        },
+        "action": "DoNothing"
+    },
+    "回到主页面": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "return_main_page"
+            }
+        }
+    }
+}
