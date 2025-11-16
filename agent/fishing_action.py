@@ -65,7 +65,7 @@ class AutoFishingAction(CustomAction):
 
         # 开始钓鱼循环
         while self.check_running(context):
-            logger.info(f"✿ 开始第{self.fishing_count}次钓鱼 | 累计已成功{self.success_fishing_count}条 ✿")
+            logger.info(f"===> 开始第{self.fishing_count}次钓鱼 | 累计已成功{self.success_fishing_count}条 <===")
             try:
                 # 3.1 检测配件：鱼竿
                 self.ensure_equipment(

@@ -35,15 +35,12 @@
 - [新手上路](./docs/用户文档/新手上路/新手上路.md)(**使用前必看**)
 - [自动协会狩猎](./docs/用户文档/任务流说明/自动协会狩猎/使用须知.md)
 - [简易采集](./docs/用户文档/任务流说明/简易采集/简易采集使用须知.md)
+- [自动钓鱼](./docs/用户文档/任务流说明/自动钓鱼/自动钓鱼使用须知.md)
 - S2挂浮游之茧
   - [Lv10浮游之茧](./docs/用户文档/任务流说明/)
     - 早期版本, 可能不够稳定,欢迎反馈异常情况
     - 目前阶段所有茧掉落的都是 1 级因子, 其他茧暂时没有写的必要了, 挂完 10 级因子直接到 Lv18 挂野怪就行了
     - PS: 不进入茧只挂 Lv18 茧外围怪物的话赛季积分获取率太低(愈合 8h 挂了不到 5w 的水平), 奔着积分来的话还是挂 Lv10 的茧比较好
-- 自动钓鱼
-  界面上的自动钓鱼只是个壳子, 无法真实使用, 目前自动钓鱼功能实现优先级低, 建议使用
-  - 模拟器手游版-Maa 钓鱼: <https://github.com/26F-Studio/maa-star-resonance>
-  - WegamePC 版前台钓鱼: <https://github.com/Sanheiii/ok-star-resonance>
 
 ---
 
@@ -80,9 +77,7 @@ UI 由 [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia)  大力支持
 
   - [ ] 顺线刷首领拿装备箱子
 
-  - [ ] 钓鱼
-
-    > 暂时不打算做, 有 [Sanheiii/ok-star-resonance: 基于ok-script的星痕共鸣自动工具](https://github.com/Sanheiii/ok-star-resonance) 可以用
+  - [x] 自动钓鱼
 
   - [ ] 怪物图鉴
 
