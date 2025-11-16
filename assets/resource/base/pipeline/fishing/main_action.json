@@ -29,7 +29,7 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [964, 585, 192, 132]
+                "target": [1058, 650, 10, 10]
             }
         }
     },

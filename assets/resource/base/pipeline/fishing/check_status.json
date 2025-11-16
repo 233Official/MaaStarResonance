@@ -36,7 +36,7 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [964, 585, 192, 132],
+                "roi": [1014, 639, 94, 27],
                 "expected": ["继续钓鱼"]
             }
         }
