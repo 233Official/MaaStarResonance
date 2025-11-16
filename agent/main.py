@@ -1,8 +1,6 @@
-import sys
 import subprocess
+import sys
 from pathlib import Path
-import traceback
-from time import sleep
 
 CURRENT_DIR = Path(__file__).parent.resolve()
 if str(CURRENT_DIR) not in sys.path:
@@ -103,12 +101,8 @@ def main():
     # 开发时应当注释下面两行, 编译时自动解除注释
     # init_python_env()
 
-    from logger import logger
     from maa.agent.agent_server import AgentServer
     from maa.toolkit import Toolkit
-    import my_action
-    import fishing_action
-    import my_reco
 
     Toolkit.init_option("./")
 

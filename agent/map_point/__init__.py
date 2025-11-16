@@ -1,5 +1,5 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
 CURRENT_DIR = Path(__file__).parent
 MAP_POINT_FILEPATH = CURRENT_DIR / "MapPoint.json"

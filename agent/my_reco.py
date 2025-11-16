@@ -1,6 +1,6 @@
 from maa.agent.agent_server import AgentServer
-from maa.custom_recognition import CustomRecognition
 from maa.context import Context
+from maa.custom_recognition import CustomRecognition
 
 
 @AgentServer.custom_recognition("my_reco_222")
