@@ -106,12 +106,23 @@ def main():
 
     import my_action
     _ = my_action
+    print("已导入 agent-my_action 模块")
 
     import fishing_action
     _ = fishing_action
-
+    print("已导入 agent-钓鱼 模块")
     import my_reco
     _ = my_reco
+
+    from general import general
+    _ = general
+    print("已导入 agent-general 模块")
+    from general import power_saving_mode
+    _ = power_saving_mode
+    print("已导入 agent-省电模式 模块")
+    from general import season_center
+    _ = season_center
+    print("已导入 agent-赛季中心 模块")
 
     Toolkit.init_option("./")
 

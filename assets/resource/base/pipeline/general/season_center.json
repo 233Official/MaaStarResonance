@@ -1,0 +1,81 @@
+// 赛季中心相关逻辑
+{
+    "图片识别是否在赛季中心页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["活跃度"],
+                "roi": [30, 20, 186, 34]
+            }
+        }
+    },
+    "打开赛季中心页面": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "open_season_center_page"
+            }
+        }
+    },
+    "领取50活跃度奖励": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [427, 609, 34, 30]
+            }
+        }
+    },
+    "领取100活跃度奖励": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [583, 611, 33, 27]
+            }
+        }
+    },
+    "领取200活跃度奖励": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [890, 609, 43, 33]
+            }
+        }
+    },
+    "领取500活跃度奖励": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [1194, 611, 37, 26]
+            }
+        }
+    },
+    "依次领取各档位活跃度奖励": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "run_custom_actions_series",
+                "custom_action_param": {
+                    "actions": [
+                        "领取50活跃度奖励",
+                        "领取50活跃度奖励",
+                        "领取100活跃度奖励",
+                        "领取100活跃度奖励",
+                        "领取200活跃度奖励",
+                        "领取200活跃度奖励",
+                        "领取500活跃度奖励",
+                        "领取500活跃度奖励"
+                    ],
+                    "interval": 1000
+                }
+            }
+        }
+    },
+    "领取今日活跃度奖励": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "claim_today_activity_rewards"
+            }
+        }
+    }
+}
