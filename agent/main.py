@@ -104,6 +104,15 @@ def main():
     from maa.agent.agent_server import AgentServer
     from maa.toolkit import Toolkit
 
+    import my_action
+    _ = my_action
+
+    import fishing_action
+    _ = fishing_action
+
+    import my_reco
+    _ = my_reco
+
     Toolkit.init_option("./")
 
     socket_id = sys.argv[-1]
