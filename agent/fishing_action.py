@@ -28,7 +28,11 @@ class AutoFishingAction(CustomAction):
         argv: CustomAction.RunArg,
     ) -> bool:
         """
-        超究极无敌变异进化全自动钓鱼
+        超究极无敌变异进化全自动钓鱼：
+        1. 可在钓鱼点上 或者 钓鱼界面 开始本任务，无需关心省电模式
+        2. 已有鱼竿/鱼饵，会自动使用第一个，如果用完了会自动执行购买，鱼竿只买1个，鱼饵买200个
+        3. 自动无限钓鱼不会停止，除非遇到意外情况
+        4. 等待鱼鱼上钩最长等待30秒
         """
         
         # 1. 判断省电模式 | 失败也不要紧，说明不在省电模式
@@ -199,13 +203,13 @@ class AutoFishingAction(CustomAction):
     def reel_loop(self, context: Context) -> bool:
         """
         钓鱼循环逻辑：
-        1. 初始状态 -> 一直收线 | 目前改为开始也直接进循环模式，好像更稳定
-        2. 首次识别箭头方向 -> 收线进入循环模式，方向按压固定时间
+        1. 初始状态 -> 收线键：${press_duration_reel}秒后停${release_duration_reel}秒，保持该节奏循环；方向键：不动
+        2. 首次识别箭头方向 -> 收线键：立即重置循环上述节奏循环；方向键：按压${press_duration_bow}秒后松开
         3. 循环模式中再次出现箭头：
-           - 同方向 -> 收线保持节奏
-           - 不同方向 -> 收线松开后重新进入节奏
-        4. 箭头方向需连续两次识别一致才确认
-        5. 方向键 -> 出现箭头后根据方向按方向键一会后松开
+           - 冷却期未到 -> 不改变之前两个按键的状态
+           - 同方向 -> 不改变之前两个按键的状态
+           - 不同方向 -> 收线键：立即重置循环上述节奏循环；方向键：换对应方向按压${press_duration_bow}秒后松开
+        4. 每${loop_interval}循环一次，根据循环独立判断收线键和方向键，以便两个按键同时操作且不堵塞
         """
 
         # ========== 可配置参数 ==========
@@ -308,7 +312,9 @@ class AutoFishingAction(CustomAction):
     @staticmethod
     def check_if_reeling(context: Context, img: numpy.ndarray) -> bool:
         """
-        检查当前是否在收线
+        检查当前是否在收线：
+        1. 钓到鱼鱼了：检测继续钓鱼按钮
+        2. 鱼鱼跑路了：检测是否在抛竿界面
         """
         recognition_task: RecognitionDetail | None = context.run_recognition("检测是否在抛竿界面", img)
         is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
