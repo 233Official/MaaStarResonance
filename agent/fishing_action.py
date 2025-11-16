@@ -17,6 +17,8 @@ class AutoFishingAction(CustomAction):
         super().__init__()
         # 当前钓鱼次数
         self.fishing_count = 1
+        # 成功钓鱼次数
+        self.success_fishing_count = 0
         # 收竿触控通道常量
         self.REEL_IN_CONTACT = 0
         # 方向触控通道常量
@@ -43,115 +45,60 @@ class AutoFishingAction(CustomAction):
         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
         fishing_result: RecognitionDetail | None = context.run_recognition("检测进入钓鱼按钮", img)
         if fishing_result and fishing_result.hit:
-            logger.info("正在进入钓鱼台，等待5秒...")
+            logger.info("[任务准备] 正在进入钓鱼台，等待5秒...")
             context.run_action("点击进入钓鱼按钮")
             time.sleep(5)
         else:
-            logger.warning('没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将直接检测抛竿按钮')
+            logger.warning('[任务准备] 没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将直接检测抛竿按钮')
 
         # 第二重抛竿按钮检测
         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
         reeling_result: RecognitionDetail | None = context.run_recognition("检测抛竿按钮", img)
         if fishing_result and fishing_result.hit and reeling_result and not reeling_result.hit:
-            logger.exception('已进入钓鱼台，但是没有检测到抛竿按钮，未知原因！')
+            logger.error('[任务准备] 已进入钓鱼台，但是没有检测到抛竿按钮，未知原因！')
             return False
         elif fishing_result and not fishing_result.hit and reeling_result and not reeling_result.hit:
-            logger.exception('没有检测到进入钓鱼台按钮，也没有检测到抛竿按钮，请检查是否在钓鱼地点！')
+            logger.error('[任务准备] 没有检测到进入钓鱼台按钮，也没有检测到抛竿按钮，请检查是否在钓鱼地点！')
             return False
         del fishing_result, img
         time.sleep(3)
 
         # 开始钓鱼循环
         while self.check_running(context):
-            logger.info(f"> 正在进行第{str(self.fishing_count)}次钓鱼...")
+            logger.info(f"✿ 开始第{self.fishing_count}次钓鱼 | 累计已成功{self.success_fishing_count}条 ✿")
             try:
-                # 3. 检测配件：点击添加鱼竿 和 点击添加鱼饵 都检测失败 | 才说明不需要买鱼竿和鱼饵就可以正常钓鱼
-                img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-                rod_result: RecognitionDetail | None = context.run_recognition("检测是否需要添加鱼竿", img)
-                # 需要添加鱼竿
-                if rod_result and rod_result.hit:
-                    del rod_result, img
-                    logger.info("检测到：需要添加鱼竿")
-                    context.run_action("点击添加鱼竿")
-                    time.sleep(1)
-                    # 检测一下是否还有已有的鱼竿：有前往购买说明没有了，没有按钮说明还有鱼竿
-                    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-                    buy_rod_result: RecognitionDetail | None = context.run_recognition("检测是否需要购买鱼竿", img)
-                    # 需要购买鱼竿
-                    if buy_rod_result and buy_rod_result.hit:
-                        del buy_rod_result, img
-                        logger.info("检测到：鱼竿不足，需要购买")
-                        context.run_action("点击前往购买鱼竿页面")
-                        # 在3秒等待前在判断一下
-                        if not self.check_running(context):
-                            break
-                        time.sleep(3)
-                        # 选择并购买鱼竿
-                        context.run_action("选择并购买需要的鱼竿")
-                        time.sleep(1)
-                        context.run_action("点击钓鱼配件购买按钮")
-                        logger.info("1个鱼竿购买完成，返回钓鱼界面")
-                        time.sleep(1)
-                        # ESC
-                        context.run_action("ESC")
-                        time.sleep(1)
-                        # 购买完再次检测后点击添加按钮
-                        img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-                        context.run_recognition("检测是否需要添加鱼竿", img)
-                        del img
-                        context.run_action("点击添加鱼竿")
-                        time.sleep(1)
-                    # 点击使用鱼竿
-                    logger.info("点击使用已有的鱼竿")
-                    context.run_action("点击使用鱼竿")
-                    time.sleep(1)
-                
-                img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-                bait_result: RecognitionDetail | None = context.run_recognition("检测是否需要添加鱼饵", img)
-                # 需要添加鱼饵
-                if bait_result and bait_result.hit:
-                    del bait_result, img
-                    logger.info("检测到：需要添加鱼饵")
-                    context.run_action("点击添加鱼饵")
-                    time.sleep(1)
-                    # 检测一下是否还有已有的鱼饵：有前往购买说明没有了，没有按钮说明还有鱼饵
-                    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-                    buy_bait_result: RecognitionDetail | None = context.run_recognition("检测是否需要购买鱼饵", img)
-                    # 需要购买鱼饵
-                    if buy_bait_result and buy_bait_result.hit:
-                        del buy_bait_result, img
-                        logger.info("检测到：鱼饵不足，需要购买")
-                        context.run_action("点击前往购买鱼饵页面")
-                        # 在3秒等待前在判断一下
-                        if not self.check_running(context):
-                            break
-                        time.sleep(3)
-                        # 选择并购买鱼饵 | 默认买最大数量：200个
-                        context.run_action("选择并购买需要的鱼饵")
-                        time.sleep(1)
-                        context.run_action("点击钓鱼配件最大数量按钮")
-                        time.sleep(1)
-                        context.run_action("点击钓鱼配件购买按钮")
-                        time.sleep(1)
-                        context.run_action("点击确认购买按钮")
-                        logger.info("200个鱼饵购买完成，返回钓鱼界面")
-                        time.sleep(1)
-                        # ESC
-                        context.run_action("ESC")
-                        time.sleep(1)
-                        # 购买完再次检测后点击添加按钮
-                        img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-                        context.run_recognition("检测是否需要添加鱼饵", img)
-                        del img
-                        context.run_action("点击添加鱼饵")
-                        time.sleep(1)
-                    # 点击使用鱼饵
-                    logger.info("点击使用已有的鱼饵")
-                    context.run_action("点击使用鱼饵")
-                    time.sleep(1)
+                # 3.1 检测配件：鱼竿
+                self.ensure_equipment(
+                    context,
+                    "鱼竿",
+                    add_task="检测是否需要添加鱼竿",
+                    buy_task="检测是否需要购买鱼竿",
+                    buy_actions=[
+                    "点击前往购买鱼竿页面",
+                    "选择并购买需要的鱼竿",
+                    "点击钓鱼配件购买按钮"
+                    ],
+                    use_action="点击使用鱼竿"
+                )
+
+                # 3.2 检测配件：鱼饵
+                self.ensure_equipment(
+                    context,
+                    "鱼饵",
+                    add_task="检测是否需要添加鱼饵",
+                    buy_task="检测是否需要购买鱼饵",
+                    buy_actions=[
+                    "点击前往购买鱼饵页面",
+                    "选择并购买需要的鱼饵",
+                    "点击钓鱼配件最大数量按钮",
+                    "点击钓鱼配件购买按钮",
+                    "点击确认购买按钮"
+                    ],
+                    use_action="点击使用鱼饵"
+                )
                 
                 # 4. 开始抛竿
-                logger.info("开始抛竿，等待鱼鱼上钩...")
+                logger.info("[任务准备] 开始抛竿，等待鱼鱼上钩...")
                 context.run_action("点击抛竿按钮")
                 time.sleep(1)
 
@@ -166,7 +113,7 @@ class AutoFishingAction(CustomAction):
                     is_hooked: RecognitionDetail | None = context.run_recognition("检测鱼鱼是否上钩", img)
                     if is_hooked and is_hooked.hit:
                         del is_hooked, img
-                        logger.info("鱼鱼上钩了！")
+                        logger.info("[执行钓鱼] 鱼鱼上钩了！")
                         break
                     time.sleep(0.1)
                     wait_for_fish_times += 1
@@ -186,19 +133,66 @@ class AutoFishingAction(CustomAction):
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
                 is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
                 if is_continue_fishing and is_continue_fishing.hit:
-                    del is_continue_fishing, img
-                    logger.info("检测到继续钓鱼按钮，将开始下一轮钓鱼")
+                    self.success_fishing_count += 1
+                    logger.info("[执行钓鱼] 成功钓上了鱼鱼，将开始下一轮钓鱼")
                     time.sleep(1)
                     context.run_action("点击继续钓鱼按钮")
+                del is_continue_fishing, img
                 time.sleep(2)
 
             except Exception as exc:
                 stack_trace = traceback.format_exc()
-                logger.exception(f"自动钓鱼出现未知错误: {exc}\n{stack_trace}",)
+                logger.exception(f"[任务结束] 自动钓鱼出现未知错误: {exc}\n{stack_trace}",)
                 return False
 
-        logger.warning("[FishingTask] 自动钓鱼已结束！")
+        logger.warning("[任务结束] 自动钓鱼已结束！")
         return True
+    
+    @staticmethod
+    def ensure_equipment(
+        context: Context,
+        type_str: str,
+        add_task: str,
+        buy_task: str,
+        buy_actions: list[str],
+        use_action: str
+    ) -> None:
+        """
+        检查钓鱼配件
+        """
+        # 1. 检测添加按钮
+        img = context.tasker.controller.post_screencap().wait().get()
+        det = context.run_recognition(add_task, img)
+        if not det or not det.hit:
+            return
+        logger.info(f"[任务准备] 检测到需要添加{type_str}")
+
+        # 2. 点击添加按钮
+        context.run_action(add_task.replace("检测", "点击"))
+        time.sleep(1)
+
+        # 3. 检测是否需要购买，如果需要就购买
+        img = context.tasker.controller.post_screencap().wait().get()
+        need_buy = context.run_recognition(buy_task, img)
+        if need_buy and need_buy.hit:
+            logger.info(f"[任务准备] 检测到{type_str}不足，需要购买")
+            # 执行一连串购买步骤
+            for act in buy_actions:
+                context.run_action(act)
+                time.sleep(1)
+            # 购买完回到钓鱼界面
+            context.run_action("ESC")
+            time.sleep(1)
+            # 再次检测和点击添加按钮
+            img = context.tasker.controller.post_screencap().wait().get()
+            context.run_recognition(add_task, img)
+            context.run_action(add_task.replace("检测", "点击"))
+            time.sleep(1)
+
+        # 4. 使用配件
+        logger.info(f"[任务准备] 点击使用已有的{type_str}")
+        context.run_action(use_action)
+        time.sleep(1)
 
     def reel_loop(self, context: Context) -> bool:
         """
@@ -232,7 +226,7 @@ class AutoFishingAction(CustomAction):
 
             # 检查是否还在收线
             if not self.check_if_reeling(context, img):
-                logger.info("当前已不在收线状态，等待一会检测继续钓鱼按钮...")
+                logger.info("[执行钓鱼] 当前已不在收线状态，等待一会检测继续钓鱼按钮...")
                 del img
                 if is_reel_pressed:
                     self.stop_reel_in(context)
@@ -266,7 +260,7 @@ class AutoFishingAction(CustomAction):
                 cycle_start_time = now
                 last_arrow_direction = confirmed_arrow
                 arrow_last_detect_time = now
-                logger.info(f"首次箭头方向确认：{confirmed_arrow} -> 开始循环模式")
+                logger.info(f"[执行钓鱼] 首次箭头方向确认：{confirmed_arrow} -> 开始循环模式")
 
                 # 按方向键
                 if self.start_bow(context, confirmed_arrow):
@@ -283,7 +277,7 @@ class AutoFishingAction(CustomAction):
                     cycle_start_time = time.time()
                     last_arrow_direction = confirmed_arrow
                     arrow_last_detect_time = now
-                    logger.info(f"方向变化为 {confirmed_arrow} -> 重置循环模式")
+                    logger.info(f"[执行钓鱼] 方向变化为 {confirmed_arrow} -> 重置循环模式")
                 # 按方向键
                 if self.start_bow(context, confirmed_arrow):
                     is_bow_pressed = True
@@ -322,7 +316,7 @@ class AutoFishingAction(CustomAction):
         # 有任何一个检测到了说明就不在收线了
         in_reel = True
         if (recognition_task and recognition_task.hit) or (is_continue_fishing and is_continue_fishing.hit):
-            in_reel =  False
+            in_reel = False
         del recognition_task, is_continue_fishing
         return in_reel
 
@@ -400,6 +394,6 @@ class AutoFishingAction(CustomAction):
         检查任务是否正在被停止 | 钓鱼有三个循环，理论上最多触发5次停止事件就会停下了
         """
         if context.tasker.stopping:
-            logger.info("[FishingTask] 监听到自动钓鱼任务被结束，将结束循环，请耐心等待一小会")
+            logger.info("[任务结束] 监听到自动钓鱼任务被结束，将结束循环，请耐心等待一小会")
             return False
         return True
