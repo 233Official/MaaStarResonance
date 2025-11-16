@@ -3,11 +3,9 @@ import time
 import traceback
 
 from maa.agent.agent_server import AgentServer
-from maa.context import Context, RecognitionDetail, Rect
+from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
-
-from custom_param import CustomActionParam, CustomActionParamError
 from key_event import ANDROID_KEY_EVENT_DATA
 from logger import logger
 

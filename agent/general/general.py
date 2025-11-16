@@ -6,7 +6,7 @@ from functools import wraps
 from typing import Any, Callable
 
 from maa.agent.agent_server import AgentServer
-from maa.context import Context, RecognitionDetail, Rect
+from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
 from key_event import ANDROID_KEY_EVENT_DATA
@@ -59,7 +59,7 @@ def ensure_main_page(
             max_retry: 最大重试次数（按返回键的最多次数）。
             interval_sec: 每次尝试之间的等待秒数。
             strict: True 时若最终仍未回到主页面则抛出异常；
-                            False 时仅记录错误日志后继续执行被装饰的方法。
+                    False 时仅记录错误日志后继续执行被装饰的方法。
 
     Returns:
             被包装的方法。保持原返回值类型不变（bool 或 CustomAction.RunResult 等）。
@@ -80,7 +80,7 @@ def ensure_main_page(
                     context.tasker.controller.post_click_key(
                         ANDROID_KEY_EVENT_DATA["KEYCODE_ESCAPE"]
                     ).wait()
-                    time.sleep(max(0.0, float(interval_sec)))
+                    time.sleep(max(0.0, interval_sec))
                 else:
                     # for 未被 break，达到最大次数
                     msg = "[EnsureMainPage] 无法回到主页面，已达到最大尝试次数"

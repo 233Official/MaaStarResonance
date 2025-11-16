@@ -1,8 +1,7 @@
 # 省电模式相关逻辑
-# agent/power_mode.py
 from __future__ import annotations
 from functools import wraps
-from typing import Callable, TypeVar, Protocol, Any
+from typing import Callable, Protocol, Any
 from maa.context import Context
 from maa.custom_action import CustomAction
 from logger import logger
@@ -23,8 +22,10 @@ def default_exit_power_save(context: Context) -> None:
         img = context.tasker.controller.post_screencap().wait().get()
         detail = context.run_recognition("识别是否在省电模式", img)
         if detail and detail.hit:
+            logger.debug("[ExitPowerSave] 尝试退出省电模式")
             context.run_task(entry="从省电模式唤醒")
-        logger.debug("[ExitPowerSave] 尝试退出省电模式")
+        else:
+            logger.info("[ExitPowerSave] 当前不在省电模式，无需退出")
     except Exception as exc:  # pragma: no cover
         logger.warning(f"[ExitPowerSave] 退出省电模式异常: {exc}")
 
