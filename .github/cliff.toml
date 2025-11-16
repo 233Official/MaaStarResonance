@@ -26,6 +26,10 @@ body = """
                 {%- endif -%}
             {%- endfor -%}
         {%- endif %}
+        {% set extra_lines = commit.message | split(pat="\n") | slice(start=1) %}
+        {% if extra_lines | length > 0 %}
+          {{ extra_lines | join(sep="\n") | indent(6) }}
+        {% endif %}
 {% endmacro -%}
 
 {% if version %}\
