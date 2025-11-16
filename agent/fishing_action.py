@@ -72,6 +72,7 @@ class AutoFishingAction(CustomAction):
                     context,
                     "鱼竿",
                     add_task="检测是否需要添加鱼竿",
+                    add_action="点击添加鱼竿",
                     buy_task="检测是否需要购买鱼竿",
                     buy_actions=[
                     "点击前往购买鱼竿页面",
@@ -86,6 +87,7 @@ class AutoFishingAction(CustomAction):
                     context,
                     "鱼饵",
                     add_task="检测是否需要添加鱼饵",
+                    add_action="点击添加鱼饵",
                     buy_task="检测是否需要购买鱼饵",
                     buy_actions=[
                     "点击前往购买鱼饵页面",
@@ -153,6 +155,7 @@ class AutoFishingAction(CustomAction):
         context: Context,
         type_str: str,
         add_task: str,
+        add_action: str,
         buy_task: str,
         buy_actions: list[str],
         use_action: str
@@ -168,8 +171,8 @@ class AutoFishingAction(CustomAction):
         logger.info(f"[任务准备] 检测到需要添加{type_str}")
 
         # 2. 点击添加按钮
-        context.run_action(add_task.replace("检测", "点击"))
-        time.sleep(1)
+        context.run_action(add_action)
+        time.sleep(2)
 
         # 3. 检测是否需要购买，如果需要就购买
         img = context.tasker.controller.post_screencap().wait().get()
@@ -179,20 +182,21 @@ class AutoFishingAction(CustomAction):
             # 执行一连串购买步骤
             for act in buy_actions:
                 context.run_action(act)
-                time.sleep(1)
+                time.sleep(2)
+            logger.info(f"[任务准备] {type_str}购买完成，将退回钓鱼界面")
             # 购买完回到钓鱼界面
             context.run_action("ESC")
-            time.sleep(1)
+            time.sleep(2)
             # 再次检测和点击添加按钮
             img = context.tasker.controller.post_screencap().wait().get()
             context.run_recognition(add_task, img)
-            context.run_action(add_task.replace("检测", "点击"))
-            time.sleep(1)
+            context.run_action(add_action)
+            time.sleep(2)
 
         # 4. 使用配件
         logger.info(f"[任务准备] 点击使用已有的{type_str}")
         context.run_action(use_action)
-        time.sleep(1)
+        time.sleep(2)
 
     def reel_loop(self, context: Context) -> bool:
         """
