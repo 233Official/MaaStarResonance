@@ -1,0 +1,27 @@
+// 省电模式相关逻辑
+{
+    "识别是否在省电模式": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [528, 629, 223, 35],
+                "expected": ["省电模式"]
+            }
+        }
+    },
+    "从省电模式唤醒": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [528, 629, 223, 35],
+                "expected": ["省电模式"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [591, 4, 33, 17]
+            }
+        }
+    }
+}

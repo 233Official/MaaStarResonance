@@ -45,21 +45,6 @@
             }
         }
     },
-    "从省电模式唤醒": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [528, 629, 223, 35],
-                "expected": ["省电模式"]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [591, 4, 33, 17]
-            }
-        }
-    },
     "点击DeepSeek图标": {
         "recognition": "TemplateMatch", // 图像模板匹配
         "template": "deepseek_icon.png", // 匹配素材路径
