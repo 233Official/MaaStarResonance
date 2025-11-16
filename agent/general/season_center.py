@@ -5,13 +5,13 @@ import traceback
 from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail, Rect
 from maa.custom_action import CustomAction
-from rapidfuzz import fuzz
+
 
 from custom_param import CustomActionParam, CustomActionParamError
 from key_event import ANDROID_KEY_EVENT_DATA
 from logger import logger
 
-from map_point import MAP_POINT_DATA
+
 from general.general import ensure_main_page
 from general.power_saving_mode import exit_power_saving_mode
 

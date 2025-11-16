@@ -31,7 +31,6 @@ def default_exit_power_save(context: Context) -> None:
 
 def exit_power_saving_mode(
     exit_func: ExitPowerSaveFunc | None = None,
-    force: bool = False,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     方法装饰器：在 run 执行前退出省电模式。
