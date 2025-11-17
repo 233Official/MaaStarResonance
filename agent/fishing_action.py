@@ -48,8 +48,7 @@ class AutoFishingAction(CustomAction):
 
         # 获取参数
         params = CustomActionParam(argv.custom_action_param)
-        required = params.require(["max_success_fishing_count"])
-        max_success_fishing_count = int(required["max_success_fishing_count"]) if required["max_success_fishing_count"] else 0
+        max_success_fishing_count = int(params.data["max_success_fishing_count"]) if params.data["max_success_fishing_count"] else 0
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count}")
         
         # 1. 判断省电模式 | 失败也不要紧，说明不在省电模式
