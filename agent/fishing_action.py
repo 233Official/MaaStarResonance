@@ -6,6 +6,7 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
+from agent.custom_param import CustomActionParam
 from logger import logger
 
 
@@ -35,7 +36,21 @@ class AutoFishingAction(CustomAction):
         2. 已有鱼竿/鱼饵，会自动使用第一个，如果用完了会自动执行购买，鱼竿只买1个，鱼饵买200个
         3. 自动无限钓鱼不会停止，除非遇到意外情况
         4. 等待鱼鱼上钩最长等待30秒
+
+        Args:
+            context: 控制器上下文
+            argv: 运行参数
+                - max_success_fishing_count: 需要的最大成功钓鱼数量，默认设置0为无限钓鱼
+
+        Returns:
+            钓鱼结果：True / False
         """
+
+        # 获取参数
+        params = CustomActionParam(argv.custom_action_param)
+        required = params.require(["max_success_fishing_count"])
+        max_success_fishing_count = int(required["max_success_fishing_count"]) if required["max_success_fishing_count"] else 0
+        logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count}")
         
         # 1. 判断省电模式 | 失败也不要紧，说明不在省电模式
         context.run_action("从省电模式唤醒")
@@ -65,6 +80,10 @@ class AutoFishingAction(CustomAction):
 
         # 开始钓鱼循环
         while self.check_running(context):
+            # 检查是否已经钓到足够数量的鱼鱼了
+            if max_success_fishing_count != 0 and max_success_fishing_count <= self.success_fishing_count:
+                logger.info(f"[任务结束] 已成功钓到了您所配置的{self.success_fishing_count}条鱼鱼，自动钓鱼结束！")
+                return True
             logger.info(f"===> 开始第{self.fishing_count}次钓鱼 | 累计已成功{self.success_fishing_count}条 <===")
             try:
                 # 3.1 检测配件：鱼竿

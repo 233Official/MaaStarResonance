@@ -4,7 +4,10 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "AutoFishing"
+                "custom_action": "AutoFishing",
+                "custom_action_param": {
+                    "max_success_fishing_count": 0
+                }
             }
         }
     },
