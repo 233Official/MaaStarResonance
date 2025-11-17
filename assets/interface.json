@@ -70,6 +70,9 @@
             "option": [
                 "自动购买鱼竿选择",
                 "自动购买鱼饵选择"
+            ],
+            "advanced": [
+                "需要的最大成功钓鱼数量"
             ]
         }
         // {
@@ -233,6 +236,33 @@
                     }
                 }
             ]
+        }
+    },
+    "advanced": {
+        "需要的最大成功钓鱼数量": {
+            "field": [
+                "需要的最大成功钓鱼数量"
+            ],
+            "type": [
+                "int"
+            ],
+            "default": [
+                "0"
+            ],
+            "pipeline_override": {
+                "启动自动钓鱼入口": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "AutoFishing",
+                            "custom_action_param": {
+                                "max_success_fishing_count": "{需要的最大成功钓鱼数量}"
+                            }
+                        }
+                    }
+                }
+            },
+            "doc": "需要的最大成功钓鱼数量，默认设置0为无限钓鱼"
         }
     }
 }
