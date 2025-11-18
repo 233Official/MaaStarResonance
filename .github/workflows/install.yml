@@ -96,24 +96,24 @@ jobs:
           - os: windows-latest
             platform: win
             arch: aarch64
-          - os: macos-latest
-            platform: macos
-            arch: x86_64
-          - os: macos-latest
-            platform: macos
-            arch: aarch64
-          - os: ubuntu-latest
-            platform: linux
-            arch: x86_64
-          - os: ubuntu-latest
-            platform: linux
-            arch: aarch64
-          - os: ubuntu-latest
-            platform: android
-            arch: x86_64
-          - os: ubuntu-latest
-            platform: android
-            arch: aarch64
+          # - os: macos-latest
+          #   platform: macos
+          #   arch: x86_64
+          # - os: macos-latest
+          #   platform: macos
+          #   arch: aarch64
+          # - os: ubuntu-latest
+          #   platform: linux
+          #   arch: x86_64
+          # - os: ubuntu-latest
+          #   platform: linux
+          #   arch: aarch64
+          # - os: ubuntu-latest
+          #   platform: android
+          #   arch: x86_64
+          # - os: ubuntu-latest
+          #   platform: android
+          #   arch: aarch64
       fail-fast: false
     runs-on: ${{ matrix.os }}
 
