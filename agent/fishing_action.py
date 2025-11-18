@@ -50,32 +50,6 @@ class AutoFishingAction(CustomAction):
         params = CustomActionParam(argv.custom_action_param)
         max_success_fishing_count = int(params.data["max_success_fishing_count"]) if params.data["max_success_fishing_count"] else 0
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count}")
-        
-        # 1. 判断省电模式 | 失败也不要紧，说明不在省电模式
-        context.run_action("从省电模式唤醒")
-        time.sleep(1)
-
-        # 2. 首次钓鱼：检测进入钓鱼按钮 和 检测抛竿按钮 至少得有一个检测成功 | 不然没法钓鱼
-        img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-        fishing_result: RecognitionDetail | None = context.run_recognition("检测进入钓鱼按钮", img)
-        if fishing_result and fishing_result.hit:
-            logger.info("[任务准备] 正在进入钓鱼台，等待5秒...")
-            context.run_action("点击进入钓鱼按钮")
-            time.sleep(5)
-        else:
-            logger.warning('[任务准备] 没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将直接检测抛竿按钮')
-
-        # 第二重抛竿按钮检测
-        img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-        reeling_result: RecognitionDetail | None = context.run_recognition("检测抛竿按钮", img)
-        if fishing_result and fishing_result.hit and reeling_result and not reeling_result.hit:
-            logger.error('[任务准备] 已进入钓鱼台，但是没有检测到抛竿按钮，未知原因！')
-            return False
-        elif fishing_result and not fishing_result.hit and reeling_result and not reeling_result.hit:
-            logger.error('[任务准备] 没有检测到进入钓鱼台按钮，也没有检测到抛竿按钮，请检查是否在钓鱼地点！')
-            return False
-        del fishing_result, img
-        time.sleep(3)
 
         # 开始钓鱼循环
         while self.check_running(context):
@@ -83,8 +57,57 @@ class AutoFishingAction(CustomAction):
             if max_success_fishing_count != 0 and max_success_fishing_count <= self.success_fishing_count:
                 logger.info(f"[任务结束] 已成功钓到了您所配置的{self.success_fishing_count}条鱼鱼，自动钓鱼结束！")
                 return True
+            
+            # 1. 判断省电模式 | 失败也不要紧，说明不在省电模式
+            context.run_action("从省电模式唤醒")
+            time.sleep(1)
+
+            # 钓鱼主循环
             logger.info(f"===> 开始第{self.fishing_count}次钓鱼 | 累计已成功{self.success_fishing_count}条 <===")
+            self.fishing_count += 1
+
             try:
+                # 2.1 检测进入钓鱼按钮
+                img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+                fishing_result: RecognitionDetail | None = context.run_recognition("检测进入钓鱼按钮", img)
+                if fishing_result and fishing_result.hit:
+                    logger.info("[任务准备] 正在进入钓鱼台，等待5秒...")
+                    context.run_action("点击进入钓鱼按钮")
+                    time.sleep(5)
+                    # 识别出了：走进钓鱼台，并重新截图
+                    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+                else:
+                    logger.warning('[任务准备] 没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将直接检测抛竿按钮')
+
+                # 2.2 检测抛竿按钮
+                reeling_result: RecognitionDetail | None = context.run_recognition("检测抛竿按钮", img)
+                if reeling_result and not reeling_result.hit:
+                    logger.warning('[任务准备] 没有检测到抛竿按钮，可能是遇到掉线/切线情况')
+                    
+                    # 2.3 检查其他意外情况
+                    disconnect_result: RecognitionDetail | None = context.run_recognition(
+                        "通用文字识别",
+                        img,
+                        pipeline_override={
+                            "通用文字识别": {"expected": "确认", "roi": [767, 517, 59, 27]}
+                        },
+                    )
+                    if disconnect_result and disconnect_result.hit:
+                        # 有确认按钮：很有可能是掉线了
+                        logger.info("[任务准备] 检测到掉线重连按钮，正在点击重连，等待30秒后重试...")
+                        context.tasker.controller.post_click(797, 532).wait()
+                    else:
+                        # 可能是：分线过期自动切线、月卡弹窗、广告弹窗  | TODO：广告弹窗暂不支持处理
+                        logger.warning("[任务准备] 未检测到掉线重连按钮，可能是自动切线或月卡弹窗，自动处理后等待30秒后重试...")
+                        context.tasker.controller.post_click(640, 10).wait()
+                    del disconnect_result, fishing_result, reeling_result, img
+                    # 等待30秒后直接进入下个循环
+                    time.sleep(30)
+                    continue
+                
+                del fishing_result, reeling_result, img
+                time.sleep(3)
+
                 # 3.1 检测配件：鱼竿
                 self.ensure_equipment(
                     context,
@@ -146,7 +169,6 @@ class AutoFishingAction(CustomAction):
                 # 没有下一次了，说明钓鱼被强制结束了
                 if not need_next:
                     break
-                self.fishing_count += 1
                 time.sleep(4)
 
                 # 7. 本次钓鱼完成，再次检测并点击继续钓鱼按钮进行第二次钓鱼
