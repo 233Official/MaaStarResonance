@@ -108,6 +108,10 @@ def main():
     _ = my_action
     print("已导入 agent-my_action 模块")
 
+    import app_manage_action
+    _ = app_manage_action
+    print("已导入 agent-app_manage_action 模块")
+
     import fishing_action
     _ = fishing_action
     print("已导入 agent-钓鱼 模块")
