@@ -6,7 +6,7 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
-from agent.custom_param import CustomActionParam
+from custom_param import CustomActionParam
 from logger import logger
 
 
@@ -76,8 +76,21 @@ class AutoFishingAction(CustomAction):
                     time.sleep(5)
                     # 识别出了：走进钓鱼台，并重新截图
                     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+                elif fishing_result:
+                    # 以防万一再次判断
+                    target_chars = {"钓", "鱼"}
+                    texts = {item.text for item in fishing_result.all_results}  # type: ignore
+                    if target_chars.issubset(texts):
+                        logger.info("[任务准备] 正在进入钓鱼台，等待5秒...")
+                        context.run_action("点击进入钓鱼按钮")
+                        time.sleep(5)
+                        # 识别出了：走进钓鱼台，并重新截图
+                        img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+                    else:
+                        logger.warning('[任务准备] 没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将直接检测抛竿按钮')
                 else:
-                    logger.warning('[任务准备] 没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将直接检测抛竿按钮')
+                    logger.error('[任务结束] 逻辑不可达')
+                    return False
 
                 # 2.2 检测抛竿按钮
                 reeling_result: RecognitionDetail | None = context.run_recognition("检测抛竿按钮", img)

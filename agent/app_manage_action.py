@@ -3,7 +3,7 @@ from maa.context import Context
 from maa.custom_action import CustomAction
 from maa.job import Job
 
-from agent.custom_param import CustomActionParam
+from custom_param import CustomActionParam
 from logger import logger
 
 
