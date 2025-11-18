@@ -174,7 +174,7 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "CloseTargetApp",
+                "custom_action": "StopTargetApp",
                 "custom_action_param": {
                     "app_package_name": "com.tencent.wlfz"
                 }

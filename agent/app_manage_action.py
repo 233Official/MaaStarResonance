@@ -1,3 +1,5 @@
+import time
+
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction
@@ -68,6 +70,11 @@ class RestartTargetAppAction(CustomAction):
         if not stop_job.succeeded:
             logger.error(f"重启应用失败: {app_package_name}，关闭应用时出错，请检查应用包名是否正确")
             return False
+        
+        # 等待5秒再启动应用
+        logger.info("等待5秒后启动应用...")
+        time.sleep(5)
+
         start_job: Job = context.tasker.controller.post_start_app(app_package_name).wait()
         if start_job.succeeded:
             logger.info(f"已重启应用: {app_package_name}")
