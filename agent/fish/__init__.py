@@ -10,4 +10,4 @@ with open(FISH_FILEPATH, "r", encoding="utf-8") as f:
 
 FISH_LIST = (lambda d: list(set(chain.from_iterable(chain.from_iterable(p.values() for p in d.values())))))(FISH_DATA)
 
-__all__ = ["FISH_DATA"]
+__all__ = ["FISH_DATA", "FISH_LIST"]
