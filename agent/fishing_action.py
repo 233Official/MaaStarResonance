@@ -78,11 +78,11 @@ class AutoFishingAction(CustomAction):
             
             self.fishing_count += 1
             # 打印当前钓鱼统计信息
-            success_rate = self.success_fishing_count / max(1, self.fishing_count - 1 - self.except_count) * 100 if self.fishing_count > 1 else 0.0
-            exception_rate = self.except_count / (self.fishing_count - 1) * 100 if self.fishing_count > 1 else 0.0
-            avg_fish_per_rod = (self.success_fishing_count / self.used_rod_count) if self.used_rod_count > 0 else 0.0
+            success_rate = (self.success_fishing_count / max(1, self.fishing_count - 1 - self.except_count) * 100) if self.fishing_count > 1 else 0.0
+            exception_rate = (self.except_count / (self.fishing_count - 1) * 100) if self.fishing_count > 1 else 0.0
+            avg_fish_per_rod = self.success_fishing_count / (self.used_rod_count + 1)
             print_center_block([
-                f"累计 {self.fishing_count - 1} 次自动钓鱼",
+                f"累计进行 {self.fishing_count - 1} 次自动钓鱼",
                 f"成功钓上 {self.success_fishing_count} 只 => 神话{self.ssr_fish_count}只 / 珍稀{self.sr_fish_count}只 / 常见{self.r_fish_count}只",
                 f"消耗配件 => {self.used_rod_count}个鱼竿 / {self.used_bait_count}个鱼饵",
                 f"钓鱼成功率 => {round(success_rate, 1)}% / 意外异常率：{round(exception_rate, 1)}%",
@@ -103,8 +103,8 @@ class AutoFishingAction(CustomAction):
                 time.sleep(env_check_result)
                 continue
             else:
-                # 环境检查通过，等待3秒继续钓鱼流程
-                time.sleep(3)
+                # 环境检查通过，等待1秒继续钓鱼流程
+                time.sleep(1)
 
             # 3.1 检测配件：鱼竿
             self.ensure_equipment(
@@ -174,14 +174,13 @@ class AutoFishingAction(CustomAction):
             is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
             if is_continue_fishing and is_continue_fishing.hit:
                 self.success_fishing_count += 1
-                logger.info("[执行钓鱼] 成功钓上了鱼鱼，将开始下一轮钓鱼")
-                time.sleep(2)
                 # 检查钓鱼结果
                 self.check_fishing_result(context, img)
+                time.sleep(1.5)
                 # 点击继续钓鱼按钮
                 context.run_action("点击继续钓鱼按钮")
             del is_continue_fishing, img
-            time.sleep(2)
+            time.sleep(1)
 
         logger.warning("[任务结束] 自动钓鱼已结束！")
         return True
@@ -205,6 +204,7 @@ class AutoFishingAction(CustomAction):
         if fishing_result and fishing_result.hit:
             logger.info("[任务准备] 正在进入钓鱼台，等待5秒...")
             context.run_action("点击进入钓鱼按钮")
+            # 走5秒，有些地方会卡住比较慢
             time.sleep(5)
             # 识别出了：走进钓鱼台，并重新截图
             img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
@@ -215,6 +215,7 @@ class AutoFishingAction(CustomAction):
             if target_chars.issubset(texts):
                 logger.info("[任务准备] 疑似钓鱼台按钮，正在尝试进入钓鱼台，等待5秒...")
                 context.run_action("点击进入钓鱼按钮")
+                # 走5秒，有些地方会卡住比较慢
                 time.sleep(5)
                 # 疑似识别出了：走进钓鱼台，并重新截图
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
@@ -236,7 +237,7 @@ class AutoFishingAction(CustomAction):
         is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
         if is_continue_fishing and is_continue_fishing.hit:
             logger.info("[任务准备] 检测到继续钓鱼按钮，将点击按钮，环境检查通过")
-            time.sleep(2)
+            time.sleep(1.5)
             context.run_action("点击继续钓鱼按钮")
             del fishing_result, reeling_result, is_continue_fishing, img
             return 0

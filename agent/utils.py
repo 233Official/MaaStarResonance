@@ -4,25 +4,19 @@ from rapidfuzz import fuzz, process
 from logger import logger
 
 
-def print_center_block(lines: list[str], total_width: int = 60, border_char: str = "#"):
+def print_center_block(lines: list[str], total_width: int = 40, border_char: str = "#"):
     """
     让多行文本在固定宽度内居中显示，并加边框。
     :param lines: 要显示的文本（列表，每行一个字符串）
-    :param total_width: 总宽度（包括边框）
+    :param total_width: 总宽度
     :param border_char: 边框字符
     """
-    logger.info("\n")
     # 打印顶部边框
-    logger.info(border_char * total_width)
+    logger.info(border_char * int(total_width * 1.3))
     for line in lines:
-        # 剔除可能的多余空格
-        line = line.strip()
-        # 中间内容宽度 = 总宽度 - 左右边框各1个字符
-        content_width = total_width - 2
-        # 居中排版
-        logger.info(border_char + line.center(content_width) + border_char)
+        logger.info(line.center(total_width))
     # 打印底部边框
-    logger.info(border_char * total_width)
+    logger.info(border_char * int(total_width * 1.3))
 
 
 def get_best_match_single(query: str, choices: list[str], score_threshold: float = 60) -> str | None:
