@@ -137,17 +137,23 @@ jobs:
       - name: Replace icon in MFAAvalonia.exe
         shell: pwsh
         run: |
-          $exePath = Join-Path "${{ github.workspace }}/MFA" "MFAAvalonia.exe"
-          $iconPath = Join-Path "${{ github.workspace }}/assets" "logo.ico"
+          $exePath = Join-Path (Join-Path $env:GITHUB_WORKSPACE "MFA") "MFAAvalonia.exe"
+          $iconPath = Join-Path (Join-Path $env:GITHUB_WORKSPACE "assets") "logo.ico"
           $resHackerUrl = "https://www.angusj.com/resourcehacker/resource_hacker.zip"
 
-          Invoke-WebRequest -Uri $resHackerUrl -OutFile "$env:TEMP\\resource_hacker.zip"
-          Expand-Archive "$env:TEMP\\resource_hacker.zip" -DestinationPath "$env:TEMP\\resource_hacker"
+          $zipPath = Join-Path $env:TEMP "resource_hacker.zip"
+          $extractPath = Join-Path $env:TEMP "resource_hacker"
 
-          $resHackerExe = "$env:TEMP\\resource_hacker\\ResourceHacker.exe"
+          Invoke-WebRequest -Uri $resHackerUrl -OutFile $zipPath
+          Expand-Archive $zipPath -DestinationPath $extractPath -Force
 
-          & $resHackerExe -open $exePath -save $exePath -action addoverwrite -res $iconPath -mask ICONGROUP,MAINICON,
-          
+          $resHackerExe = Join-Path $extractPath "ResourceHacker.exe"
+
+          & $resHackerExe -open $exePath -save $exePath `
+              -action addoverwrite `
+              -res $iconPath `
+              -mask "ICONGROUP,MAINICON,"
+
           Write-Host "Icon replaced for $exePath"
 
       # 缓存 resource 目录下的所有资源文件,以便后续 Action 运行时可以直接使用缓存的资源文件, 避免重复下载浪费时间和流量
