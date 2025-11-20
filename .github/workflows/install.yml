@@ -124,14 +124,15 @@ jobs:
           latest: true
           out-file-path: "MFA"
           extract: true
-      
-      # 清理无用压缩包
-      - name: Clean up MFAAvalonia archive
-        shell: bash
+        
+      # 替换解压后 MFAA Assets文件夹下的图标文件
+      - name: Replace MFAAvalonia icon
+        shell: pwsh
         run: |
-          ARCHIVE_FILE_PATH="${{ fromJson(steps.download_mfa.outputs.downloaded_files)[0] }}"
-          rm -f "${ARCHIVE_FILE_PATH}"
-          echo "Archive cleanup command executed for MFAAvalonia."
+          $src = Join-Path $env:GITHUB_WORKSPACE "assets/logo.ico"
+          $dst = Join-Path (Join-Path $env:GITHUB_WORKSPACE "MFA/Assets") "logo.ico"
+          Copy-Item -Path $src -Destination $dst -Force
+          Write-Host "已替换 MFAAvalonia 的 logo.ico"
 
       # 替换 MFAAvalonia.exe 的图标
       - name: Replace icon in MFAAvalonia.exe
@@ -154,7 +155,30 @@ jobs:
               -res $iconPath `
               -mask "ICONGROUP,MAINICON,"
 
-          Write-Host "Icon replaced for $exePath"
+          Write-Host "已替换 $exePath 的EXE图标"
+        
+      # 清理无用文件
+      - name: Clean up temporary files
+        shell: bash
+        run: |
+          # 删除 MFAAvalonia 压缩包
+          ARCHIVE_FILE_PATH="${{ fromJson(steps.download_mfa.outputs.downloaded_files)[0] }}"
+          if [[ -f "${ARCHIVE_FILE_PATH}" ]]; then
+            rm -f "${ARCHIVE_FILE_PATH}"
+            echo "已移除 MFAA 的压缩包： ${ARCHIVE_FILE_PATH}"
+          fi
+
+          # 删除 Resource Hacker 压缩包和解压目录
+          if [[ -d "${TEMP:-$RUNNER_TEMP}/resource_hacker" ]]; then
+            rm -rf "${TEMP:-$RUNNER_TEMP}/resource_hacker"
+            echo "已移除 resource_hacker 的文件夹"
+          fi
+          if [[ -f "${TEMP:-$RUNNER_TEMP}/resource_hacker.zip" ]]; then
+            rm -f "${TEMP:-$RUNNER_TEMP}/resource_hacker.zip"
+            echo "已移除 resource_hacker 的压缩包"
+          fi
+
+          echo "Cleanup completed."
 
       # 缓存 resource 目录下的所有资源文件,以便后续 Action 运行时可以直接使用缓存的资源文件, 避免重复下载浪费时间和流量
       - name: Cache Resources
