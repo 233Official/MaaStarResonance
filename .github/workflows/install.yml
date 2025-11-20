@@ -96,29 +96,11 @@ jobs:
           - os: windows-latest
             platform: win
             arch: aarch64
-          # - os: macos-latest
-          #   platform: macos
-          #   arch: x86_64
-          # - os: macos-latest
-          #   platform: macos
-          #   arch: aarch64
-          # - os: ubuntu-latest
-          #   platform: linux
-          #   arch: x86_64
-          # - os: ubuntu-latest
-          #   platform: linux
-          #   arch: aarch64
-          # - os: ubuntu-latest
-          #   platform: android
-          #   arch: x86_64
-          # - os: ubuntu-latest
-          #   platform: android
-          #   arch: aarch64
       fail-fast: false
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
 
@@ -132,31 +114,27 @@ jobs:
           out-file-path: "deps"
           extract: true
 
-      # Win平台：下载 MFAAvalonia 源码
+      # 下载 MFAAvalonia 源码
       - name: Checkout MFAAvalonia source
-        if: matrix.platform == 'win'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: SweetSmellFox/MFAAvalonia
           path: MFA-src
 
-      # Win平台：替换图标文件
+      # 替换图标文件
       - name: Replace MFAAvalonia icon
-        if: matrix.platform == 'win'
         run: |
           cp assets/logo.ico MFA-src/MFAAvalonia/Assets/logo.ico
           echo "已替换 Windows 版 MFAAvalonia 的 logo.ico"
 
-      # Win平台：设置 .NET 版本
+      # 设置 .NET 版本
       - name: Setup .NET
-        if: matrix.platform == 'win'
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
-      # Win平台：编译修改过的 MFAAvalonia
-      - name: Build MFAAvalonia
-        if: matrix.platform == 'win'
+      # 编译修改过的 MFAAvalonia
+      - name: Build MFAAvaloni
         shell: pwsh
         run: |
           cd MFA-src
@@ -164,27 +142,6 @@ jobs:
           cd ..
           New-Item -ItemType Directory -Force -Path MFA | Out-Null
           Copy-Item -Path "MFA-src/bin/AnyCPU/Release/win-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}/publish/*" -Destination "MFA" -Recurse -Force
-      
-      # 非Win平台：直接下载对应平台的 MFAAvalonia 完整包
-      - name: Download MFAAvalonia
-        if: matrix.platform != 'android' && matrix.platform != 'win'
-        id: download_mfa
-        uses: robinraju/release-downloader@v1
-        with:
-          repository: SweetSmellFox/MFAAvalonia
-          fileName: "MFAAvalonia-*-${{ matrix.platform == 'macos' && 'osx' || matrix.platform }}-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}*"
-          latest: true
-          out-file-path: "MFA"
-          extract: true
-      
-      # 非 Windows 平台清理无用压缩包
-      - name: Clean up MFAAvalonia archive
-        if: matrix.platform != 'android' && matrix.platform != 'win'
-        shell: bash
-        run: |
-          ARCHIVE_FILE_PATH="${{ fromJson(steps.download_mfa.outputs.downloaded_files)[0] }}"
-          rm -f "${ARCHIVE_FILE_PATH}"
-          echo "Archive cleanup command executed for MFAAvalonia."
 
       # 缓存 resource 目录下的所有资源文件,以便后续 Action 运行时可以直接使用缓存的资源文件, 避免重复下载浪费时间和流量
       - name: Cache Resources
