@@ -213,14 +213,14 @@ class AutoFishingAction(CustomAction):
             target_chars = {"钓", "鱼"}
             texts = {item.text for item in fishing_result.all_results}  # type: ignore
             if target_chars.issubset(texts):
-                logger.info("[任务准备] 疑似钓鱼台按钮，正在尝试进入钓鱼台，等待5秒...")
+                logger.info("[任务准备] 疑似钓鱼按钮，正在尝试进入钓鱼台，等待5秒...")
                 context.run_action("点击进入钓鱼按钮")
                 # 走5秒，有些地方会卡住比较慢
                 time.sleep(5)
                 # 疑似识别出了：走进钓鱼台，并重新截图
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
             else:
-                logger.info('[任务准备] 没有检测到进入钓鱼台按钮，可能是已经在钓鱼中，将直接检测抛竿按钮')
+                logger.info('[任务准备] 没有检测到钓鱼按钮，可能已经在钓鱼中，将直接检测抛竿按钮')
         else:
             logger.error('[任务结束] 识别节点不存在，逻辑不可达，请GitHub提交Issue反馈')
             return -1
@@ -353,7 +353,7 @@ class AutoFishingAction(CustomAction):
         release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
         press_duration_bow = 2.8  # 方向按压时长
         loop_interval = 0.1  # 循环检测间隔 | 太短影响性能，太长影响收线
-        arrow_cooldown = 0.5  # 箭头方向冷却时间（秒），冷却期内不再检测
+        arrow_cooldown = 1  # 箭头方向冷却时间（秒），冷却期内不再检测
 
         # ========== 状态变量 ==========
         is_reel_pressed = False  # 当前收线键状态
