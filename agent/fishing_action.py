@@ -64,6 +64,8 @@ class AutoFishingAction(CustomAction):
             钓鱼结果：True / False
         """
 
+        logger.warning(f"!!! 即将开始钓鱼，建议根据文档选择合适的钓鱼点 !!!")
+
         # 获取参数
         params = CustomActionParam(argv.custom_action_param)
         max_success_fishing_count = int(params.data["max_success_fishing_count"]) if params.data["max_success_fishing_count"] else 0
