@@ -144,7 +144,7 @@ class AutoFishingAction(CustomAction):
             time.sleep(1)
 
             # 5. 检测鱼鱼是否上钩 | 检测30秒，检测时间长，如果有中断命令就直接结束
-            need_next = True
+            need_next = True  # 是否需要进行下一步 | 不需要就是被手动终止任务了
             wait_for_fish_times = 0
             while wait_for_fish_times < 300:
                 if not self.check_running(context):
@@ -158,6 +158,10 @@ class AutoFishingAction(CustomAction):
                     break
                 time.sleep(0.1)
                 wait_for_fish_times += 1
+            # 超时还没检测到鱼鱼上钩 | 重新开始检测环境
+            if wait_for_fish_times >= 300:
+                logger.info("[执行钓鱼] 超过30秒未检测到鱼鱼上钩，将重新开始环境检测")
+                continue
             # 30秒检测内如果没有下一次了，说明钓鱼被强制结束了
             if not need_next:
                 break
