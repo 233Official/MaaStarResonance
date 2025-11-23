@@ -12,18 +12,6 @@ from logger import logger
 from map_point import MAP_POINT_DATA
 
 
-@AgentServer.custom_action("my_action_111")
-class MyCustomAction(CustomAction):
-
-    def run(
-        self,
-        context: Context,
-        argv: CustomAction.RunArg,
-    ) -> bool:
-        logger.info("my_action_111 is running!")
-        return True
-
-
 # 运行任务流水线任务
 @AgentServer.custom_action("run_pipeline_node")
 class RunTaskPipelineAction(CustomAction):
@@ -233,7 +221,7 @@ class RunCustomActionsSeriesAction(CustomAction):
                 actions = params.data.get("actions", [])
                 interval = params.data.get("interval", 1000)
             logger.exception(
-                f"RunCustomActionsSeriesAction 运行自定义动作系列 {actions} 失败, 错误: {exc}\n{stack_trace}",
+                f"RunCustomActionsSeriesAction 运行自定义动作系列 {actions} 失败，间隔 {interval} 秒，错误: {exc}\n{stack_trace}",
             )
             return False
 
