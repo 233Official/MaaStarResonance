@@ -4,6 +4,7 @@ import numpy
 from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
+from maa.job import Job
 
 from custom_param import CustomActionParam
 from fish import FISH_LIST
@@ -91,8 +92,8 @@ class AutoFishingAction(CustomAction):
                 f"每个鱼竿平均可钓 => {round(avg_fish_per_rod, 1)} 条鱼"
             ])
             
-            # 1.1 判断省电模式
-            context.run_action("从省电模式唤醒")
+            # 1.1 直接点击一下指定位置 | 可以直接解决月卡和省电模式问题
+            context.tasker.controller.post_click(640, 10).wait()
             time.sleep(1)
 
             # 2. 环境检查
@@ -265,10 +266,47 @@ class AutoFishingAction(CustomAction):
             # 有确认按钮：很有可能是掉线了
             logger.info("[任务准备] 有确认按钮，可能是掉线重连按钮，正在点击重连，等待30秒后重试...")
             context.tasker.controller.post_click(797, 532).wait()
+            time.sleep(2)
+
+            # 检测是否有再次确认按钮
+            disconnect_result: RecognitionDetail | None = context.run_recognition(
+                "通用文字识别",
+                img,
+                pipeline_override={
+                    "通用文字识别": {"expected": "确认", "roi": [614, 518, 50, 28]}
+                },
+            )
+            if disconnect_result and disconnect_result.hit:
+                # 大概率是服务器炸了，要回到主界面了
+                logger.info("[任务准备] 检测到再次确认按钮，继续点击确认，等待30秒后重试...")
+                context.tasker.controller.post_click(637, 529).wait()
         else:
-            # 没有确认阿牛：可能是分线过期自动切线、月卡弹窗、广告弹窗  | TODO：广告弹窗暂不支持处理
-            logger.warning("[任务准备] 未检测到掉线重连按钮，可能是自动切线或月卡弹窗，自动处理后等待30秒后重试...")
-            context.tasker.controller.post_click(640, 10).wait()
+            # 检测一下是否在登录页面
+            logger.info("[任务准备] 检测不到确认按钮，可能是回到主界面...")
+            login_result: RecognitionDetail | None = context.run_recognition("点击连接开始", img)
+            if login_result and login_result.hit:
+                logger.info("[任务准备] 检测到主界面连接开始按钮，准备登录游戏...")
+                # 识别到开始界面
+                context.tasker.controller.post_click(639, 602).wait()
+                time.sleep(10)
+                # 识别出了：进入选角色界面，并重新截图
+                img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+            del login_result
+
+            # 检测一下是否在选择角色进入游戏页面
+            entry_result: RecognitionDetail | None = context.run_recognition("点击进入游戏", img)
+            if entry_result and entry_result.hit:
+                # 识别到进入游戏
+                logger.info("[任务准备] 登录结束，点击进入游戏，等待90秒...")
+                context.tasker.controller.post_click(1103, 632).wait()
+                del entry_result
+                return 90
+            del entry_result
+
+            # 什么都检测不到，直接重启游戏得了
+            logger.info("[任务准备] 检测不到进入游戏按钮，准备直接重启游戏，等待240秒...")
+            self.restart_app(context)
+            return 240
         del disconnect_result, fishing_result, reeling_result, img
         # 等待30秒后直接进入下个循环
         return 30
@@ -348,6 +386,7 @@ class AutoFishingAction(CustomAction):
            - 同方向 -> 不改变之前两个按键的状态
            - 不同方向 -> 收线键：立即重置循环上述节奏循环；方向键：换对应方向按压${press_duration_bow}秒后松开
         4. 每${loop_interval}循环一次，根据循环独立判断收线键和方向键，以便两个按键同时操作且不堵塞
+        5. 在循环中检测张力，持续${tension_check_duration}秒检测成功张力，则停止按压${tension_press_duration}秒的收线键，随后重新恢复原来的节奏循环
 
         Args:
             context: 控制器上下文
@@ -357,21 +396,37 @@ class AutoFishingAction(CustomAction):
         """
 
         # ========== 可配置参数 ==========
+        max_reel_time = 120  # 最长收线时间，防止意外卡死
         press_duration_reel = 2.8  # 收线按压时长
         release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
         press_duration_bow = 2.8  # 方向按压时长
         loop_interval = 0.1  # 循环检测间隔 | 太短影响性能，太长影响收线
         arrow_cooldown = 0.8  # 箭头方向冷却时间（秒），冷却期内不再检测
+        tension_check_duration = 0.2  # 连续检测张力满的时间阈值
+        tension_press_duration = 1.0  # 张力满暂停收线的时间
 
         # ========== 状态变量 ==========
+        first_start_time = time.time()  # 循环开始时间
         is_reel_pressed = False  # 当前收线键状态
         cycle_start_time = None  # 节奏循环开始时间
         last_arrow_direction = None  # 最近确认的箭头方向
         is_bow_pressed = False  # 当前方向键状态
         bow_release_time = 0  # 当前方向松开的时间
         arrow_last_detect_time = 0  # 上次确认箭头的时间戳
+        tension_peak_start_time = None  # 检测到张力已满的时间戳
+        tension_pause_until = 0  # 暂停收线的截止时间戳
 
         while self.check_running(context):
+            # 超过最长收线时间，强制结束本次钓鱼
+            now = time.time()
+            if now - first_start_time >= max_reel_time:
+                logger.warning(f"[执行钓鱼] 收线时间超过最大限制{max_reel_time}秒，强制结束本次钓鱼")
+                if is_reel_pressed:
+                    self.stop_reel_in(context)
+                if is_bow_pressed:
+                    self.stop_bow(context)
+                return True
+
             img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
 
             # 检查是否还在收线
@@ -385,9 +440,20 @@ class AutoFishingAction(CustomAction):
                     self.stop_bow(context)
                 return True
 
-            now = time.time()
+            # ===== 张力检测 =====
+            is_tension_peak: RecognitionDetail | None = context.run_recognition("检测张力是否到达上限", img)
+            if is_tension_peak and is_tension_peak.hit:
+                # 张力到达上限
+                if tension_peak_start_time is None:
+                    tension_peak_start_time = now
+                elif now - tension_peak_start_time >= tension_check_duration:
+                    logger.info(f"[执行钓鱼] 张力到达上限，将暂停收线一小会")
+                    tension_pause_until = now + tension_press_duration
+                    tension_peak_start_time = None
+            else:
+                tension_peak_start_time = None
 
-            # 冷却期内跳过箭头检测
+            # ===== 箭头检测 =====
             if now - arrow_last_detect_time >= arrow_cooldown:
                 confirmed_arrow = self.get_bow_direction(context, img)
             else:
@@ -398,7 +464,7 @@ class AutoFishingAction(CustomAction):
             # ===== 收线逻辑 =====
             if cycle_start_time is None and confirmed_arrow is None:
                 # 初始无箭头 -> 进行常规收线节奏
-                if not is_reel_pressed:
+                if not is_reel_pressed and now >= tension_pause_until:
                     self.start_reel_in(context)
                     is_reel_pressed = True
                 cycle_start_time = now
@@ -437,14 +503,20 @@ class AutoFishingAction(CustomAction):
             # 收线节奏控制
             if cycle_start_time is not None:
                 elapsed = (now - cycle_start_time) % (press_duration_reel + release_duration_reel)
-                if elapsed < press_duration_reel:
-                    if not is_reel_pressed:
-                        self.start_reel_in(context)
-                        is_reel_pressed = True
-                else:
+
+                if now < tension_pause_until:
                     if is_reel_pressed:
                         self.stop_reel_in(context)
                         is_reel_pressed = False
+                else:
+                    if elapsed < press_duration_reel:
+                        if not is_reel_pressed:
+                            self.start_reel_in(context)
+                            is_reel_pressed = True
+                    else:
+                        if is_reel_pressed:
+                            self.stop_reel_in(context)
+                            is_reel_pressed = False
 
             # ===== 方向键松开控制 =====
             if is_bow_pressed and now >= bow_release_time:
@@ -612,3 +684,22 @@ class AutoFishingAction(CustomAction):
         del fish_name_result
 
         logger.info(f"[钓鱼结果] 钓上了 [{fish}] 稀有度：[{rare}]")
+
+    @staticmethod
+    def restart_app(context: Context, app_package_name = "com.tencent.wlfz"):
+        stop_job: Job = context.tasker.controller.post_stop_app(app_package_name).wait()
+        if not stop_job.succeeded:
+            logger.error(f"重启应用失败: {app_package_name}，关闭应用时出错，请检查应用包名是否正确")
+            return False
+        
+        # 等待5秒再启动应用
+        logger.info("等待5秒后启动应用...")
+        time.sleep(5)
+
+        start_job: Job = context.tasker.controller.post_start_app(app_package_name).wait()
+        if start_job.succeeded:
+            logger.info(f"已重启应用: {app_package_name}")
+            return True
+        else:
+            logger.error(f"重启应用失败: {app_package_name}，启动应用时出错，请检查应用包名是否正确")
+            return False

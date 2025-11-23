@@ -110,5 +110,17 @@
                 "green_mask": true
             }
         }
+    },
+    "检测张力是否到达上限": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "method": 4,
+                "count": 80,
+                "lower": [255, 220, 220],
+                "upper": [255, 255, 255],
+                "roi": [650, 596, 20, 5]
+            }
+        }
     }
 }
