@@ -20,7 +20,7 @@
             }
         }
     },
-    "检测鱼鱼是否上钩": {
+    "检测鱼鱼是否咬钩": {
         "recognition": {
             "type": "ColorMatch",
             "param": {

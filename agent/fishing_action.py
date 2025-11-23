@@ -53,7 +53,7 @@ class AutoFishingAction(CustomAction):
         1. 可在钓鱼点上 或者 钓鱼界面 开始本任务，无需关心省电模式
         2. 已有鱼竿/鱼饵，会自动使用第一个，如果用完了会自动执行购买，鱼竿只买1个，鱼饵买200个
         3. 自动无限钓鱼不会停止，除非遇到意外情况
-        4. 等待鱼鱼上钩最长等待30秒
+        4. 等待鱼鱼咬钩最长等待30秒
 
         Args:
             context: 控制器上下文
@@ -141,11 +141,11 @@ class AutoFishingAction(CustomAction):
             )
             
             # 4. 开始抛竿
-            logger.info("[任务准备] 开始抛竿，等待鱼鱼上钩...")
+            logger.info("[任务准备] 开始抛竿，等待鱼鱼咬钩...")
             context.run_action("点击抛竿按钮")
             time.sleep(1)
 
-            # 5. 检测鱼鱼是否上钩 | 检测30秒，检测时间长，如果有中断命令就直接结束
+            # 5. 检测鱼鱼是否咬钩 | 检测30秒，检测时间长，如果有中断命令就直接结束
             need_next = True  # 是否需要进行下一步 | 不需要就是被手动终止任务了
             wait_for_fish_times = 0
             while wait_for_fish_times < 300:
@@ -153,16 +153,16 @@ class AutoFishingAction(CustomAction):
                     need_next = False
                     break
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-                is_hooked: RecognitionDetail | None = context.run_recognition("检测鱼鱼是否上钩", img)
+                is_hooked: RecognitionDetail | None = context.run_recognition("检测鱼鱼是否咬钩", img)
                 if is_hooked and is_hooked.hit:
                     del is_hooked, img
-                    logger.info("[执行钓鱼] 鱼鱼上钩了！")
+                    logger.info("[执行钓鱼] 鱼鱼咬钩了！")
                     break
                 time.sleep(0.1)
                 wait_for_fish_times += 1
-            # 超时还没检测到鱼鱼上钩 | 重新开始检测环境
+            # 超时还没检测到鱼鱼咬钩 | 重新开始检测环境
             if wait_for_fish_times >= 300:
-                logger.info("[执行钓鱼] 超过30秒未检测到鱼鱼上钩，将重新开始环境检测")
+                logger.info("[执行钓鱼] 超过30秒未检测到鱼鱼咬钩，将重新开始环境检测")
                 continue
             # 30秒检测内如果没有下一次了，说明钓鱼被强制结束了
             if not need_next:
@@ -185,6 +185,8 @@ class AutoFishingAction(CustomAction):
                 time.sleep(1.5)
                 # 点击继续钓鱼按钮
                 context.run_action("点击继续钓鱼按钮")
+            else:
+                logger.info(f"[钓鱼结果] 鱼鱼跑掉了...")
             del is_continue_fishing, img
             time.sleep(1)
 
@@ -359,7 +361,7 @@ class AutoFishingAction(CustomAction):
         release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
         press_duration_bow = 2.8  # 方向按压时长
         loop_interval = 0.1  # 循环检测间隔 | 太短影响性能，太长影响收线
-        arrow_cooldown = 1  # 箭头方向冷却时间（秒），冷却期内不再检测
+        arrow_cooldown = 0.8  # 箭头方向冷却时间（秒），冷却期内不再检测
 
         # ========== 状态变量 ==========
         is_reel_pressed = False  # 当前收线键状态
