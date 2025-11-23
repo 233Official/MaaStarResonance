@@ -6,7 +6,8 @@
             "param": {
                 "custom_action": "AutoFishing",
                 "custom_action_param": {
-                    "max_success_fishing_count": 0
+                    "max_success_fishing_count": 0,
+                    "restart_for_except": true
                 }
             }
         }

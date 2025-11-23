@@ -60,6 +60,7 @@ class AutoFishingAction(CustomAction):
             context: 控制器上下文
             argv: 运行参数
                 - max_success_fishing_count: 需要的最大成功钓鱼数量，默认设置0为无限钓鱼
+                - restart_for_except: 如遇到不可恢复异常，是否重启游戏，默认True重启
 
         Returns:
             钓鱼结果：True / False
@@ -70,7 +71,9 @@ class AutoFishingAction(CustomAction):
         # 获取参数
         params = CustomActionParam(argv.custom_action_param)
         max_success_fishing_count = int(params.data["max_success_fishing_count"]) if params.data["max_success_fishing_count"] else 0
+        restart_for_except = bool(params.data["restart_for_except"]) if params.data["restart_for_except"] is not None else True
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count if max_success_fishing_count != 0 else '无限'}")
+        logger.info(f"如遇到不可恢复异常，是否重启游戏: {restart_for_except}")
 
         # 开始钓鱼循环
         while self.check_running(context):
@@ -97,7 +100,7 @@ class AutoFishingAction(CustomAction):
             time.sleep(1)
 
             # 2. 环境检查
-            env_check_result = self.env_check(context)
+            env_check_result = self.env_check(context, restart_for_except)
             if env_check_result == -1:
                 logger.error("[任务结束] 自动钓鱼环境检查出现无法重试错误，结束任务")
                 return False
@@ -196,13 +199,15 @@ class AutoFishingAction(CustomAction):
     
     def env_check(
         self,
-        context: Context
+        context: Context,
+        restart_for_except: bool = True
     ) -> int:
         """
         环境检查
 
         Args:
             context: 控制器上下文
+            restart_for_except: 如遇到不可恢复异常，是否重启游戏，默认True重启
 
         Returns:
             等待下次钓鱼的时间（秒），0表示环境检查通过可以钓鱼，-1表示出现不可恢复错误需要结束任务
@@ -303,10 +308,13 @@ class AutoFishingAction(CustomAction):
                 return 90
             del entry_result
 
-            # 什么都检测不到，直接重启游戏得了
-            logger.info("[任务准备] 检测不到进入游戏按钮，准备直接重启游戏，等待240秒...")
-            self.restart_app(context)
-            return 240
+            # 若开启不可恢复异常重启选项，则直接重启游戏
+            if restart_for_except:
+                # 什么都检测不到，直接重启游戏得了
+                logger.info("[任务准备] 检测不到进入游戏按钮，准备直接重启游戏，等待240秒...")
+                self.restart_app(context)
+                return 240
+            logger.info("[任务准备] 检测不到进入游戏按钮，等待30秒...")
         del disconnect_result, fishing_result, reeling_result, img
         # 等待30秒后直接进入下个循环
         return 30
