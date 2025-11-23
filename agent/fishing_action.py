@@ -390,7 +390,7 @@ class AutoFishingAction(CustomAction):
         """
         钓鱼循环逻辑：
         1. 收线键的两种状态：
-            - 初始模式 -> 一直按住收线键
+            - 初始模式 -> 一直按住收线键 | 目前可能出现按不住的情况，暂时换回初始节奏模式
             - 节奏模式 -> 循环进行：按住${press_duration_reel}秒后停${release_duration_reel}秒
         2. 初始状态 -> 收线键：初始模式；方向键：不动
         3. 识别到箭头：
@@ -417,9 +417,9 @@ class AutoFishingAction(CustomAction):
         press_duration_bow = 2.8  # 方向按压时长
         loop_interval = 0.1  # 循环检测间隔 | 太短影响性能，太长影响收线
         arrow_cooldown = 0.8  # 箭头方向冷却时间，冷却期内不再检测
-        same_arrow_cooldown = 4.0 # 同向再次按压冷却期，冷却期内同向不再按压 | 同向再次按压冷却期 >= 箭头方向冷却时间
+        same_arrow_cooldown = 3.2 # 同向再次按压冷却期，冷却期内同向不再按压 | 同向再次按压冷却期 >= 箭头方向冷却时间
         tension_check_duration = 0.2  # 连续检测张力满的时间阈值
-        tension_press_duration = 1.2  # 张力满暂停收线的时间
+        tension_press_duration = 1.1  # 张力满暂停收线的时间
 
         # ========== 状态变量 ==========
         first_start_time = time.time()  # 循环开始时间
@@ -492,12 +492,14 @@ class AutoFishingAction(CustomAction):
                 # 初始无箭头 -> 收线键：进入初始模式；方向键：不动
                 if not is_reel_pressed:
                     logger.info("[执行钓鱼] 初始无箭头 -> 收线键：进入初始模式；方向键：松开")
-                    # 按住收线键
+                    # 按住收线键 | 按两次防止出现异常
                     if self.start_reel_in(context):
                         if is_first_cycle:
                             is_first_cycle = False
                         else:
                             is_reel_pressed = True
+                # 直接进入节奏模式 | 临时处理，防止按不住收线键的情况，后续不需要请注释下面一行
+                cycle_start_time = now
 
             elif confirmed_arrow is not None and last_arrow_direction is None:
                 # 首次确认箭头方向 -> 收线键：开始节奏模式；方向键：按住一会后松开
@@ -513,21 +515,17 @@ class AutoFishingAction(CustomAction):
                     last_bow_press_time = now
 
             elif confirmed_arrow is not None and confirmed_arrow != last_arrow_direction:
+                # 时间变量赋值
+                cycle_start_time = now + release_duration_reel
+                last_arrow_direction = confirmed_arrow
+                last_arrow_detect_time = now
                 if is_bow_pressed:
-                    # 不同方向但前一次方向键未松开
+                    # 不同方向但前一次方向键未松开 -> 收线键：保持节奏模式；方向键：松开
                     logger.info(f"[执行钓鱼] 方向变化(快) -> 收线键：保持节奏模式；方向键：松开")
                     bow_release_time = now
-                    # 收线键保持节奏模式，不按新方向，更新方向冷却计时
-                    cycle_start_time = now + release_duration_reel
-                    last_arrow_direction = confirmed_arrow
-                    last_arrow_detect_time = now
                 else:
                     # 不同方向 -> 收线键：保持节奏模式；方向键：按住一会后松开
                     logger.info(f"[执行钓鱼] 方向变化：{confirmed_arrow} -> 收线键：保持节奏模式；方向键：常规模式")
-                    # 时间变量赋值
-                    cycle_start_time = now + release_duration_reel
-                    last_arrow_direction = confirmed_arrow
-                    last_arrow_detect_time = now
                     # 按住方向键
                     if self.start_bow(context, confirmed_arrow):
                         is_bow_pressed = True
