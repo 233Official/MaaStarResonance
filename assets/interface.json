@@ -69,7 +69,8 @@
             "entry": "启动自动钓鱼入口",
             "option": [
                 "自动购买鱼竿选择",
-                "自动购买鱼饵选择"
+                "自动购买鱼饵选择",
+                "如遇到不可恢复异常是否重启游戏"
             ],
             "advanced": [
                 "需要的最大成功钓鱼数量"
@@ -99,9 +100,7 @@
                     "name": "普通鱼竿",
                     "pipeline_override": {
                         "选择并购买需要的鱼竿": {
-                            "post_delay": 1000,
                             "action": {
-                                "type": "Click",
                                 "param": {
                                     "target": [
                                         806,
@@ -118,9 +117,7 @@
                     "name": "强韧鱼竿",
                     "pipeline_override": {
                         "选择并购买需要的鱼竿": {
-                            "post_delay": 1000,
                             "action": {
-                                "type": "Click",
                                 "param": {
                                     "target": [
                                         1012,
@@ -137,9 +134,7 @@
                     "name": "柔韧鱼竿",
                     "pipeline_override": {
                         "选择并购买需要的鱼竿": {
-                            "post_delay": 1000,
                             "action": {
-                                "type": "Click",
                                 "param": {
                                     "target": [
                                         187,
@@ -160,9 +155,7 @@
                     "name": "普通鱼饵",
                     "pipeline_override": {
                         "选择并购买需要的鱼饵": {
-                            "post_delay": 1000,
                             "action": {
-                                "type": "Click",
                                 "param": {
                                     "target": [
                                         188,
@@ -179,9 +172,7 @@
                     "name": "不空军鱼饵",
                     "pipeline_override": {
                         "选择并购买需要的鱼饵": {
-                            "post_delay": 1000,
                             "action": {
-                                "type": "Click",
                                 "param": {
                                     "target": [
                                         385,
@@ -198,9 +189,7 @@
                     "name": "特制鱼饵",
                     "pipeline_override": {
                         "选择并购买需要的鱼饵": {
-                            "post_delay": 1000,
                             "action": {
-                                "type": "Click",
                                 "param": {
                                     "target": [
                                         599,
@@ -209,6 +198,30 @@
                                         26
                                     ]
                                 }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "如遇到不可恢复异常是否重启游戏": {
+            "cases": [
+                {
+                    "name": "是",
+                    "pipeline_override": {
+                        "获取参数-是否重启游戏": {
+                            "attach": {
+                                "restart_for_except": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "否",
+                    "pipeline_override": {
+                        "获取参数-是否重启游戏": {
+                            "attach": {
+                                "restart_for_except": false
                             }
                         }
                     }
@@ -256,9 +269,7 @@
             "pipeline_override": {
                 "启动自动钓鱼入口": {
                     "action": {
-                        "type": "Custom",
                         "param": {
-                            "custom_action": "AutoFishing",
                             "custom_action_param": {
                                 "max_success_fishing_count": "{需要的最大成功钓鱼数量}"
                             }

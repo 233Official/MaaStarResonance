@@ -60,7 +60,6 @@ class AutoFishingAction(CustomAction):
             context: 控制器上下文
             argv: 运行参数
                 - max_success_fishing_count: 需要的最大成功钓鱼数量，默认设置0为无限钓鱼
-                - restart_for_except: 如遇到不可恢复异常，是否重启游戏，默认True重启
 
         Returns:
             钓鱼结果：True / False
@@ -71,9 +70,12 @@ class AutoFishingAction(CustomAction):
         # 获取参数
         params = CustomActionParam(argv.custom_action_param)
         max_success_fishing_count = int(params.data["max_success_fishing_count"]) if params.data["max_success_fishing_count"] else 0
-        restart_for_except = bool(params.data["restart_for_except"]) if params.data["restart_for_except"] is not None else True
+        # 获取是否重启游戏参数
+        restart_for_except_node = context.get_node_data("获取参数-是否重启游戏")
+        restart_for_except = restart_for_except_node.get("attach", {}).get("restart_for_except", True) if restart_for_except_node else True
+        # 打印参数信息
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count if max_success_fishing_count != 0 else '无限'}")
-        logger.info(f"如遇到不可恢复异常，是否重启游戏: {restart_for_except}")
+        logger.info(f"如遇到不可恢复异常，是否重启游戏: {'是' if restart_for_except else '否'}")
 
         # 开始钓鱼循环
         while self.check_running(context):

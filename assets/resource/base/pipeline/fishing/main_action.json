@@ -6,10 +6,18 @@
             "param": {
                 "custom_action": "AutoFishing",
                 "custom_action_param": {
-                    "max_success_fishing_count": 0,
-                    "restart_for_except": true
+                    "max_success_fishing_count": 0
                 }
             }
+        }
+    },
+    // 曲线救国的获取参数
+    "获取参数-是否重启游戏": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "restart_for_except": true
         }
     },
     // 钓鱼按钮
