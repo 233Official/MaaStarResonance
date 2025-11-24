@@ -18,22 +18,16 @@ class AutoFishingAction(CustomAction):
 
     def __init__(self):
         super().__init__()
-        # 累计钓鱼次数
-        self.fishing_count = 0
-        # 成功钓鱼次数
-        self.success_fishing_count = 0
-        # 出现意外次数
-        self.except_count = 0
-        # 神话鱼
-        self.ssr_fish_count = 0
-        # 珍稀鱼
-        self.sr_fish_count = 0
-        # 常见鱼
-        self.r_fish_count = 0
-        # 消耗的鱼竿数量
-        self.used_rod_count = 0
-        # 消耗的鱼饵数量
-        self.used_bait_count = 0
+        # 初始变量
+        self.fishing_count = None
+        self.success_fishing_count = None
+        self.except_count = None
+        self.ssr_fish_count = None
+        self.sr_fish_count = None
+        self.r_fish_count = None
+        self.used_rod_count = None
+        self.used_bait_count = None
+        self.REEL_IN_CONTACT = 0
 
         # 收竿触控通道常量
         self.REEL_IN_CONTACT = 0
@@ -76,6 +70,23 @@ class AutoFishingAction(CustomAction):
         # 打印参数信息
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count if max_success_fishing_count != 0 else '无限'}")
         logger.info(f"如遇到不可恢复异常，是否重启游戏: {'是' if restart_for_except else '否'}")
+        
+        # 累计钓鱼次数
+        self.fishing_count = 0
+        # 成功钓鱼次数
+        self.success_fishing_count = 0
+        # 出现意外次数
+        self.except_count = 0
+        # 神话鱼
+        self.ssr_fish_count = 0
+        # 珍稀鱼
+        self.sr_fish_count = 0
+        # 常见鱼
+        self.r_fish_count = 0
+        # 消耗的鱼竿数量
+        self.used_rod_count = 0
+        # 消耗的鱼饵数量
+        self.used_bait_count = 0
 
         # 开始钓鱼循环
         while self.check_running(context):
@@ -259,7 +270,7 @@ class AutoFishingAction(CustomAction):
             return 0
         
         logger.warning('[任务准备] 没有检测到继续钓鱼按钮，可能是遇到掉线/切线情况')
-        self.except_count += 1
+        self.except_count += 1  # type: ignore
         
         # 4. 检查其他意外情况
         disconnect_result: RecognitionDetail | None = context.run_recognition(
@@ -363,7 +374,7 @@ class AutoFishingAction(CustomAction):
         if need_buy and need_buy.hit:
             logger.info(f"[任务准备] 检测到{type_str}不足，需要购买")
             if type_str == "鱼竿":
-                self.used_rod_count += 1
+                self.used_rod_count += 1  # type: ignore
                 logger.info(f"[任务准备] 当前将购买1个{type_str}")
             else:
                 logger.info(f"[任务准备] 当前将购买200个{type_str}")
@@ -452,7 +463,7 @@ class AutoFishingAction(CustomAction):
 
             # ===== 检查是否还在收线状态 =====
             if not self.check_if_reeling(context, img):
-                self.used_bait_count += 1
+                self.used_bait_count += 1  # type: ignore
                 logger.info("[执行钓鱼] 当前已不在收线状态，等待一会检测继续钓鱼按钮...")
                 del img
                 if is_reel_pressed:
@@ -715,11 +726,11 @@ class AutoFishingAction(CustomAction):
             rare = get_best_match_single(fish_rarity, self.FISH_RARITY_LIST)
             # 计数
             if rare == "神话":
-                self.ssr_fish_count += 1
+                self.ssr_fish_count += 1  # type: ignore
             elif rare == "珍稀":
-                self.sr_fish_count += 1
+                self.sr_fish_count += 1  # type: ignore
             elif rare == "常见":
-                self.r_fish_count += 1
+                self.r_fish_count += 1  # type: ignore
         del rarity_result
 
         # 鱼名
