@@ -192,6 +192,19 @@
             }
         }
     },
+    "重启星痕共鸣并等待X秒后登录": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "RestartTargetApp",
+                "custom_action_param": {
+                    "app_package_name": "com.tencent.wlfz"
+                }
+            }
+        },
+        "post_delay": 240000,
+        "next": ["点击连接开始"]
+    },
     "点击连接开始": {
         "recognition": {
             "type": "OCR",
