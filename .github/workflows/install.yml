@@ -159,6 +159,13 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
+          config-file: MFA-src/MFAAvalonia/NuGet.Config
+
+      # 恢复依赖
+      - name: Restore Dependencies
+        run: dotnet restore MFA-src/MFAAvalonia.sln --configfile MFA-src/MFAAvalonia/NuGet.Config
+        env:
+          NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
       # 编译修改过的 MFAAvalonia
       - name: Build MFAAvaloni
