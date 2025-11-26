@@ -52,3 +52,20 @@ def get_best_match_single(query: str, choices: list[str], score_threshold: float
         return None
 
     return choices[best_idx]
+
+
+def format_seconds_to_hms(seconds: float) -> str:
+    """
+    将秒数转换为 'xx小时xx分钟xx秒' 格式
+
+    Args:
+        seconds: 时间差（秒）
+    
+    Returns:
+        字符串，如 '1小时2分钟3秒'
+    """
+    seconds = int(seconds)
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    sec = seconds % 60
+    return f"{hours}小时{minutes}分钟{sec}秒"

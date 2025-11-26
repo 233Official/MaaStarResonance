@@ -9,7 +9,7 @@ from maa.job import Job
 from custom_param import CustomActionParam
 from fish import FISH_LIST
 from logger import logger
-from utils import get_best_match_single, print_center_block
+from utils import get_best_match_single, print_center_block, format_seconds_to_hms
 
 
 # 自动钓鱼任务
@@ -19,6 +19,7 @@ class AutoFishingAction(CustomAction):
     def __init__(self):
         super().__init__()
         # 初始变量
+        self.fishing_start_time = None
         self.fishing_count = None
         self.success_fishing_count = None
         self.except_count = None
@@ -70,7 +71,12 @@ class AutoFishingAction(CustomAction):
         # 打印参数信息
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count if max_success_fishing_count != 0 else '无限'}")
         logger.info(f"如遇到不可恢复异常，是否重启游戏: {'是' if restart_for_except else '否'}")
+
+        # 当前时间
+        now = time.time()
         
+        # 起始钓鱼时间
+        self.fishing_start_time = now
         # 累计钓鱼次数
         self.fishing_count = 0
         # 成功钓鱼次数
@@ -97,12 +103,14 @@ class AutoFishingAction(CustomAction):
             
             self.fishing_count += 1
             # 打印当前钓鱼统计信息
+            delta_time = now - self.fishing_start_time
             success_rate = (self.success_fishing_count / max(1, self.fishing_count - 1 - self.except_count) * 100) if self.fishing_count > 1 else 0.0
             exception_rate = (self.except_count / (self.fishing_count - 1) * 100) if self.fishing_count > 1 else 0.0
             avg_fish_per_rod = self.success_fishing_count / (self.used_rod_count + 1)
             print_center_block([
-                f"累计进行 {self.fishing_count - 1} 次自动钓鱼",
+                f"累计进行 {self.fishing_count - 1} 次自动钓鱼 / 耗时 {format_seconds_to_hms(delta_time)}",
                 f"成功钓上 {self.success_fishing_count} 只 => 神话{self.ssr_fish_count}只 / 珍稀{self.sr_fish_count}只 / 常见{self.r_fish_count}只",
+                f"每条鱼鱼平均耗时 => {round(delta_time / max(1, self.success_fishing_count), 1)} 秒",
                 f"消耗配件 => {self.used_rod_count}个鱼竿 / {self.used_bait_count}个鱼饵",
                 f"钓鱼成功率 => {round(success_rate, 1)}% / 可恢复异常率：{round(exception_rate, 1)}%",
                 f"每个鱼竿平均可钓 => {round(avg_fish_per_rod, 1)} 条鱼"
