@@ -4,12 +4,12 @@ import numpy
 from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
-from maa.job import Job
 
+from app_manage_action import restart_and_login_xhgm
 from custom_param import CustomActionParam
 from fish import FISH_LIST
 from logger import logger
-from utils import get_best_match_single, print_center_block, format_seconds_to_hms
+from utils import format_seconds_to_hms, get_best_match_single, print_center_block
 
 
 # 自动钓鱼任务
@@ -333,8 +333,8 @@ class AutoFishingAction(CustomAction):
             if restart_for_except:
                 # 什么都检测不到，直接重启游戏得了
                 logger.info("[任务准备] 检测不到进入游戏按钮，准备直接重启游戏，等待240秒...")
-                self.restart_app(context)
-                return 240
+                restart_and_login_xhgm(context)
+                return 0
             logger.info("[任务准备] 检测不到进入游戏按钮，等待30秒...")
         del disconnect_result, fishing_result, reeling_result, img
         # 等待30秒后直接进入下个循环
@@ -756,22 +756,3 @@ class AutoFishingAction(CustomAction):
         del fish_name_result
 
         logger.info(f"[钓鱼结果] 钓上了 [{fish}] 稀有度：[{rare}]")
-
-    @staticmethod
-    def restart_app(context: Context, app_package_name = "com.tencent.wlfz"):
-        stop_job: Job = context.tasker.controller.post_stop_app(app_package_name).wait()
-        if not stop_job.succeeded:
-            logger.error(f"重启应用失败: {app_package_name}，关闭应用时出错，请检查应用包名是否正确")
-            return False
-        
-        # 等待5秒再启动应用
-        logger.info("等待5秒后启动应用...")
-        time.sleep(5)
-
-        start_job: Job = context.tasker.controller.post_start_app(app_package_name).wait()
-        if start_job.succeeded:
-            logger.info(f"已重启应用: {app_package_name}")
-            return True
-        else:
-            logger.error(f"重启应用失败: {app_package_name}，启动应用时出错，请检查应用包名是否正确")
-            return False

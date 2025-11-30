@@ -192,18 +192,29 @@
             }
         }
     },
-    "重启星痕共鸣并等待X秒后登录": {
+    "重启并登录星痕共鸣": {
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "RestartTargetApp",
-                "custom_action_param": {
-                    "app_package_name": "com.tencent.wlfz"
-                }
+                "custom_action": "RestartAndLoginXHGM"
             }
+        }
+    },
+    "获取参数-登录超时时长": {
+        "action": {
+            "type": "DoNothing"
         },
-        "post_delay": 240000,
-        "next": ["点击连接开始"]
+        "attach": {
+            "login_timeout": 240
+        }
+    },
+    "获取参数-场景切换超时时长": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "area_change_timeout": 90
+        }
     },
     "点击连接开始": {
         "recognition": {
