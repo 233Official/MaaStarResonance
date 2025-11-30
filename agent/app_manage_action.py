@@ -120,7 +120,7 @@ def restart_and_login_xhgm(context: Context) -> bool:
     """重启并登录星痕共鸣"""
     app_package_name = "com.tencent.wlfz"
     login_timeout = get_login_timeout(context)
-    arae_change_timeout = get_area_change_timeout(context)
+    area_change_timeout = get_area_change_timeout(context)
     start_time = time.time()
     need_next = False
     elapsed_time = 0
@@ -173,7 +173,7 @@ def restart_and_login_xhgm(context: Context) -> bool:
     # 等待进入游戏主页面
     start_time = time.time()
     elapsed_time = 0
-    while elapsed_time <= arae_change_timeout and not context.tasker.stopping:
+    while elapsed_time <= area_change_timeout and not context.tasker.stopping:
         elapsed_time = time.time() - start_time
         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
         area_change_result: RecognitionDetail | None = context.run_recognition("图片识别是否在主页面", img)

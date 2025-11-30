@@ -112,6 +112,10 @@ def main():
     _ = app_manage_action
     print("已导入 agent-app_manage_action 模块")
 
+    import teleport_action
+    _ = teleport_action
+    print("已导入 agent-传送 模块")
+
     import fishing_action
     _ = fishing_action
     print("已导入 agent-钓鱼 模块")
