@@ -74,6 +74,7 @@ class AutoFishingAction(CustomAction):
         # 打印参数信息
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count if max_success_fishing_count != 0 else '无限'}")
         logger.info(f"如遇到不可恢复异常，是否重启游戏: {'是' if restart_for_except else '否'}")
+        logger.info(f"最大重启游戏次数限制: {max_restart_count}")
 
         # 当前时间
         now = time.time()
@@ -117,8 +118,8 @@ class AutoFishingAction(CustomAction):
                 f"成功钓上 {self.success_fishing_count} 只 => 神话{self.ssr_fish_count}只 / 珍稀{self.sr_fish_count}只 / 常见{self.r_fish_count}只",
                 f"每条鱼鱼平均耗时 => {round(delta_time / max(1, self.success_fishing_count), 1)} 秒",
                 f"消耗配件 => {self.used_rod_count}个鱼竿 / {self.used_bait_count}个鱼饵",
-                f"钓鱼成功率 => {round(success_rate, 1)}% / 可恢复异常率：{round(exception_rate, 1)}%",
-                f"每个鱼竿平均可钓 => {round(avg_fish_per_rod, 1)} 条鱼"
+                f"每个鱼竿平均可钓 => {round(avg_fish_per_rod, 1)} 条鱼",
+                f"钓鱼成功率 => {round(success_rate, 1)}% / 可恢复异常率：{round(exception_rate, 1)}%"
             ])
             
             # 1.1 直接点击一下指定位置 | 可以直接解决月卡和省电模式问题
@@ -342,7 +343,7 @@ class AutoFishingAction(CustomAction):
                 logger.info("[任务准备] 检测不到进入游戏按钮，准备直接重启游戏，等待240秒...")
                 restart_and_login_xhgm(context)
                 self.restart_count += 1  # type: ignore
-                return 0
+                return 1
             logger.info("[任务准备] 检测不到进入游戏按钮，等待30秒...")
         del disconnect_result, fishing_result, reeling_result, img
         # 等待30秒后直接进入下个循环
@@ -422,8 +423,7 @@ class AutoFishingAction(CustomAction):
         2. 初始状态 -> 收线键：初始模式；方向键：不动
         3. 识别到箭头：
             - 识别冷却期未到 -> 不改变之前两个按键的状态
-            - 同向再次按压冷却期未到 & 同方向 -> 不改变之前两个按键的状态
-            - 同向再次按压冷却期到了 & 同方向 -> 收线键：不改变之前的状态；方向键：再次朝对应方向按压${press_duration_bow}秒后松开
+            - 同方向 -> 收线键：不改变之前的状态；方向键：再次朝对应方向按压${press_duration_bow}秒后松开
             - 不同方向 -> 收线键：保持节奏模式；方向键：换对应方向按压${press_duration_bow}秒后松开
             - 不同方向但前一次方向键未松开 -> 收线键：保持节奏模式；方向键：松开
         4. 张力上限检测：
@@ -442,11 +442,10 @@ class AutoFishingAction(CustomAction):
         press_duration_reel = 2.8  # 收线按压时长
         release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
         press_duration_bow = 2.8  # 方向按压时长
-        loop_interval = 0.1  # 循环检测间隔 | 太短影响性能，太长影响收线
+        loop_interval = 0.2  # 循环检测间隔 | 太短影响性能，太长影响收线
         arrow_cooldown = 0.8  # 箭头方向冷却时间，冷却期内不再检测
-        same_arrow_cooldown = 3.2 # 同向再次按压冷却期，冷却期内同向不再按压 | 同向再次按压冷却期 >= 箭头方向冷却时间
-        tension_check_duration = 0.2  # 连续检测张力满的时间阈值
-        tension_press_duration = 1.1  # 张力满暂停收线的时间
+        tension_check_duration = 0.4  # 连续检测张力满的时间阈值
+        tension_press_duration = 2.0  # 张力满暂停收线的时间
 
         # ========== 状态变量 ==========
         first_start_time = time.time()  # 循环开始时间
@@ -457,7 +456,6 @@ class AutoFishingAction(CustomAction):
         last_arrow_direction = None  # 上次箭头方向
         is_bow_pressed = False  # 当前方向键状态
         bow_release_time = 0  # 当前方向松开的时间
-        last_bow_press_time = 0  # 最近一次方向键实际按压的时间戳
         tension_peak_start_time = None  # 检测到张力已满的时间戳
         tension_pause_deadline = 0  # 张力上限打断截至时间
 
@@ -539,7 +537,6 @@ class AutoFishingAction(CustomAction):
                 if self.start_bow(context, confirmed_arrow):
                     is_bow_pressed = True
                     bow_release_time = now + press_duration_bow
-                    last_bow_press_time = now
 
             elif confirmed_arrow is not None and confirmed_arrow != last_arrow_direction:
                 # 时间变量赋值
@@ -557,21 +554,14 @@ class AutoFishingAction(CustomAction):
                     if self.start_bow(context, confirmed_arrow):
                         is_bow_pressed = True
                         bow_release_time = now + press_duration_bow
-                        last_bow_press_time = now
 
             elif confirmed_arrow is not None and confirmed_arrow == last_arrow_direction:
-                # 相同方向 -> 根据同向冷却状态分别处理
-                if now - last_bow_press_time < same_arrow_cooldown:
-                    # 同向再次按压冷却期未到 -> 不改变之前两个按键的状态
-                    pass
-                else:
-                    # 同向再次按压冷却期到了 -> 收线键：不改变之前的状态；方向键：再次按住一会后松开
-                    logger.info(f"[执行钓鱼] 方向未变 -> 收线键：不变化；方向键：重启常规模式")
-                    last_arrow_detect_time = now
-                    if self.start_bow(context, confirmed_arrow):
-                        is_bow_pressed = True
-                        bow_release_time = now + press_duration_bow
-                        last_bow_press_time = now
+                # 相同方向 -> 收线键：不改变之前的状态；方向键：再次按住一会后松开
+                logger.info(f"[执行钓鱼] 方向未变 -> 收线键：不变化；方向键：重启常规模式")
+                last_arrow_detect_time = now
+                if self.start_bow(context, confirmed_arrow):
+                    is_bow_pressed = True
+                    bow_release_time = now + press_duration_bow
 
             # ===== 节奏模式中统一控制收线逻辑 =====
             if cycle_start_time is not None:
