@@ -1,13 +1,18 @@
 {
+    "interface_version": 2,
     "name": "MaaStarResonance",
     "url": "https://github.com/233Official/MaaStarResonance",
     "mirrorchyan_rid": "MaaStarResonance",
     "mirrorchyan_multiplatform": true,
     "version": "v0.5.6",
+    "title": "星痕共鸣MAA小助手",
+    "icon": "./assets/logo.ico",
     "message": "早期开发版本,欢迎反馈问题与建议",
+    "github": "https://github.com/233Official/MaaStarResonance",
+    "license": "./LICENSE",
     "controller": [
         {
-            "name": "安卓端",
+            "name": "模拟器",
             "type": "Adb",
             "adb": {
                 // 输入方式：EmulatorExtras > Maatouch > MinitouchAndAdbKey > AdbShell => 按位或 1 | 2 | 4 | 8 为：15

@@ -10,9 +10,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "loguru>=0.7.3",
-    "maafw>=5.0.5",
+    "maafw>=5.1.0",
     "pip>=25.3",
-    "pre-commit>=4.3.0",
+    "pre-commit>=4.5.0",
     "rapidfuzz>=3.14.3",
     "toml>=0.10.2",
     "tzdata>=2025.2",
