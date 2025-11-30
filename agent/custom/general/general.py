@@ -9,8 +9,8 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
-from key_event import ANDROID_KEY_EVENT_DATA
-from logger import logger
+from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
+from agent.logger import logger
 
 
 # 返回主页面

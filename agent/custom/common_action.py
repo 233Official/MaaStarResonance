@@ -5,9 +5,9 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
-from custom_param import CustomActionParam, CustomActionParamError
-from key_event import ANDROID_KEY_EVENT_DATA
-from logger import logger
+from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
+from agent.logger import logger
+from agent.utils.param_utils import CustomActionParam, CustomActionParamError
 
 
 # 运行任务流水线任务

@@ -6,8 +6,9 @@ from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 from maa.job import Job
 
-from custom_param import CustomActionParam
-from logger import logger
+from agent.attach.common_attach import get_area_change_timeout, get_login_timeout
+from agent.logger import logger
+from agent.utils.param_utils import CustomActionParam
 
 
 # 启动指定APP
@@ -76,22 +77,6 @@ class RestartAndLoginXHGMAction(CustomAction):
         _,
     ) -> bool:
         return restart_and_login_xhgm(context)
-
-
-def get_login_timeout(context: Context) -> int:
-    """获取登录超时时长参数"""
-    login_timeout_node = context.get_node_data("获取参数-登录超时时长")
-    login_timeout = login_timeout_node.get("attach", {}).get("login_timeout", 240) if login_timeout_node else 240
-    logger.info(f"登录超时时长参数: {login_timeout}秒")
-    return int(login_timeout)
-
-
-def get_area_change_timeout(context: Context) -> int:
-    """获取场景切换超时时长参数"""
-    area_change_timeout_node = context.get_node_data("获取参数-场景切换超时时长")
-    area_change_timeout = area_change_timeout_node.get("attach", {}).get("area_change_timeout", 90) if area_change_timeout_node else 90
-    logger.info(f"场景切换超时时长参数: {area_change_timeout}秒")
-    return int(area_change_timeout)
 
 
 def start_target_app(context: Context, app_package_name: str) -> bool:

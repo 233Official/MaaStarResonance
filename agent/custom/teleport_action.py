@@ -6,11 +6,11 @@ from maa.context import Context, RecognitionDetail, Rect
 from maa.custom_action import CustomAction
 from rapidfuzz import fuzz
 
-from app_manage_action import get_area_change_timeout
-from custom_param import CustomActionParam
-from key_event import ANDROID_KEY_EVENT_DATA
-from logger import logger
-from map_point import MAP_POINT_DATA
+from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
+from agent.constant.map_point import MAP_POINT_DATA
+from agent.custom.app_manage_action import get_area_change_timeout
+from agent.logger import logger
+from agent.utils.param_utils import CustomActionParam
 
 
 @AgentServer.custom_action("TeleportPoint")

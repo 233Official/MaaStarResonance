@@ -5,11 +5,14 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
-from app_manage_action import restart_and_login_xhgm
-from custom_param import CustomActionParam
-from fish import FISH_LIST
-from logger import logger
-from utils import format_seconds_to_hms, get_best_match_single, print_center_block
+from agent.attach.common_attach import get_restart_for_except, get_max_restart_count
+from agent.constant.fish import FISH_LIST
+from agent.custom.app_manage_action import restart_and_login_xhgm
+from agent.utils.fuzzy_utils import get_best_match_single
+from agent.logger import logger
+from agent.utils.other_utils import print_center_block
+from agent.utils.param_utils import CustomActionParam
+from agent.utils.time_utlls import format_seconds_to_hms
 
 
 # 自动钓鱼任务
@@ -66,11 +69,9 @@ class AutoFishingAction(CustomAction):
         params = CustomActionParam(argv.custom_action_param)
         max_success_fishing_count = int(params.data["max_success_fishing_count"]) if params.data["max_success_fishing_count"] else 0
         # 获取是否重启游戏参数
-        restart_for_except_node = context.get_node_data("获取参数-是否重启游戏")
-        restart_for_except = restart_for_except_node.get("attach", {}).get("restart_for_except", True) if restart_for_except_node else True
+        restart_for_except = get_restart_for_except(context)
         # 获取最大重启游戏次数限制参数
-        max_restart_count_node = context.get_node_data("获取参数-最大重启游戏次数限制")
-        max_restart_count = max_restart_count_node.get("attach", {}).get("max_restart_count", 5) if max_restart_count_node else 5
+        max_restart_count = get_max_restart_count(context)
         # 打印参数信息
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count if max_success_fishing_count != 0 else '无限'}")
         logger.info(f"如遇到不可恢复异常，是否重启游戏: {'是' if restart_for_except else '否'}")

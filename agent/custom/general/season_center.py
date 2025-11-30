@@ -6,12 +6,10 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
-from key_event import ANDROID_KEY_EVENT_DATA
-from logger import logger
-
-
-from general.general import ensure_main_page
-from general.power_saving_mode import exit_power_saving_mode
+from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
+from agent.logger import logger
+from .general import ensure_main_page
+from .power_saving_mode import exit_power_saving_mode
 
 
 # 打开赛季中心页面

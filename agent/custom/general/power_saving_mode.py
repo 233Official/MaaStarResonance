@@ -1,10 +1,13 @@
 # 省电模式相关逻辑
 from __future__ import annotations
+
 from functools import wraps
 from typing import Callable, Protocol, Any
+
 from maa.context import Context
 from maa.custom_action import CustomAction
-from logger import logger
+
+from agent.logger import logger
 
 
 class ExitPowerSaveFunc(Protocol):
