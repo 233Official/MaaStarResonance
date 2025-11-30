@@ -28,7 +28,7 @@ class AutoFishingAction(CustomAction):
         self.r_fish_count = None
         self.used_rod_count = None
         self.used_bait_count = None
-        self.REEL_IN_CONTACT = 0
+        self.restart_count = None
 
         # 收竿触控通道常量
         self.REEL_IN_CONTACT = 0
@@ -68,6 +68,9 @@ class AutoFishingAction(CustomAction):
         # 获取是否重启游戏参数
         restart_for_except_node = context.get_node_data("获取参数-是否重启游戏")
         restart_for_except = restart_for_except_node.get("attach", {}).get("restart_for_except", True) if restart_for_except_node else True
+        # 获取最大重启游戏次数限制参数
+        max_restart_count_node = context.get_node_data("获取参数-最大重启游戏次数限制")
+        max_restart_count = max_restart_count_node.get("attach", {}).get("max_restart_count", 5) if max_restart_count_node else 5
         # 打印参数信息
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count if max_success_fishing_count != 0 else '无限'}")
         logger.info(f"如遇到不可恢复异常，是否重启游戏: {'是' if restart_for_except else '否'}")
@@ -93,6 +96,8 @@ class AutoFishingAction(CustomAction):
         self.used_rod_count = 0
         # 消耗的鱼饵数量
         self.used_bait_count = 0
+        # 重启游戏次数
+        self.restart_count = 0
 
         # 开始钓鱼循环
         while self.check_running(context):
@@ -121,7 +126,7 @@ class AutoFishingAction(CustomAction):
             time.sleep(1)
 
             # 2. 环境检查
-            env_check_result = self.env_check(context, restart_for_except)
+            env_check_result = self.env_check(context, restart_for_except, max_restart_count)
             if env_check_result == -1:
                 logger.error("[任务结束] 自动钓鱼环境检查出现无法重试错误，结束任务")
                 return False
@@ -221,7 +226,8 @@ class AutoFishingAction(CustomAction):
     def env_check(
         self,
         context: Context,
-        restart_for_except: bool = True
+        restart_for_except: bool = True,
+        max_restart_count: int = 5
     ) -> int:
         """
         环境检查
@@ -229,6 +235,7 @@ class AutoFishingAction(CustomAction):
         Args:
             context: 控制器上下文
             restart_for_except: 如遇到不可恢复异常，是否重启游戏，默认True重启
+            max_restart_count: 最大重启游戏次数限制，默认5次
 
         Returns:
             等待下次钓鱼的时间（秒），0表示环境检查通过可以钓鱼，-1表示出现不可恢复错误需要结束任务
@@ -330,10 +337,11 @@ class AutoFishingAction(CustomAction):
             del entry_result
 
             # 若开启不可恢复异常重启选项，则直接重启游戏
-            if restart_for_except:
+            if restart_for_except and self.restart_count < max_restart_count:  # type: ignore
                 # 什么都检测不到，直接重启游戏得了
                 logger.info("[任务准备] 检测不到进入游戏按钮，准备直接重启游戏，等待240秒...")
                 restart_and_login_xhgm(context)
+                self.restart_count += 1  # type: ignore
                 return 0
             logger.info("[任务准备] 检测不到进入游戏按钮，等待30秒...")
         del disconnect_result, fishing_result, reeling_result, img
