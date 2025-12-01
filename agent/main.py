@@ -2,9 +2,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from logger import logger
-from module_loader import load_plugins
-
 # 补充当前路径和上级路径
 CURRENT_DIR = Path(__file__).parent.resolve()
 PARENT_DIR = CURRENT_DIR.parent
@@ -22,10 +19,10 @@ def check_req_ready() -> bool:
     try:
         import maa  # noqa: F401
 
-        logger.info("maa imported successfully")
+        print("maa imported successfully")
         return True
     except ImportError:
-        logger.error("maa import failed")
+        print("maa import failed")
         return False
 
 
@@ -33,21 +30,21 @@ def init_python_env():
     """离线安装 pip, setuptools, wheel 以及项目依赖"""
     embed_python_path = PROJECT_ROOT / "python"
     if not embed_python_path.exists():
-        logger.error("请先运行 install.py 脚本安装 Python 运行环境")
-        logger.error("Please run install.py script to install Python runtime environment first.")
+        print("请先运行 install.py 脚本安装 Python 运行环境")
+        print("Please run install.py script to install Python runtime environment first.")
         sys.exit(1)
 
     python_executable = embed_python_path / "python.exe"
     if not python_executable.exists():
-        logger.error("无法找到 Python 可执行文件，请检查 python 文件夹是否正确")
-        logger.error("Cannot find Python executable, please check if the python folder is correct.")
+        print("无法找到 Python 可执行文件，请检查 python 文件夹是否正确")
+        print("Cannot find Python executable, please check if the python folder is correct.")
         sys.exit(1)
 
     # 安装 pip
     get_pip_script = PROJECT_ROOT / "deps" / "get-pip.py"
     if not get_pip_script.exists():
-        logger.error("无法找到 get-pip.py，请检查 deps 文件夹是否正确")
-        logger.error("Cannot find get-pip.py, please check if the deps folder is correct.")
+        print("无法找到 get-pip.py，请检查 deps 文件夹是否正确")
+        print("Cannot find get-pip.py, please check if the deps folder is correct.")
         sys.exit(1)
 
     subprocess.check_call(
@@ -94,11 +91,11 @@ def init_python_env():
     import importlib
     importlib.invalidate_caches()
 
-    logger.info("Python 依赖安装/更新 已完成\n")
+    print("Python 依赖安装/更新 已完成\n")
 
 
 def main():
-    logger.info(f"开始安装/更新 Python 依赖")
+    print(f"开始安装/更新 Python 依赖")
 
     # 开发时应当注释下面两行, 编译时自动解除注释
     # init_python_env()
@@ -107,19 +104,22 @@ def main():
     from maa.agent.agent_server import AgentServer
     from maa.toolkit import Toolkit
 
-    logger.info("")
-    logger.info("===== 开始初始化MAA模块包 =====")
-
     # 导入整个 Agent 包
     import agent
     _ = agent
 
-    # 加载 Agent 包下所有的子模块
-    plugin_list = ["constant", "utils", "attach", "custom"]
-    for plugin_name in plugin_list:
-        idx = plugin_list.index(plugin_name) + 1
-        load_plugins(str(CURRENT_DIR / plugin_name), f'agent.{plugin_name}')
-        logger.info(f"{idx}. 子模块 {plugin_name} 加载完成！")
+    # 导入基础包
+    from agent.logger import logger
+    from agent.module_loader import load_plugins
+
+    logger.info("===== 开始初始化MAA模块包 =====")
+
+    # 加载 Agent 包下所有的文件夹
+    for item in CURRENT_DIR.iterdir():
+        # 跳过 __pycache__
+        if item.is_dir() and item.name != "__pycache__":
+            load_plugins(str(item), f"agent.{item.name}")
+            logger.info(f"> 子模块 {item.name} 加载完成！")
 
     logger.info("===== MAA模块包初始化完成 =====\n")
 
