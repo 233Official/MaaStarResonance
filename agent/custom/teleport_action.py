@@ -6,11 +6,11 @@ from maa.context import Context, RecognitionDetail, Rect
 from maa.custom_action import CustomAction
 from rapidfuzz import fuzz
 
+from agent.attach.common_attach import get_dest_map, get_dest_tele_point
 from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
 from agent.constant.map_point import MAP_POINT_DATA
 from agent.custom.app_manage_action import get_area_change_timeout
 from agent.logger import logger
-from agent.utils.param_utils import CustomActionParam
 
 
 @AgentServer.custom_action("TeleportPoint")
@@ -19,13 +19,14 @@ class TeleportPointAction(CustomAction):
     def run(
         self,
         context: Context,
-        argv: CustomAction.RunArg,
+        _,
     ) -> bool:
-        params = CustomActionParam(argv.custom_action_param)
-        required = params.require(["dest_map", "dest_tele_point"])
-        dest_map = required["dest_map"]
-        dest_tele_point = required["dest_tele_point"]
+        dest_map = get_dest_map(context)
+        dest_tele_point = get_dest_tele_point(context)
         logger.info(f"目的地图: {dest_map}, 目的传送点: {dest_tele_point}")
+        if not dest_map or not dest_tele_point:
+            logger.error("目的地图或目的传送点参数不能为空！")
+            return False
         return teleport(context, dest_map, dest_tele_point)
 
 

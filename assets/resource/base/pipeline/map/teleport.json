@@ -1,14 +1,26 @@
 {
-    "测试传送地图传送点": {
+    "传送地图传送点": {
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "TeleportPoint",
-                "custom_action_param": {
-                    "dest_map": "巴哈马尔高原",
-                    "dest_tele_point": "传送-贝克马尔运输站-小点"
-                }
+                "custom_action": "TeleportPoint"
             }
+        }
+    },
+    "获取参数-传送所需地图": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "dest_map": ""
+        }
+    },
+    "获取参数-传送所需传送点": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "dest_tele_point": ""
         }
     },
     "图片识别是否已经打开地图": {
@@ -16,7 +28,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": ["地图/地图列表图标.png"],
-                "roi": [25,643,43,42]
+                "roi": [25, 643, 43, 42]
             }
         }
     },
@@ -25,7 +37,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": ["地图/地图传送点传送按钮.png"],
-                "roi": [1046,641,73,32]
+                "roi": [1046, 641, 73, 32]
             }
         }
     }

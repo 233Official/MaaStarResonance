@@ -103,19 +103,26 @@
         {
             "name": "领取今日活跃度奖励",
             "entry": "领取今日活跃度奖励"
+        },
+        {
+            "name": "打开一键连招",
+            "entry": "打开一键连招"
+        },
+        {
+            "name": "关闭一键连招",
+            "entry": "关闭一键连招"
+        },
+        {
+            "name": "从省电模式唤醒",
+            "entry": "从省电模式唤醒"
+        },
+        {
+            "name": "地图传送",
+            "entry": "传送地图传送点",
+            "option": [
+                "目的地图选择"
+            ]
         }
-        // {
-        //     "name": "打开一键连招",
-        //     "entry": "打开一键连招"
-        // },
-        // {
-        //     "name": "关闭一键连招",
-        //     "entry": "关闭一键连招"
-        // },
-        // {
-        //     "name": "从省电模式唤醒",
-        //     "entry": "从省电模式唤醒"
-        // }
     ],
     "option": {
         "自动购买鱼竿选择": {
@@ -273,6 +280,501 @@
                         },
                         "普通采集": {
                             "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "目的地图选择": {
+            "cases": [
+                {
+                    "name": "阿斯特里斯",
+                    "option": [
+                        "阿斯特里斯传送点选择"
+                    ],
+                    "pipeline_override": {
+                        "获取参数-传送所需地图": {
+                            "attach": {
+                                "dest_map": "阿斯特里斯"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "阿斯特里亚平原",
+                    "option": [
+                        "阿斯特里亚平原传送点选择"
+                    ],
+                    "pipeline_override": {
+                        "获取参数-传送所需地图": {
+                            "attach": {
+                                "dest_map": "阿斯特里亚平原"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "巴哈马尔高原",
+                    "option": [
+                        "巴哈马尔高原传送点选择"
+                    ],
+                    "pipeline_override": {
+                        "获取参数-传送所需地图": {
+                            "attach": {
+                                "dest_map": "巴哈马尔高原"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "阿斯特里斯传送点选择": {
+            "cases": [
+                {
+                    "name": "传送-亚利那镇",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-亚利那镇"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-神殿地区",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-神殿地区"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-开拓局",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-开拓局"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-欢乐街",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-欢乐街"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-旋转舵轮亭",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-旋转舵轮亭"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-阿斯特里斯海滩",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-阿斯特里斯海滩"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-天纹广场",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-天纹广场"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-奥香山",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-奥香山"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-街门广场",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-街门广场"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-港口镇",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-港口镇"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "阿斯特里亚平原传送点选择": {
+            "cases": [
+                {
+                    "name": "传送-安德拉废都",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-安德拉废都"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-安德拉废都外围",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-安德拉废都外围"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-登陆战遗址海滩",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-登陆战遗址海滩"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-英雄碑林",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-英雄碑林"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-维尔古城",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-维尔古城"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-维尔古城内部",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-维尔古城内部"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-安德拉驿站",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-安德拉驿站"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-崖之遗迹",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-崖之遗迹"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-海鸣草原",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-海鸣草原"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-侦察兵营地",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-侦察兵营地"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-明斯特霍恩",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-明斯特霍恩"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-淡青湖",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-淡青湖"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-卡尼曼部落外郊",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-卡尼曼部落外郊"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-卡尼曼部落",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-卡尼曼部落"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "巴哈马尔高原传送点选择": {
+            "cases": [
+                {
+                    "name": "传送-巡礼者的休憩之所",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-巡礼者的休憩之所"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-拉尔帕尔村庄",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-拉尔帕尔村庄"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-陷落河",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-陷落河"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-陷落河谷-地上",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-陷落河谷-地上"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-奥古拉斯遗迹",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-奥古拉斯遗迹"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-巴哈马尔之北",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-巴哈马尔之北"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-神悬御柱",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-神悬御柱"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-教团营地",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-教团营地"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-贝克马尔运输站-大点",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-贝克马尔运输站-大点"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-贝克马尔运输站-小点",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-贝克马尔运输站-小点"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-山芥垆",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-山芥垆"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-露天矿场",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-露天矿场"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-陷落河谷-地下",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-陷落河谷-地下"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "西斯莱萨矿场-采掘矿洞",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "西斯莱萨矿场-采掘矿洞"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "西斯莱萨矿场-安全区",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "西斯莱萨矿场-安全区"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "西斯莱萨矿场-采掘矿道",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "西斯莱萨矿场-采掘矿道"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "西斯莱萨矿场-分拣转运区",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "西斯莱萨矿场-分拣转运区"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "传送-西斯莱萨矿场",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "传送-西斯莱萨矿场"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "西斯莱萨矿场-废弃矿洞",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "西斯莱萨矿场-废弃矿洞"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "西斯莱萨矿场-一号矿洞",
+                    "pipeline_override": {
+                        "获取参数-传送所需传送点": {
+                            "attach": {
+                                "dest_tele_point": "西斯莱萨矿场-一号矿洞"
+                            }
                         }
                     }
                 }
