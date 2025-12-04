@@ -70,7 +70,7 @@ wheels = [
 
 [[package]]
 name = "maafw"
-version = "5.1.3"
+version = "5.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "maaagentbinary" },
@@ -78,12 +78,12 @@ dependencies = [
     { name = "strenum" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/16/4f9619c995f7decb39ac2c160e35e92f97618b9fd3deec960f0958834ec5/maafw-5.1.3-py3-none-macosx_13_0_arm64.whl", hash = "sha256:d0846779d48fbeb1c5add20b999e9d11e5f2720d2d8363cd69a0c27c92492163", size = 15133911, upload-time = "2025-12-02T07:16:29.589Z" },
-    { url = "https://files.pythonhosted.org/packages/dc/1b/7af283c1d2864dfcb59f5a1d174a8362f02f7389f31dc86e43f0dbaf284f/maafw-5.1.3-py3-none-macosx_13_0_x86_64.whl", hash = "sha256:99d17deec68ff2de5be5861ec079fefb698760aa61461ac2a1eadee4a4a8660a", size = 17072659, upload-time = "2025-12-02T07:16:31.443Z" },
-    { url = "https://files.pythonhosted.org/packages/aa/4f/b81e182fd5ee6e7254b89e7bbd3362ea3c77193e405c60b4ba0734ba3b5c/maafw-5.1.3-py3-none-manylinux2014_aarch64.whl", hash = "sha256:09753746fbc2049163af3fd53dab42dcdc7d25495c4e4b1e8bb612351302121f", size = 16544240, upload-time = "2025-12-02T07:16:33.508Z" },
-    { url = "https://files.pythonhosted.org/packages/79/58/29cddadf229407f8032878f48229216c77b09a3dce606ae376bde8e7d775/maafw-5.1.3-py3-none-manylinux2014_x86_64.whl", hash = "sha256:946746e8750bdbc995d08ecd8d89f453f1348c075fab7c2222fc8883f5af8011", size = 18285937, upload-time = "2025-12-02T07:16:35.254Z" },
-    { url = "https://files.pythonhosted.org/packages/73/51/a539213bf39e61823613402f33bb82be03597efe56ca92d37f2141f52b87/maafw-5.1.3-py3-none-win_amd64.whl", hash = "sha256:dd43ed3a6ae9010d516cc8016bb167298d076c192d863b08cd1eaddce954270c", size = 24014290, upload-time = "2025-12-02T07:16:38.108Z" },
-    { url = "https://files.pythonhosted.org/packages/db/95/fc435551a3605d42172aa94c601096a34191eb1d5b69db41b1a8d3895c31/maafw-5.1.3-py3-none-win_arm64.whl", hash = "sha256:26d500ebf209ccfb9e00f5fc211cb0d4629174ad124f00338af013352fe0c6f6", size = 23035224, upload-time = "2025-12-02T07:16:40.994Z" },
+    { url = "https://files.pythonhosted.org/packages/c1/dd/fda46e23a1a761365e905faf0af53cc2aa100bcd49be3e22a0ca3d9e3ff5/maafw-5.1.4-py3-none-macosx_13_0_arm64.whl", hash = "sha256:6080da8279d36ee1a84c77809c21b2e028b17e781e3169bdfe8d350d8950d8f9", size = 15174919, upload-time = "2025-12-04T02:45:38.178Z" },
+    { url = "https://files.pythonhosted.org/packages/35/74/d15ec228b5225df4fab4d2a7625d6d7432a2b33ba0ffe018efb8fbeaff71/maafw-5.1.4-py3-none-macosx_13_0_x86_64.whl", hash = "sha256:187ee7aed3355263eeddc50e3d4eeb0d4ada29eaea3d4b9acd9652e519b81562", size = 17110933, upload-time = "2025-12-04T02:45:40.364Z" },
+    { url = "https://files.pythonhosted.org/packages/b6/9f/5f02419c7a96be180d44d09e94b4cfa318f79b990617812e943e988192cc/maafw-5.1.4-py3-none-manylinux2014_aarch64.whl", hash = "sha256:4c4f31de4b3f5a7899baef96f15d7c5c43a4fa47dd648fc6e72d9105c4f7a97f", size = 51613015, upload-time = "2025-12-04T02:45:43.695Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/64/0754a24e2a5019c0366163ae608670899fcee6373adce9b4600799d9fa01/maafw-5.1.4-py3-none-manylinux2014_x86_64.whl", hash = "sha256:dbf35a21d246b1e69eabdab29fbfc7a0b0b6f300f31a8dc71cf8bda24c4efb6a", size = 52758071, upload-time = "2025-12-04T02:45:47.547Z" },
+    { url = "https://files.pythonhosted.org/packages/8e/af/1e4fbfd5dfbb4c9bd16b652adc93dcc6d371d6c43aab08b975538fa5f67c/maafw-5.1.4-py3-none-win_amd64.whl", hash = "sha256:6920329f1c4e5d1318f7483719aba0849f8a937a39b54ef8ccc7196b16a554f4", size = 25171623, upload-time = "2025-12-04T02:45:51.203Z" },
+    { url = "https://files.pythonhosted.org/packages/37/60/3dd3909f59da3c4e990984e1cf109eb1da185a854d1bede0a62a205cc335/maafw-5.1.4-py3-none-win_arm64.whl", hash = "sha256:acc9facabffb57a013a690e9275337b5ed02bd8d18f2daeaaf80c4058ff56836", size = 23885962, upload-time = "2025-12-04T02:45:54.225Z" },
 ]
 
 [[package]]
