@@ -76,12 +76,9 @@ class AutoFishingAction(CustomAction):
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count if max_success_fishing_count != 0 else '无限'}")
         logger.info(f"如遇到不可恢复异常，是否重启游戏: {'是' if restart_for_except else '否'}")
         logger.info(f"最大重启游戏次数限制: {max_restart_count}")
-
-        # 当前时间
-        now = time.time()
         
         # 起始钓鱼时间
-        self.fishing_start_time = now
+        self.fishing_start_time = time.time()
         # 累计钓鱼次数
         self.fishing_count = 0
         # 成功钓鱼次数
@@ -110,7 +107,7 @@ class AutoFishingAction(CustomAction):
             
             self.fishing_count += 1
             # 打印当前钓鱼统计信息
-            delta_time = now - self.fishing_start_time
+            delta_time = time.time() - self.fishing_start_time
             success_rate = (self.success_fishing_count / max(1, self.fishing_count - 1 - self.except_count) * 100) if self.fishing_count > 1 else 0.0
             exception_rate = (self.except_count / (self.fishing_count - 1) * 100) if self.fishing_count > 1 else 0.0
             avg_fish_per_rod = self.success_fishing_count / (self.used_rod_count + 1)
