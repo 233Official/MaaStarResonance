@@ -100,7 +100,7 @@ def init_python_env():
 
 def main():
     # 开发时应当注释下面这行, 编译时自动解除注释
-    init_python_env()
+    # init_python_env()
 
     # 导入MAA工具
     from maa.agent.agent_server import AgentServer
