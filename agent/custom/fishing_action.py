@@ -8,6 +8,7 @@ from maa.custom_action import CustomAction
 from agent.attach.common_attach import get_restart_for_except, get_max_restart_count
 from agent.constant.fish import FISH_LIST
 from agent.custom.app_manage_action import restart_and_login_xhgm
+from agent.custom.general.ad_close import close_ad
 from agent.utils.fuzzy_utils import get_best_match_single
 from agent.logger import logger
 from agent.utils.other_utils import print_center_block
@@ -239,15 +240,27 @@ class AutoFishingAction(CustomAction):
         Returns:
             等待下次钓鱼的时间（秒），0表示环境检查通过可以钓鱼，-1表示出现不可恢复错误需要结束任务
         """
-        # 1. 检测进入钓鱼按钮
+        # 1. 检测继续钓鱼按钮 | 每次正常循环的钓鱼都会执行，优先检测
         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+        is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
+        if is_continue_fishing and is_continue_fishing.hit:
+            logger.info("[任务准备] 检测到继续钓鱼按钮，将点击按钮，环境检查通过")
+            time.sleep(1)
+            context.run_action("点击继续钓鱼按钮")
+            del is_continue_fishing, img
+            return 0
+
+        # 2. 尝试关闭弹窗广告
+        close_ad(context)
+
+        # 3. 检测进入钓鱼按钮 | 仅有首次启动和异常情况才可能触发
         fishing_result: RecognitionDetail | None = context.run_recognition("检测进入钓鱼按钮", img)
         if fishing_result and fishing_result.hit:
             logger.info("[任务准备] 正在进入钓鱼台，等待5秒...")
             context.run_action("点击进入钓鱼按钮")
             # 走5秒，有些地方会卡住比较慢
             time.sleep(5)
-            # 识别出了：走进钓鱼台，并重新截图
+            # 识别出了：走进钓鱼台，并重新截图 | 仅有首次启动和异常情况才可能触发
             img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
         elif fishing_result:
             # 部分钓鱼地点背景影响严重，以防万一再次判断
@@ -258,7 +271,7 @@ class AutoFishingAction(CustomAction):
                 context.run_action("点击进入钓鱼按钮")
                 # 走5秒，有些地方会卡住比较慢
                 time.sleep(5)
-                # 疑似识别出了：走进钓鱼台，并重新截图
+                # 疑似识别出了：走进钓鱼台，并重新截图 | 仅有首次启动和异常情况才可能触发
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
             else:
                 logger.info('[任务准备] 没有检测到钓鱼按钮，可能已经在钓鱼中，将直接检测抛竿按钮')
@@ -266,14 +279,14 @@ class AutoFishingAction(CustomAction):
             logger.error('[任务结束] 识别节点不存在，逻辑不可达，请GitHub提交Issue反馈')
             return -1
 
-        # 2. 检测抛竿按钮
+        # 4. 再次检测抛竿按钮 | 仅有首次启动就在抛竿界面才可能触发
         reeling_result: RecognitionDetail | None = context.run_recognition("检测抛竿按钮", img)
         if reeling_result and reeling_result.hit:
             logger.info("[任务准备] 检测到抛竿按钮，环境检查通过")
             del fishing_result, reeling_result, img
             return 0
 
-        # 3. 检测继续钓鱼按钮
+        # 5. 再次检测继续钓鱼按钮 | 仅有首次启动就在继续钓鱼界面才可能触发
         logger.info('[任务准备] 没有检测到抛竿按钮，可能是在继续钓鱼界面')
         is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
         if is_continue_fishing and is_continue_fishing.hit:
@@ -286,7 +299,7 @@ class AutoFishingAction(CustomAction):
         logger.warning('[任务准备] 没有检测到继续钓鱼按钮，可能是遇到掉线/切线情况')
         self.except_count += 1  # type: ignore
         
-        # 4. 检查其他意外情况
+        # 6. 检查其他意外情况
         disconnect_result: RecognitionDetail | None = context.run_recognition(
             "通用文字识别",
             img,
@@ -295,12 +308,12 @@ class AutoFishingAction(CustomAction):
             },
         )
         if disconnect_result and disconnect_result.hit:
-            # 有确认按钮：很有可能是掉线了
+            # 7.1 有确认按钮：很有可能是掉线了
             logger.info("[任务准备] 有确认按钮，可能是掉线重连按钮，正在点击重连，等待30秒后重试...")
             context.tasker.controller.post_click(797, 532).wait()
             time.sleep(2)
 
-            # 检测是否有再次确认按钮
+            # 7.2 检测是否有再次确认按钮
             disconnect_result: RecognitionDetail | None = context.run_recognition(
                 "通用文字识别",
                 img,
@@ -309,11 +322,11 @@ class AutoFishingAction(CustomAction):
                 },
             )
             if disconnect_result and disconnect_result.hit:
-                # 大概率是服务器炸了，要回到主界面了
+                # 7.3 大概率是服务器炸了，要回到主界面了
                 logger.info("[任务准备] 检测到再次确认按钮，继续点击确认，等待30秒后重试...")
                 context.tasker.controller.post_click(637, 529).wait()
         else:
-            # 检测一下是否在登录页面
+            # 8.1 检测一下是否在登录页面
             logger.info("[任务准备] 检测不到确认按钮，可能是回到主界面...")
             login_result: RecognitionDetail | None = context.run_recognition("点击连接开始", img)
             if login_result and login_result.hit:
@@ -325,7 +338,7 @@ class AutoFishingAction(CustomAction):
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
             del login_result
 
-            # 检测一下是否在选择角色进入游戏页面
+            # 8.2 检测一下是否在选择角色进入游戏页面
             entry_result: RecognitionDetail | None = context.run_recognition("点击进入游戏", img)
             if entry_result and entry_result.hit:
                 # 识别到进入游戏
@@ -335,7 +348,7 @@ class AutoFishingAction(CustomAction):
                 return 90
             del entry_result
 
-            # 若开启不可恢复异常重启选项，则直接重启游戏
+            # 8.3 若开启不可恢复异常重启选项，则直接重启游戏
             if restart_for_except and self.restart_count < max_restart_count:  # type: ignore
                 # 什么都检测不到，直接重启游戏得了
                 logger.info("[任务准备] 检测不到进入游戏按钮，准备直接重启游戏，等待240秒...")
