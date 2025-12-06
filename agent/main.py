@@ -102,6 +102,9 @@ def main():
     # 开发时应当注释下面这行, 编译时自动解除注释
     # init_python_env()
 
+    if str(PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(PROJECT_ROOT))
+
     # 导入MAA工具
     from maa.agent.agent_server import AgentServer
     from maa.toolkit import Toolkit
