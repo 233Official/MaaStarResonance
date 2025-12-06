@@ -3,17 +3,22 @@
 from __future__ import annotations
 
 import sys
-from typing import Final
 
 from loguru import logger as _logger
 
-_DEFAULT_FORMAT: Final[str] = "[{time:YYYY-MM-DD HH:mm:ss}] <{level}> {message}"
+
+def format_record(record):
+    """根据日志级别生成前缀并拼接消息."""
+    level_name = record["level"].name
+    prefix = level_name.lower() + ":"
+    return f"{prefix} [{record['time'].strftime('%Y-%m-%d %H:%M:%S')}] {record['message']}\n"
+
 
 # 重新配置默认输出，确保格式统一且线程安全。
 _logger.remove()
 _logger.add(
     sys.stdout,
-    format=_DEFAULT_FORMAT,
+    format=format_record,
     # level="INFO",
     level="DEBUG",
     enqueue=True,
