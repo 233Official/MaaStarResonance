@@ -178,7 +178,7 @@ class AutoFishingAction(CustomAction):
             # 5. 检测鱼鱼是否咬钩 | 检测30秒，检测时间长，如果有中断命令就直接结束
             need_next = True  # 是否需要进行下一步 | 不需要就是被手动终止任务了
             wait_for_fish_times = 0
-            while wait_for_fish_times < 300:
+            while wait_for_fish_times < 60:
                 if not self.check_running(context):
                     need_next = False
                     break
@@ -188,10 +188,10 @@ class AutoFishingAction(CustomAction):
                     del is_hooked, img
                     logger.info("[执行钓鱼] 鱼鱼咬钩了！")
                     break
-                time.sleep(0.1)
+                time.sleep(0.5)
                 wait_for_fish_times += 1
             # 超时还没检测到鱼鱼咬钩 | 重新开始检测环境
-            if wait_for_fish_times >= 300:
+            if wait_for_fish_times >= 60:
                 logger.info("[执行钓鱼] 超过30秒未检测到鱼鱼咬钩，将重新开始环境检测")
                 continue
             # 30秒检测内如果没有下一次了，说明钓鱼被强制结束了
@@ -450,13 +450,13 @@ class AutoFishingAction(CustomAction):
 
         # ========== 可配置参数 ==========
         max_reel_time = 120  # 最长收线时间，防止意外卡死
-        press_duration_reel = 2.8  # 收线按压时长
-        release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
-        press_duration_bow = 2.8  # 方向按压时长
-        loop_interval = 0.2  # 循环检测间隔 | 太短影响性能，太长影响收线
+        press_duration_reel = 2.7  # 收线按压时长
+        release_duration_reel = 0.3  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
+        press_duration_bow = 2.7  # 方向按压时长
+        loop_interval = 0.3  # 循环检测间隔 | 太短影响性能，太长影响收线
         arrow_cooldown = 0.8  # 箭头方向冷却时间，冷却期内不再检测
-        tension_check_duration = 0.4  # 连续检测张力满的时间阈值
-        tension_press_duration = 2.0  # 张力满暂停收线的时间
+        tension_check_duration = 0.3  # 连续检测张力满的时间阈值
+        tension_press_duration = 1.7  # 张力满暂停收线的时间
 
         # ========== 状态变量 ==========
         first_start_time = time.time()  # 循环开始时间
