@@ -1,0 +1,39 @@
+import time
+
+import numpy
+from maa.agent.agent_server import AgentServer
+from maa.context import Context, RecognitionDetail
+from maa.custom_action import CustomAction
+
+
+# 关闭所有广告
+@AgentServer.custom_action("CloseAd")
+class CloseAdAction(CustomAction):
+
+    def run(
+        self,
+        context: Context,
+        _,
+    ) -> bool:
+        return close_ad(context)
+
+def close_ad(context: Context) -> bool:
+    """
+    关闭所有广告
+
+    Args:
+        context: 控制器上下文
+
+    Returns: 是否完成
+
+    """
+    # 检测今日不再弹出按钮
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    firm_result: RecognitionDetail | None = context.run_recognition("检测今日不再弹出按钮-1", img)
+    if firm_result and firm_result.hit:
+        # 点击不再弹出按钮
+        context.tasker.controller.post_click(263, 609).wait()
+        time.sleep(1)
+        # 点击关闭广告按钮
+        context.tasker.controller.post_click(1061, 157).wait()
+    return True

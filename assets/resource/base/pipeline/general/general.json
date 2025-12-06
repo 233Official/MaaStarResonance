@@ -16,5 +16,22 @@
                 "custom_action": "return_main_page"
             }
         }
+    },
+    "关闭所有弹窗广告": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "CloseAd"
+            }
+        }
+    },
+    "检测今日不再弹出按钮-1": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["今日不再弹出"],
+                "roi": [185, 587, 152, 42]
+            }
+        }
     }
 }
