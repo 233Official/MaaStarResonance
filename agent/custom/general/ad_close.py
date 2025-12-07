@@ -27,7 +27,7 @@ def close_ad(context: Context) -> bool:
     Returns: 是否完成
 
     """
-    # 检测今日不再弹出按钮
+    # 检测今日不再弹出按钮-1
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
     firm_result: RecognitionDetail | None = context.run_recognition("检测今日不再弹出按钮-1", img)
     if firm_result and firm_result.hit:
@@ -36,4 +36,17 @@ def close_ad(context: Context) -> bool:
         time.sleep(1)
         # 点击关闭广告按钮
         context.tasker.controller.post_click(1061, 157).wait()
+        time.sleep(1)
+
+    # 检测今日不再弹出按钮-2
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    firm_result: RecognitionDetail | None = context.run_recognition("检测今日不再弹出按钮-2", img)
+    if firm_result and firm_result.hit:
+        # 点击不再弹出按钮
+        context.tasker.controller.post_click(187, 592).wait()
+        time.sleep(1)
+        # 点击关闭广告按钮
+        context.tasker.controller.post_click(1047, 141).wait()
+        time.sleep(1)
+
     return True
