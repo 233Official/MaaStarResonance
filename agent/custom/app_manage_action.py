@@ -104,11 +104,6 @@ def stop_target_app(context: Context, app_package_name: str) -> bool:
 def restart_and_login_xhgm(context: Context) -> bool:
     """重启并登录星痕共鸣"""
     app_package_name = "com.tencent.wlfz"
-    login_timeout = get_login_timeout(context)
-    area_change_timeout = get_area_change_timeout(context)
-    start_time = time.time()
-    need_next = False
-    elapsed_time = 0
 
     # 先关闭星痕共鸣
     stop_target_app(context, app_package_name)
@@ -122,31 +117,19 @@ def restart_and_login_xhgm(context: Context) -> bool:
 
     # 等待星痕共鸣启动完成
     logger.info("等待星痕共鸣已启动，等待游戏连接开始...")
-    while elapsed_time <= login_timeout and not context.tasker.stopping:
-        elapsed_time = time.time() - start_time
-        img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-        login_result: RecognitionDetail | None = context.run_recognition("点击连接开始", img)
-        if login_result and login_result.hit:
-            del login_result
-            logger.info("检测到主界面连接开始按钮，准备登录游戏...")
-            context.tasker.controller.post_click(639, 602).wait()
-            need_next = True
-            break
-        del login_result
-        time.sleep(2)
+    need_next = wait_for_start(context)
     
     # 登录结果判断
     if not need_next:
-        logger.error("星痕共鸣登录超时，未检测到连接开始按钮，请检查应用是否正常启动")
         return False
-    
-    logger.info("星痕共鸣连接开始完成，等待10秒后将检测进入游戏按钮...")
-    time.sleep(10)
+
+    logger.info("等待8秒后将检测进入游戏按钮...")
+    time.sleep(8)
 
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
     entry_result: RecognitionDetail | None = context.run_recognition("点击进入游戏", img)
     if not entry_result or not entry_result.hit:
-        # 未识别到进入游戏，继续等待
+        # 未识别到进入游戏
         logger.error("未检测到进入游戏按钮，登录失败，请检查网络或应用状态！")
         return False
     
@@ -155,7 +138,40 @@ def restart_and_login_xhgm(context: Context) -> bool:
     logger.info("星痕共鸣进入游戏成功，将等待登录完成...")
     del entry_result
 
-    # 等待进入游戏主页面
+    # 等待进入游戏主界面
+    return wait_for_switch(context)
+
+
+def wait_for_start(context: Context) -> bool:
+    """等待游戏启动"""
+    login_timeout = get_login_timeout(context)
+    start_time = time.time()
+    elapsed_time = 0
+    while elapsed_time <= login_timeout and not context.tasker.stopping:
+        elapsed_time = time.time() - start_time
+        img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+        # 登录完成检测
+        login_result: RecognitionDetail | None = context.run_recognition("点击连接开始", img)
+        if login_result and login_result.hit:
+            del login_result, img
+            logger.info("检测到星痕共鸣已经成功启动完游戏！")
+            context.tasker.controller.post_click(639, 602).wait()
+            return True
+        # 登录信息失效检测
+        no_login_result: RecognitionDetail | None = context.run_recognition("检测是否需要登录", img)
+        if no_login_result and no_login_result.hit:
+            del login_result, no_login_result, img
+            logger.info("检测到星痕共鸣登录信息失效，需要登录账号！")
+            return False
+        del login_result, no_login_result, img
+        time.sleep(2)
+    logger.error(f"星痕共鸣启动游戏超{login_timeout}秒限制 或者 被手动停止，请检查游戏状态！")
+    return False
+
+
+def wait_for_switch(context: Context) -> bool:
+    """等待场景切换"""
+    area_change_timeout = get_area_change_timeout(context)
     start_time = time.time()
     elapsed_time = 0
     while elapsed_time <= area_change_timeout and not context.tasker.stopping:
@@ -164,11 +180,10 @@ def restart_and_login_xhgm(context: Context) -> bool:
         area_change_result: RecognitionDetail | None = context.run_recognition("图片识别是否在主页面", img)
         if area_change_result and area_change_result.hit:
             del area_change_result, img
-            logger.info("检测到已经进入游戏主页面，登录成功！")
+            logger.info("检测到星痕共鸣已经成功切换场景！")
             return True
         del area_change_result, img
         time.sleep(2)
-
     # 超时未进入游戏主页面
-    logger.error("星痕共鸣进入游戏超时，未检测到主页面，请检查应用状态！")
+    logger.error(f"星痕共鸣切换场景超过{area_change_timeout}秒限制 或者 被手动停止，请检查游戏状态！")
     return False
