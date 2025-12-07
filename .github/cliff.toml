@@ -71,9 +71,9 @@ footer = """
 [git]
 # 过滤提交
 conventional_commits = true # 使用约定式提交格式
-filter_unconventional = false # 不过滤非约定式提交
-# 启用完整的 commit 信息
-split_commits = false
+filter_unconventional = true # 过滤非约定式提交（只保留标准格式的行）
+# 拆分 commit message（处理 squash merge 中的多行提交）
+split_commits = true
 # 保留完整的 commit body
 protect_breaking_commits = false
 commit_parsers = [
