@@ -1,6 +1,6 @@
 [remote.github]
-owner = "MaaXYZ"
-repo = "MaaPracticeBoilerplate"
+owner = "233Official"
+repo = "MAAStarResonance"
 #自用时换成自己的仓库owner和repo
 #注意，本地git user需与github一致才能实现成功@
 [changelog]
@@ -18,11 +18,11 @@ body = """
     - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
         {% if commit.breaking %}[**breaking**] {% endif %}\
         {{ commit.message | split(pat="\n") | first | upper_first }} \
-        @{{ commit.author.name }}
+        {% if commit.github.username %}@{{ commit.github.username }}{% else %}{{ commit.author.name }}{% endif %}
         {%- if commit.footers -%}
             {%- for footer in commit.footers -%}
                 {%- if footer.token == "Co-authored-by" -%}
-                    {%- set co_author_name = footer.value | split(pat=" <") | first | trim %} @{{ co_author_name }}
+                    {%- set co_author_name = footer.value | split(pat=" <") | first | trim %} (Co-authored: {{ co_author_name }})
                 {%- endif -%}
             {%- endfor -%}
         {%- endif %}
