@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 import hashlib
-from agent.utils import print_info, print_warning, print_error, print_debug
+from utils import print_info, print_warning, print_error, print_debug
 
 # 获取：当前目录 / 项目根目录 / wheels目录 的绝对路径
 CURRENT_DIR = Path(__file__).parent.resolve()
