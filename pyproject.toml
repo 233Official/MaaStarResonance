@@ -1,11 +1,12 @@
 [project]
 name = "MaaStarResonance"
-version = "0.5.7"
+version = "0.5.8"
 description = "基于MAAFW的星痕共鸣黑盒测试工具"
 authors = [
-    {name = "233Official",email = "ayusummer233@outlook.com"},
+    { name = "233Official", email = "ayusummer233@outlook.com" },
+    { name = "AZMIAO", email = "2362020227@qq.com" },
 ]
-license = {text = "LGPL-3.0"}
+license = { text = "AGPL-3.0" }
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
