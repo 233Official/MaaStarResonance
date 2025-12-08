@@ -130,15 +130,14 @@ class AllMatchRecognition(CustomRecognition):
             params = json.loads(argv.custom_recognition_param)
             nodes: list[str] = params.get("nodes", [])
         except (json.JSONDecodeError, TypeError) as e:
-            print(f"[AllMatch] 参数解析失败: {e}")
-            return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
+            logger.error(f"[AllMatch] 参数解析失败: {e}")
+            return CustomRecognition.AnalyzeResult(box=None, detail=f"{'hit': False}")
 
         if not nodes:
-            print("[AllMatch] 节点列表为空")
-            return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
+            logger.error("[AllMatch] 节点列表为空")
+            return CustomRecognition.AnalyzeResult(box=None, detail=f"{'hit': False}")
         # 用于存储最后一个成功的识别结果
-        last_box = None
-        last_detail = ""
+        last_detail: RecognitionDetail | None = None
 
         # 当前使用的图像
         image = argv.image
@@ -148,16 +147,16 @@ class AllMatchRecognition(CustomRecognition):
 
             if reco_detail is None or reco_detail.box is None:
                 # 任一节点识别失败，整体失败
-                print(f"[AllMatch] 节点 '{node_name}' 识别失败，终止")
-                return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
+                logger.error(f"[AllMatch] 节点 '{node_name}' 识别失败，终止")
+                return CustomRecognition.AnalyzeResult(box=None, detail="{hit: False}")
 
             # 记录结果
             last_detail = reco_detail
 
-        print(f"[AllMatch] 全部 {len(nodes)} 个节点识别成功")
+        logger.info(f"[AllMatch] 全部 {len(nodes)} 个节点识别成功")
         return CustomRecognition.AnalyzeResult(
             box=last_detail.box if last_detail else None,
-            detail={"hit": True, "detail": str(last_detail)},
+            detail=f"{{'hit': True, 'detail': 'All {len(nodes)} nodes matched successfully'}}",
         )
 
 
@@ -175,7 +174,7 @@ class AnyMatchRecognition(CustomRecognition):
             params = json.loads(argv.custom_recognition_param)
             nodes: list[str] = params.get("nodes", [])
         except (json.JSONDecodeError, TypeError):
-            return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
+            return CustomRecognition.AnalyzeResult(box=None, detail=f"{'hit': False}")
 
         for node_name in nodes:
             reco_detail = context.run_recognition(node_name, argv.image, {})
@@ -189,10 +188,7 @@ class AnyMatchRecognition(CustomRecognition):
                 )
                 return CustomRecognition.AnalyzeResult(
                     box=reco_detail.box,
-                    detail={
-                        "hit": True,
-                        "detail": detail,
-                    },
+                    detail=f"{{'hit': True,'detail': {detail}}}",
                 )
 
-        return CustomRecognition.AnalyzeResult(box=None, detail={"hit": False})
+        return CustomRecognition.AnalyzeResult(box=None, detail=f"{'hit': False}")

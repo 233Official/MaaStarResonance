@@ -66,6 +66,8 @@ class ClaimDailyActivityRewardAction(CustomAction):
 # 打开补偿商店页面
 @AgentServer.custom_action("open_compensation_shop_page")
 class OpenCompensationShopAction(CustomAction):
+    @exit_power_saving_mode()
+    @ensure_main_page(strict=True)
     def run(
         self,
         context: Context,
