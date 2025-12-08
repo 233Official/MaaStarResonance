@@ -110,7 +110,10 @@ jobs:
         with:
           repository: MaaXYZ/MaaFramework
           fileName: "MAA-${{ matrix.platform }}-${{ matrix.arch }}*"
-          latest: true
+          # 下载最新的 Release
+          # latest: true
+          # 下载指定的 Release Tag
+          tag: v5.2.0
           out-file-path: "deps"
           extract: true
 
