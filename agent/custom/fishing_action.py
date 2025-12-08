@@ -7,7 +7,7 @@ from maa.custom_action import CustomAction
 
 from agent.attach.common_attach import get_restart_for_except, get_max_restart_count
 from agent.constant.fish import FISH_LIST
-from agent.custom.app_manage_action import restart_and_login_xhgm
+from agent.custom.app_manage_action import restart_and_login_xhgm, wait_for_switch
 from agent.custom.general.ad_close import close_ad
 from agent.utils.fuzzy_utils import get_best_match_single
 from agent.logger import logger
@@ -254,52 +254,54 @@ class AutoFishingAction(CustomAction):
         close_ad(context)
 
         # 3. 检测进入钓鱼按钮 | 仅有首次启动和异常情况才可能触发
+        has_fishing = False
         fishing_result: RecognitionDetail | None = context.run_recognition("检测进入钓鱼按钮", img)
         if fishing_result and fishing_result.hit:
-            logger.info("[任务准备] 正在进入钓鱼台，等待5秒...")
+            logger.info("[任务准备] 检测到钓鱼按钮，等待5秒后进入钓鱼台...")
             context.run_action("点击进入钓鱼按钮")
             # 走5秒，有些地方会卡住比较慢
             time.sleep(5)
             # 识别出了：走进钓鱼台，并重新截图 | 仅有首次启动和异常情况才可能触发
             img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+            has_fishing = True
         elif fishing_result:
             # 部分钓鱼地点背景影响严重，以防万一再次判断
             target_chars = {"钓", "鱼"}
             texts = {item.text for item in fishing_result.all_results}  # type: ignore
             if target_chars.issubset(texts):
-                logger.info("[任务准备] 疑似钓鱼按钮，正在尝试进入钓鱼台，等待5秒...")
+                logger.info("[任务准备] 疑似钓鱼按钮，等待5秒尝试进入钓鱼台...")
                 context.run_action("点击进入钓鱼按钮")
                 # 走5秒，有些地方会卡住比较慢
                 time.sleep(5)
                 # 疑似识别出了：走进钓鱼台，并重新截图 | 仅有首次启动和异常情况才可能触发
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+                has_fishing = True
             else:
                 logger.info('[任务准备] 没有检测到钓鱼按钮，可能已经在钓鱼中，将直接检测抛竿按钮')
         else:
             logger.error('[任务结束] 识别节点不存在，逻辑不可达，请GitHub提交Issue反馈')
             return -1
 
-        # 4. 再次检测抛竿按钮 | 仅有首次启动就在抛竿界面才可能触发
+        # 4. 检测抛竿按钮 | 仅有首次启动就在抛竿界面才可能触发
         reeling_result: RecognitionDetail | None = context.run_recognition("检测抛竿按钮", img)
         if reeling_result and reeling_result.hit:
             logger.info("[任务准备] 检测到抛竿按钮，环境检查通过")
             del fishing_result, reeling_result, img
             return 0
-
-        # 5. 再次检测继续钓鱼按钮 | 仅有首次启动就在继续钓鱼界面才可能触发
-        logger.info('[任务准备] 没有检测到抛竿按钮，可能是在继续钓鱼界面')
-        is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
-        if is_continue_fishing and is_continue_fishing.hit:
-            logger.info("[任务准备] 检测到继续钓鱼按钮，将点击按钮，环境检查通过")
-            time.sleep(1.5)
-            context.run_action("点击继续钓鱼按钮")
-            del fishing_result, reeling_result, is_continue_fishing, img
-            return 0
         
-        logger.warning('[任务准备] 没有检测到继续钓鱼按钮，可能是遇到掉线/切线情况')
-        self.except_count += 1  # type: ignore
+        # 5. 钓鱼台满人 | TODO 后续设计切线逻辑
+        if has_fishing and reeling_result and not reeling_result.hit:
+            logger.error('[任务准备] 进入钓鱼台后未检测到抛竿按钮，可能钓鱼台已满，尝试自动重启游戏，但是还是建议手动处理！')
+            restart_result = restart_and_login_xhgm(context)
+            self.restart_count += 1  # type: ignore
+            if restart_result:
+                return 1
+            else:
+                return -1
         
         # 6. 检查其他意外情况
+        self.except_count += 1  # type: ignore
+        logger.warning('[任务准备] 出现异常：可能是遇到掉线/切线情况，尝试自动处理...')
         disconnect_result: RecognitionDetail | None = context.run_recognition(
             "通用文字识别",
             img,
@@ -333,7 +335,7 @@ class AutoFishingAction(CustomAction):
                 logger.info("[任务准备] 检测到主界面连接开始按钮，准备登录游戏...")
                 # 识别到开始界面
                 context.tasker.controller.post_click(639, 602).wait()
-                time.sleep(10)
+                time.sleep(8)
                 # 识别出了：进入选角色界面，并重新截图
                 img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
             del login_result
@@ -345,16 +347,28 @@ class AutoFishingAction(CustomAction):
                 logger.info("[任务准备] 登录结束，点击进入游戏，等待90秒...")
                 context.tasker.controller.post_click(1103, 632).wait()
                 del entry_result
-                return 90
+                # 等待场景切换
+                wait_for_switch(context)
+                return 1
             del entry_result
 
-            # 8.3 若开启不可恢复异常重启选项，则直接重启游戏
+            # 8.3 检测是否登录失效
+            no_login_result: RecognitionDetail | None = context.run_recognition("检测是否需要登录", img)
+            if no_login_result and no_login_result.hit:
+                del no_login_result, img
+                logger.info("检测到星痕共鸣登录信息失效，需要登录账号！")
+                return -1
+
+            # 8.4 若开启不可恢复异常重启选项，则直接重启游戏
             if restart_for_except and self.restart_count < max_restart_count:  # type: ignore
-                # 什么都检测不到，直接重启游戏得了
-                logger.info("[任务准备] 检测不到进入游戏按钮，准备直接重启游戏，等待240秒...")
-                restart_and_login_xhgm(context)
+                logger.info("[任务准备] 检测不到进入游戏按钮，准备直接重启游戏...")
+                # 等待游戏重启完成
+                restart_result = restart_and_login_xhgm(context)
                 self.restart_count += 1  # type: ignore
-                return 1
+                if restart_result:
+                    return 1
+                else:
+                    return -1
             logger.info("[任务准备] 检测不到进入游戏按钮，等待30秒...")
         del disconnect_result, fishing_result, reeling_result, img
         # 等待30秒后直接进入下个循环
@@ -450,13 +464,13 @@ class AutoFishingAction(CustomAction):
 
         # ========== 可配置参数 ==========
         max_reel_time = 120  # 最长收线时间，防止意外卡死
-        press_duration_reel = 2.7  # 收线按压时长
-        release_duration_reel = 0.3  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
-        press_duration_bow = 2.7  # 方向按压时长
-        loop_interval = 0.3  # 循环检测间隔 | 太短影响性能，太长影响收线
+        press_duration_reel = 2.8  # 收线按压时长
+        release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
+        press_duration_bow = 3.0  # 方向按压时长
+        loop_interval = 0.2  # 循环检测间隔 | 太短影响性能，太长影响收线
         arrow_cooldown = 0.8  # 箭头方向冷却时间，冷却期内不再检测
-        tension_check_duration = 0.3  # 连续检测张力满的时间阈值
-        tension_press_duration = 1.7  # 张力满暂停收线的时间
+        tension_check_duration = 0.2  # 连续检测张力满的时间阈值
+        tension_press_duration = 1.6  # 张力满暂停收线的时间
 
         # ========== 状态变量 ==========
         first_start_time = time.time()  # 循环开始时间

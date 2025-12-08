@@ -1,6 +1,6 @@
 [remote.github]
-owner = "MaaXYZ"
-repo = "MaaPracticeBoilerplate"
+owner = "233Official"
+repo = "MAAStarResonance"
 #自用时换成自己的仓库owner和repo
 #注意，本地git user需与github一致才能实现成功@
 [changelog]
@@ -18,11 +18,11 @@ body = """
     - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
         {% if commit.breaking %}[**breaking**] {% endif %}\
         {{ commit.message | split(pat="\n") | first | upper_first }} \
-        @{{ commit.author.name }}
+        {% if commit.github.username %}@{{ commit.github.username }}{% else %}{{ commit.author.name }}{% endif %}
         {%- if commit.footers -%}
             {%- for footer in commit.footers -%}
                 {%- if footer.token == "Co-authored-by" -%}
-                    {%- set co_author_name = footer.value | split(pat=" <") | first | trim %} @{{ co_author_name }}
+                    {%- set co_author_name = footer.value | split(pat=" <") | first | trim %} (Co-authored: {{ co_author_name }})
                 {%- endif -%}
             {%- endfor -%}
         {%- endif %}
@@ -71,9 +71,9 @@ footer = """
 [git]
 # 过滤提交
 conventional_commits = true # 使用约定式提交格式
-filter_unconventional = false # 不过滤非约定式提交
-# 启用完整的 commit 信息
-split_commits = false
+filter_unconventional = true # 过滤非约定式提交（只保留标准格式的行）
+# 拆分 commit message（处理 squash merge 中的多行提交）
+split_commits = true
 # 保留完整的 commit body
 protect_breaking_commits = false
 commit_parsers = [
@@ -83,10 +83,18 @@ commit_parsers = [
     { message = "^perf", group = "<!-- 3 -->🚀 性能优化" },
     { message = "^refactor", group = "<!-- 2 -->🚜 代码重构" },
     { message = "^style", group = "<!-- 5 -->🎨 样式" },
+    { message = "^format", group = "<!-- 5 -->🎨 样式" },
     { message = "^test", group = "<!-- 6 -->🧪 测试" },
     { message = "^chore\\(deps\\)", group = "📦 依赖更新" },
     { message = "^chore", group = "<!-- 8 -->🔧 日常维护" },
     { message = "^ci", group = "<!-- 7 -->⚙️ 持续集成" },
+    { message = "^init", group = "<!-- 11 -->🎊 初始化" },
+    { message = "^patch", group = "<!-- 1 -->🐛 Bug修复" },
+    { message = "^file", group = "<!-- 12 -->📦 文件变更" },
+    { message = "^publish", group = "<!-- 13 -->🚀 发布" },
+    { message = "^tag", group = "<!-- 13 -->🚀 发布" },
+    { message = "^config", group = "<!-- 8 -->🔧 日常维护" },
+    { message = "^git", group = "<!-- 8 -->🔧 日常维护" },
     { body = ".*security", group = "<!-- 9 -->🔒 安全" },
     { message = "^revert", group = "<!-- 10 -->◀️ 撤销" },
 ]

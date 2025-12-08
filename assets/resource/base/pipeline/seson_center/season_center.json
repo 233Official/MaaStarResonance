@@ -1,5 +1,14 @@
 // 赛季中心相关逻辑
 {
+    "O-打开赛季中心": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "ClickKey",
+            "param": {
+                "key": 43 // O
+            }
+        }
+    },
     "图片识别是否在赛季中心页面": {
         "recognition": {
             "type": "OCR",
@@ -75,6 +84,40 @@
             "type": "Custom",
             "param": {
                 "custom_action": "claim_today_activity_rewards"
+            }
+        }
+    },
+    "补偿商店页面识别": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["补偿商店"],
+                "roi": [60, 23, 68, 21]
+            }
+        }
+    },
+    "补偿商店页面识别玩法补偿商店": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [40, 97, 5, 1],
+                "lower": [245, 228, 196],
+                "upper": [255, 248, 216],
+                "count": 4
+            }
+        }
+    },
+    "玩法补偿商店页面识别": {
+        "recognition": {
+            "type": "Custom",
+            "param": {
+                "custom_recognition": "AllMatch",
+                "custom_recognition_param": {
+                    "nodes": [
+                        "补偿商店页面识别",
+                        "补偿商店页面识别玩法补偿商店"
+                    ]
+                }
             }
         }
     }

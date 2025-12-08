@@ -8,8 +8,8 @@ def get_login_timeout(context: Context) -> int:
     login_timeout_node = context.get_node_data("获取参数-登录超时时长")
     login_timeout = (login_timeout_node
                      .get("attach", {})
-                     .get("login_timeout", 240)
-                     ) if login_timeout_node else 240
+                     .get("login_timeout", 300)
+                     ) if login_timeout_node else 300
     logger.info(f"登录超时时长参数: {login_timeout}秒")
     return int(login_timeout)
 

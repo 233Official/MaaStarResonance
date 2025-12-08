@@ -1,0 +1,21 @@
+{
+    "在赛季中心页面打开补偿商店页面": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["商店/补偿商店/赛季中心补偿商店按钮.png"],
+                "roi": [22, 492, 51, 38]
+            }
+        },
+        "action": "Click"
+    },
+    "打开补偿商店": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "open_compensation_shop_page"
+            }
+        }
+    }
+}

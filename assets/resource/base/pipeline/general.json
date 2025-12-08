@@ -205,7 +205,7 @@
             "type": "DoNothing"
         },
         "attach": {
-            "login_timeout": 240
+            "login_timeout": 300
         }
     },
     "获取参数-场景切换超时时长": {
@@ -247,18 +247,14 @@
             }
         }
     },
-    "关闭开屏广告": {
+    "检测是否需要登录": {
         "recognition": {
-            "type": "OCR",
+            "type": "ColorMatch",
             "param": {
-                "roi": [187, 592, 144, 36],
-                "expected": ["不再弹出"]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [1047, 141, 29, 30] // 直接点击右上角关闭按钮
+                "method": 4,
+                "lower": [80, 170, 110],
+                "upper": [90, 190, 120],
+                "roi": [339, 589, 18, 17]
             }
         }
     }
