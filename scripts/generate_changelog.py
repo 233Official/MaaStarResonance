@@ -16,14 +16,15 @@
 
 用法:
     python scripts/generate_changelog.py [--output CHANGELOG.md] [--latest]
-    
+
     # 本地测试示例 (自动提取 GitHub 邮箱格式)
     python scripts/generate_changelog.py --latest
-    
+
     # CI/CD 示例 (使用 token 查询所有用户名)
     GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} python scripts/generate_changelog.py -o CHANGELOG.md
 """
 
+import json
 import os
 import re
 import subprocess
@@ -32,15 +33,79 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
-from urllib.request import Request, urlopen
+from typing import Any
 from urllib.error import URLError
-import json
+from urllib.request import Request, urlopen
+
+# ============================================================================
+# 常量定义
+# ============================================================================
+
+# 约定式提交正则: type[emoji](scope): message
+CONVENTIONAL_COMMIT_PATTERN = re.compile(
+    r"^(?P<type>\w+)(?P<emoji>[^\w\s:(]*)?(?:\((?P<scope>[^)]+)\))?\s*:\s*(?P<message>.+)$"
+)
+
+# GitHub noreply 邮箱正则: {id}+{username}@users.noreply.github.com
+GITHUB_NOREPLY_EMAIL_PATTERN = re.compile(
+    r"^(\d+)\+([^@]+)@users\.noreply\.github\.com$"
+)
+
+# Git log 中需要过滤的干扰文本模式
+NOISE_PATTERNS = frozenset(
+    [
+        "Bumps [",
+        "Release notes",
+        "Commits]",
+        "updated-dependencies:",
+        "dependency-name:",
+        "dependency-version:",
+        "dependency-type:",
+        "update-type:",
+        "Signed-off-by:",
+    ]
+)
+
+# Footer 关键字
+FOOTER_KEYWORDS = frozenset(["Co-authored-by", "Signed-off-by"])
+
+# 提交类型到分组的映射
+TYPE_GROUPS: dict[str, tuple[str, int]] = {
+    "feat": ("✨ 新功能", 0),
+    "fix": ("🐛 Bug修复", 1),
+    "patch": ("🐛 Bug修复", 1),
+    "perf": ("🚀 性能优化", 2),
+    "refactor": ("🎨 代码重构", 3),
+    "format": ("🥚 格式化", 4),
+    "style": ("💄 样式", 5),
+    "docs": ("📚 文档", 6),
+    "chore": ("🧹 日常维护", 7),
+    "git": ("🧹 日常维护", 7),
+    "deps": ("🧩 修改依赖", 8),
+    "build": ("🧩 修改依赖", 8),
+    "revert": ("🔁 还原提交", 10),
+    "test": ("🧪 测试", 11),
+    "file": ("📦 文件变更", 12),
+    "tag": ("📌 发布", 13),
+    "config": ("🔧 配置文件", 14),
+    "ci": ("⚙️ 持续集成", 15),
+    "init": ("🎉 初始化", 16),
+    "wip": ("🚧 进行中", 17),
+}
+
+DEFAULT_GROUP = ("其他变更", 99)
+COMMIT_SEPARATOR = "---COMMIT-SEPARATOR---"
+GIT_LOG_FORMAT = "%H|%an|%ae|%ai|%B"
+
+
+# ============================================================================
+# 数据模型
+# ============================================================================
 
 
 @dataclass
 class Commit:
-    """提交信息"""
+    """提交信息数据类"""
 
     hash: str
     message: str
@@ -50,249 +115,179 @@ class Commit:
     type: str = ""
     scope: str = ""
     breaking: bool = False
-    footers: dict = field(default_factory=dict)
-    # 保存原始完整消息用于 squash 处理
+    footers: dict[str, str] = field(default_factory=dict)
     original_message: str = ""
-    # 缓存的 GitHub 用户 ID
-    github_id: Optional[int] = None
 
-    def __post_init__(self):
-        # 保存原始消息(包含所有行)
+    def __post_init__(self) -> None:
+        """初始化后处理：保存原始消息并解析提交格式"""
         if not self.original_message:
             self.original_message = self.message
         self._parse_message()
 
-    def _parse_message(self):
+    def _parse_message(self) -> None:
         """解析约定式提交消息"""
         lines = self.message.strip().split("\n")
         if not lines:
             return
 
-        # 解析第一行: type(scope): message 或 type: message 或 type🎨: message
-        first_line = lines[0].strip()
-
-        # 移除可能的前导符号 (-, *, 等)
-        first_line = re.sub(r"^[-*]\s*", "", first_line)
-
-        # 匹配约定式提交格式 (支持 emoji)
-        # 匹配模式: type[emoji](scope): message 或 type[emoji]: message
-        match = re.match(
-            r"^(?P<type>\w+)(?P<emoji>[^\w\s:(]*)?(?:\((?P<scope>[^)]+)\))?\s*:\s*(?P<message>.+)$",
-            first_line,
-        )
+        first_line = re.sub(r"^[-*]\s*", "", lines[0].strip())
+        match = CONVENTIONAL_COMMIT_PATTERN.match(first_line)
 
         if match:
             self.type = match.group("type").lower()
             self.scope = match.group("scope") or ""
-            # 保留原始消息(不含type/emoji/scope前缀)
             self.message = match.group("message").strip()
         else:
-            # 特殊处理 Revert 提交
-            if first_line.lower().startswith("revert"):
-                self.type = "revert"
-                self.message = first_line
-            else:
-                # 特殊提交类型 (如 WIP、docs update 等)
-                # 尝试提取 emoji 后的文本
-                emoji_match = re.match(r"^(\w+)([^:]*?):\s*(.+)$", first_line)
-                if emoji_match:
-                    self.type = emoji_match.group(1).lower()
-                    self.message = emoji_match.group(3).strip()
-                else:
-                    # 无法解析,归类为 chore
-                    self.type = "chore"
-                    self.message = first_line
+            self._parse_non_conventional_message(first_line)
 
-        # 解析 footer (Co-authored-by 等)
-        for line in lines[1:]:
+        self._parse_footers(lines[1:])
+
+    def _parse_non_conventional_message(self, first_line: str) -> None:
+        """解析非标准格式的提交消息"""
+        if first_line.lower().startswith("revert"):
+            self.type = "revert"
+            self.message = first_line
+            return
+
+        # 尝试匹配带 emoji 的格式: type[emoji]: message
+        emoji_match = re.match(r"^(\w+)([^:]*?):\s*(.+)$", first_line)
+        if emoji_match:
+            self.type = emoji_match.group(1).lower()
+            self.message = emoji_match.group(3).strip()
+        else:
+            self.type = "chore"
+            self.message = first_line
+
+    def _parse_footers(self, lines: list[str]) -> None:
+        """解析提交消息的 footer 部分"""
+        for line in lines:
             line = line.strip()
             if ": " in line:
                 key, value = line.split(": ", 1)
-                if key in ["Co-authored-by", "Signed-off-by"]:
+                if key in FOOTER_KEYWORDS:
                     self.footers[key] = value
 
     def get_display_message(self) -> str:
-        """获取用于显示的消息(第一行)"""
+        """获取用于显示的消息（仅第一行）"""
         return self.message.split("\n")[0].strip()
 
-    def get_author_display(self) -> str:
-        """获取作者显示名称"""
-        # 如果有 Co-authored-by,也显示出来
-        if "Co-authored-by" in self.footers:
-            co_author = self.footers["Co-authored-by"].split("<")[0].strip()
-            return f"@{self.author} (Co-authored: {co_author})"
-        return f"@{self.author}"
+
+# ============================================================================
+# GitHub 用户名查询
+# ============================================================================
 
 
 class GitHubUserCache:
-    """GitHub 用户名缓存与获取"""
+    """GitHub 用户名缓存与查询服务
 
-    def __init__(self, email_to_names: Optional[dict[str, set[str]]] = None):
-        self.cache: dict[str, Optional[str]] = {}
+    获取策略优先级:
+    1. 从 GitHub noreply 邮箱格式提取
+    2. 通过 GitHub API 查询
+    3. 返回 None（由调用方决定回退策略）
+    """
+
+    GITHUB_API_HEADERS = {
+        "Accept": "application/vnd.github.v3+json",
+    }
+    API_TIMEOUT = 5
+
+    def __init__(self, email_to_names: dict[str, set[str]] | None = None) -> None:
+        self.cache: dict[str, str | None] = {}
         self.github_token = os.getenv("GITHUB_TOKEN")
-        # 邮箱到用户名的映射(用于反向查询)
         self.email_to_names = email_to_names or {}
 
-    def get_github_username(self, author_name: str, author_email: str) -> Optional[str]:
-        """获取用户的真实 GitHub 用户名
-        
-        策略:
-        1. 从邮箱中提取 (GitHub 邮箱格式)
-        2. 通过 GitHub API 查询邮箱对应的用户名
-        3. 返回原始作者名 (作为回退)
-        """
+    def get_github_username(self, author_name: str, author_email: str) -> str | None:
+        """获取用户的真实 GitHub 用户名"""
         if not author_name:
             return None
 
-        # 检查缓存 (key 包含邮箱,保证不同邮箱的同一昵称能被区分)
         cache_key = f"{author_name}|{author_email}"
         if cache_key in self.cache:
-            cached = self.cache[cache_key]
-            return cached if cached else None
+            return self.cache[cache_key]
 
-        # 策略 1: 从邮箱中提取 GitHub 用户名
-        # GitHub 生成的邮箱格式: {id}+{username}@users.noreply.github.com
-        if author_email and "users.noreply.github.com" in author_email:
-            username = self._extract_username_from_github_email(author_email)
+        username = self._resolve_username(author_email)
+        self.cache[cache_key] = username
+        return username
+
+    def _resolve_username(self, email: str) -> str | None:
+        """按优先级解析用户名"""
+        # 策略 1: 从 noreply 邮箱提取
+        if email:
+            username = self._extract_from_noreply_email(email)
             if username:
-                self.cache[cache_key] = username
                 return username
 
-        # 策略 2: 通过 GitHub API 查询邮箱对应的用户
-        # 这是解决非标准邮箱用户名识别的最可靠方式
-        if self.github_token:
-            username = self._fetch_username_by_email(author_email)
-            if username:
-                self.cache[cache_key] = username
-                return username
-
-        # 策略 3: 缓存回退结果
-        self.cache[cache_key] = None
-        return None
-
-    def _extract_username_from_github_email(self, email: str) -> Optional[str]:
-        """从 GitHub 生成的邮箱中提取 username
-        
-        格式: {id}+{username}@users.noreply.github.com
-        例如: 2475613+azmiao@users.noreply.github.com -> azmiao
-        """
-        if not email or "@users.noreply.github.com" not in email:
-            return None
-
-        try:
-            # 提取 @ 前的部分
-            local_part = email.split("@")[0]
-            # 提取 + 后的部分
-            if "+" in local_part:
-                username = local_part.split("+", 1)[1]
-                return username if username else None
-        except (IndexError, ValueError):
-            pass
+        # 策略 2: API 查询
+        if self.github_token and email:
+            return self._fetch_via_api(email)
 
         return None
 
-    def _fetch_username_by_email(self, email: str) -> Optional[str]:
-        """通过 GitHub API 查询邮箱对应的用户名
-        
-        策略:
-        1. 直接用邮箱搜索
-        2. 如果失败,尝试用关联的用户名去搜 (从 git 历史中获取)
-        3. 返回找到的第一个有效用户名
-        """
-        if not email or not self.github_token:
-            return None
+    def _extract_from_noreply_email(self, email: str) -> str | None:
+        """从 GitHub noreply 邮箱提取用户名"""
+        match = GITHUB_NOREPLY_EMAIL_PATTERN.match(email)
+        return match.group(2) if match else None
 
-        # 首先尝试直接用邮箱搜索
-        username = self._search_github_by_email(email)
+    def _fetch_via_api(self, email: str) -> str | None:
+        """通过 GitHub API 查询用户名"""
+        # 优先用邮箱搜索
+        username = self._api_search_by_email(email)
         if username:
             return username
 
-        # 如果邮箱搜索失败,尝试用关联的用户名搜索
+        # 回退：尝试用关联的 git 用户名验证
         email_lower = email.lower()
-        if email_lower in self.email_to_names:
-            for name in self.email_to_names[email_lower]:
-                username = self._search_github_by_username(name)
-                if username:
-                    return username
+        for name in self.email_to_names.get(email_lower, []):
+            username = self._api_verify_username(name)
+            if username:
+                return username
 
         return None
 
-    def _search_github_by_email(self, email: str) -> Optional[str]:
+    def _github_api_request(self, url: str) -> dict[str, Any] | None:
+        """统一的 GitHub API 请求方法"""
+        headers = {**self.GITHUB_API_HEADERS}
+        if self.github_token:
+            headers["Authorization"] = f"token {self.github_token}"
+
+        try:
+            req = Request(url, headers=headers)
+            with urlopen(req, timeout=self.API_TIMEOUT) as response:
+                return json.loads(response.read().decode())
+        except (URLError, json.JSONDecodeError, TimeoutError):
+            return None
+
+    def _api_search_by_email(self, email: str) -> str | None:
         """通过邮箱搜索 GitHub 用户"""
-        try:
-            url = f"https://api.github.com/search/users?q={email}+in:email"
-            headers = {
-                "Authorization": f"token {self.github_token}",
-                "Accept": "application/vnd.github.v3+json",
-            }
-
-            req = Request(url, headers=headers)
-            with urlopen(req, timeout=5) as response:
-                data = json.loads(response.read().decode())
-                items = data.get("items", [])
-
-                if items:
-                    # 返回第一个匹配的用户名
-                    username = items[0].get("login")
-                    return username
-        except (URLError, json.JSONDecodeError, KeyError, Exception):
-            pass
-
+        data = self._github_api_request(
+            f"https://api.github.com/search/users?q={email}+in:email"
+        )
+        if data:
+            items = data.get("items", [])
+            if items:
+                return items[0].get("login")
         return None
 
-    def _search_github_by_username(self, username: str) -> Optional[str]:
-        """通过用户名直接查询 GitHub API (验证用户是否存在)"""
-        try:
-            url = f"https://api.github.com/users/{username}"
-            headers = {
-                "Authorization": f"token {self.github_token}",
-                "Accept": "application/vnd.github.v3+json",
-            }
+    def _api_verify_username(self, username: str) -> str | None:
+        """验证用户名是否存在并返回规范化名称"""
+        data = self._github_api_request(f"https://api.github.com/users/{username}")
+        return data.get("login") if data else None
 
-            req = Request(url, headers=headers)
-            with urlopen(req, timeout=5) as response:
-                data = json.loads(response.read().decode())
-                # 返回 API 返回的用户名 (规范化)
-                login = data.get("login")
-                return login
-        except (URLError, json.JSONDecodeError, KeyError, Exception):
-            pass
 
-        return None
+# ============================================================================
+# Changelog 生成器
+# ============================================================================
 
 
 class ChangelogGenerator:
-    """Changelog 生成器"""
+    """Changelog 生成器
 
-    # 提交类型到分组的映射
-    TYPE_GROUPS = {
-        "feat": ("✨ 新功能", 0),
-        "fix": ("🐛 Bug修复", 1),
-        "patch": ("🐛 Bug修复", 1),
-        "perf": ("🚀 性能优化", 2),
-        "refactor": ("🎨 代码重构", 3),
-        "format": ("🥚 格式化", 4),
-        "style": ("💄 样式", 5),
-        "docs": ("📚 文档", 6),
-        "chore": ("🧹 日常维护", 7),
-        "git": ("🧹 日常维护", 7),
-        "deps": ("🧩 修改依赖", 8),
-        "build": ("🧩 修改依赖", 8),
-        "revert": ("🔁 还原提交", 10),
-        "test": ("🧪 测试", 11),
-        "file": ("📦 文件变更", 12),
-        "tag": ("📌 发布", 13),
-        "config": ("🔧 配置文件", 14),
-        "ci": ("⚙️ 持续集成", 15),
-        "init": ("🎉 初始化", 16),
-        "wip": ("🚧 进行中", 17),
-    }
+    从 Git 仓库读取提交历史，解析约定式提交格式，生成格式化的 changelog。
+    """
 
-    def __init__(self, repo_path: Optional[Path] = None):
+    def __init__(self, repo_path: Path | None = None) -> None:
         self.repo_path = repo_path or Path.cwd()
-        # 构建邮箱 -> 用户名的映射(用于反向查询)
         self.email_to_names = self._build_email_to_names_map()
-        # 传递给 cache 使用
         self.user_cache = GitHubUserCache(self.email_to_names)
 
     def _run_git(self, *args) -> str:
@@ -324,51 +319,32 @@ class ChangelogGenerator:
         return dict(mapping)
 
     def _get_tags(self) -> list[tuple[str, str]]:
-        """获取所有 tag 及其对应的提交hash"""
-        output = self._run_git("tag", "-l", "--sort=-version:refname", "--format=%(refname:short) %(objectname)")
-        tags = []
-        for line in output.strip().split("\n"):
-            if not line:
-                continue
-            parts = line.split()
-            if len(parts) == 2:
-                tags.append((parts[0], parts[1]))
-        return tags  # 已经按版本号降序排序
+        """获取所有 tag 及其对应的提交 hash（按版本号降序）"""
+        output = self._run_git(
+            "tag", "-l", "--sort=-version:refname",
+            "--format=%(refname:short) %(objectname)"
+        )
+        return [
+            (parts[0], parts[1])
+            for line in output.strip().split("\n")
+            if line and len(parts := line.split()) == 2
+        ]
 
-    def _parse_commit(self, commit_line: str) -> Optional[Commit]:
-        """解析 git log 输出的一行"""
-        # 格式: hash|author|email|date|message
+    def _parse_commit(self, commit_line: str) -> Commit | None:
+        """解析 git log 输出的单个提交"""
         parts = commit_line.split("|", 4)
         if len(parts) < 5:
             return None
 
         hash_val, author, email, date_str, message_full = parts
 
-        # 过滤明显的 merge commit
+        # 过滤 merge commit
         first_line = message_full.strip().split("\n")[0]
         if first_line.startswith("Merge pull request"):
             return None
 
-        # 解析日期
-        try:
-            date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S %z")
-        except ValueError:
-            date = datetime.now()
-
-        # 提取 footers (在消息最后)
-        footers = {}
-        message_lines = message_full.strip().split("\n")
-        clean_message_lines = []
-        
-        for line in message_lines:
-            # 检查是否是 footer (只提取 Co-authored-by, 其他的保留)
-            if line.strip().startswith("Co-authored-by:") and ": " in line:
-                key, value = line.split(": ", 1)
-                footers[key.strip()] = value.strip()
-            else:
-                clean_message_lines.append(line)
-        
-        clean_message = "\n".join(clean_message_lines).strip()
+        date = self._parse_date(date_str)
+        clean_message, footers = self._extract_footers(message_full)
 
         return Commit(
             hash=hash_val,
@@ -378,6 +354,28 @@ class ChangelogGenerator:
             date=date,
             footers=footers,
         )
+
+    def _parse_date(self, date_str: str) -> datetime:
+        """解析日期字符串"""
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S %z")
+        except ValueError:
+            return datetime.now()
+
+    def _extract_footers(self, message: str) -> tuple[str, dict[str, str]]:
+        """从消息中提取 footer 并返回清理后的消息"""
+        footers: dict[str, str] = {}
+        clean_lines: list[str] = []
+
+        for line in message.strip().split("\n"):
+            stripped = line.strip()
+            if stripped.startswith("Co-authored-by:") and ": " in stripped:
+                key, value = stripped.split(": ", 1)
+                footers[key] = value
+            else:
+                clean_lines.append(line)
+
+        return "\n".join(clean_lines).strip(), footers
 
     def _filter_squash_commits(self, commits: list[Commit]) -> list[Commit]:
         """
@@ -443,28 +441,21 @@ class ChangelogGenerator:
         return result
 
     def _group_commits(self, commits: list[Commit]) -> dict[str, list[Commit]]:
-        """按类型分组提交"""
-        groups = defaultdict(list)
+        """按提交类型分组并按优先级排序"""
+        groups: dict[str, list[Commit]] = defaultdict(list)
 
         for commit in commits:
-            group_name, order = self.TYPE_GROUPS.get(
-                commit.type, ("其他变更", 99)
-            )
+            group_name, _ = TYPE_GROUPS.get(commit.type, DEFAULT_GROUP)
             groups[group_name].append(commit)
 
-        # 按优先级排序
+        # 构建分组名到优先级的映射
+        group_order = {v[0]: v[1] for v in TYPE_GROUPS.values()}
         return dict(
-            sorted(
-                groups.items(),
-                key=lambda x: next(
-                    (v[1] for k, v in self.TYPE_GROUPS.items() if v[0] == x[0]),
-                    99,
-                ),
-            )
+            sorted(groups.items(), key=lambda x: group_order.get(x[0], 99))
         )
 
     def get_commits_for_version(
-        self, tag: Optional[str] = None, previous_tag: Optional[str] = None
+        self, tag: str | None = None, previous_tag: str | None = None
     ) -> list[Commit]:
         """获取指定版本的提交"""
         # 构建 git log 范围
@@ -477,151 +468,139 @@ class ChangelogGenerator:
         else:
             range_spec = "HEAD"
 
-        # 获取提交
-        format_str = "%H|%an|%ae|%ai|%B"
-        separator = "---COMMIT-SEPARATOR---"
-
         try:
             output = self._run_git(
-                "log",
-                range_spec,
-                f"--format={format_str}{separator}",
+                "log", range_spec,
+                f"--format={GIT_LOG_FORMAT}{COMMIT_SEPARATOR}",
                 "--no-merges",
             )
         except subprocess.CalledProcessError:
             return []
 
-        commits = []
-        for commit_block in output.split(separator):
-            if not commit_block.strip():
-                continue
-
-            # 移除消息体中的干扰行
-            lines = commit_block.strip().split("\n")
-            cleaned_lines = []
-            in_message = False
-            message_start_idx = 0
-
-            for i, line in enumerate(lines):
-                # 前4行是 hash|author|email|date
-                if i < 4:
-                    cleaned_lines.append(line)
-                    if i == 3:
-                        message_start_idx = len(cleaned_lines)
-                        in_message = True
-                else:
-                    # 过滤消息体中的干扰行
-                    line_stripped = line.strip()
-
-                    # 保留 squash merge 的子提交列表 (以 * 开头) - 后续处理
-                    if line_stripped.startswith("* "):
-                        cleaned_lines.append(line)
-                        continue
-
-                    # 跳过分隔线
-                    if re.match(r"^-+$", line_stripped):
-                        continue
-
-                    # 跳过 dependabot 样板文本
-                    if any(
-                        pattern in line_stripped
-                        for pattern in [
-                            "Bumps [",
-                            "Release notes",
-                            "Commits]",
-                            "updated-dependencies:",
-                            "dependency-name:",
-                            "dependency-version:",
-                            "dependency-type:",
-                            "update-type:",
-                            "Signed-off-by:",
-                        ]
-                    ):
-                        continue
-
-                    cleaned_lines.append(line)
-
-            cleaned_block = "\n".join(cleaned_lines)
-
-            commit = self._parse_commit(cleaned_block)
-            if commit:
-                commits.append(commit)
+        commits = [
+            commit
+            for block in output.split(COMMIT_SEPARATOR)
+            if block.strip()
+            and (commit := self._parse_commit(self._clean_commit_block(block)))
+        ]
 
         return self._filter_squash_commits(commits)
+
+    def _clean_commit_block(self, block: str) -> str:
+        """清理提交消息块，移除干扰行"""
+        lines = block.strip().split("\n")
+        cleaned: list[str] = []
+
+        for i, line in enumerate(lines):
+            # 前 4 行是 hash|author|email|date（消息从第 5 行开始）
+            if i < 4:
+                cleaned.append(line)
+                continue
+
+            stripped = line.strip()
+
+            # 保留 squash merge 子提交（以 * 开头）
+            if stripped.startswith("* "):
+                cleaned.append(line)
+                continue
+
+            # 跳过分隔线
+            if re.match(r"^-+$", stripped):
+                continue
+
+            # 跳过干扰文本
+            if self._is_noise_line(stripped):
+                continue
+
+            cleaned.append(line)
+
+        return "\n".join(cleaned)
+
+    @staticmethod
+    def _is_noise_line(line: str) -> bool:
+        """判断是否是需要过滤的干扰行"""
+        return any(pattern in line for pattern in NOISE_PATTERNS)
 
     def generate_version_section(
         self,
         version: str,
-        date: Optional[datetime] = None,
-        commits: Optional[list[Commit]] = None,
+        date: datetime | None = None,
+        commits: list[Commit] | None = None,
     ) -> str:
         """生成单个版本的 changelog 内容"""
-        lines = []
-
-        # 版本标题
-        if version == "unreleased":
-            lines.append("## 未发布\n")
-        else:
-            date_str = date.strftime("%Y-%m-%d") if date else ""
-            # 清理版本号: 移除 tags/ refs/tags/ 等前缀
-            version_clean = version.replace("tags/", "").replace("refs/tags/", "").lstrip("v")
-            lines.append(f"## {version_clean} ({date_str})\n")
+        lines = [self._format_version_header(version, date)]
 
         if not commits:
             return "\n".join(lines)
 
-        # 按类型分组
-        grouped = self._group_commits(commits)
-
-        for group_name, group_commits in grouped.items():
+        for group_name, group_commits in self._group_commits(commits).items():
             lines.append(f"### {group_name}\n")
-
-            # 先显示有 scope 的提交(按 scope 排序)
-            scoped = sorted(
-                [c for c in group_commits if c.scope],
-                key=lambda x: x.scope,
-            )
-            for commit in scoped:
-                msg = commit.get_display_message()
-                author_display = self._get_author_mention(commit)
-                lines.append(f"- *({commit.scope})* {msg} {author_display}")
-
-            # 再显示无 scope 的提交
-            unscoped = [c for c in group_commits if not c.scope]
-            for commit in unscoped:
-                msg = commit.get_display_message()
-                author_display = self._get_author_mention(commit)
-                lines.append(f"- {msg} {author_display}")
-
-            lines.append("")  # 组之间空一行
+            lines.extend(self._format_commit_group(group_commits))
+            lines.append("")  # 组间空行
 
         return "\n".join(lines)
 
+    def _format_version_header(self, version: str, date: datetime | None) -> str:
+        """格式化版本标题"""
+        if version == "unreleased":
+            return "## 未发布\n"
+
+        date_str = date.strftime("%Y-%m-%d") if date else ""
+        version_clean = (
+            version.replace("tags/", "").replace("refs/tags/", "").lstrip("v")
+        )
+        return f"## {version_clean} ({date_str})\n"
+
+    def _format_commit_group(self, commits: list[Commit]) -> list[str]:
+        """格式化一组提交为 changelog 条目"""
+        lines: list[str] = []
+
+        # 先显示有 scope 的提交（按 scope 排序）
+        scoped = sorted((c for c in commits if c.scope), key=lambda x: x.scope)
+        for commit in scoped:
+            lines.append(self._format_commit_line(commit, with_scope=True))
+
+        # 再显示无 scope 的提交
+        for commit in commits:
+            if not commit.scope:
+                lines.append(self._format_commit_line(commit, with_scope=False))
+
+        return lines
+
+    def _format_commit_line(self, commit: Commit, with_scope: bool) -> str:
+        """格式化单个提交条目"""
+        msg = commit.get_display_message()
+        author = self._get_author_mention(commit)
+        if with_scope:
+            return f"- *({commit.scope})* {msg} {author}"
+        return f"- {msg} {author}"
+
     def _get_author_mention(self, commit: Commit) -> str:
         """获取 GitHub @提及格式
-        
-        优先级:
-        1. 如果有真实 GitHub username,使用 @username
-        2. 否则使用原始昵称 @nickname
-        3. 如果有 Co-authored-by,添加到括号中
-        """
-        # 获取真实的 GitHub username
-        github_username = self.user_cache.get_github_username(commit.author, commit.email)
-        
-        if github_username:
-            author_mention = f"@{github_username}"
-        else:
-            # 无法获取真实用户名时,使用昵称
-            author_mention = f"@{commit.author}"
 
-        # 添加 Co-authored-by 信息
+        策略:
+        1. 如果能获取真实 GitHub username，使用 @username（会被渲染为链接）
+        2. 如果无法获取，只使用昵称（不加 @，避免链接到错误用户）
+        3. 如果有 Co-authored-by，添加到括号中
+        """
+        github_username = self.user_cache.get_github_username(
+            commit.author, commit.email
+        )
+
+        # 只有确认是真实 GitHub 用户名时才使用 @ 前缀
+        if github_username:
+            mention = f"@{github_username}"
+        else:
+            # 无法确认时使用昵称，不加 @ 避免错误链接
+            mention = commit.author
+
         if "Co-authored-by" in commit.footers:
             co_author = commit.footers["Co-authored-by"].split("<")[0].strip()
-            return f"{author_mention} (Co-authored: {co_author})"
+            return f"{mention} (Co-authored: {co_author})"
 
-        return author_mention
+        return mention
 
-    def generate_full_changelog(self, output_path: Optional[Path] = None) -> str:
+    def generate_full_changelog(self, output_path: Path | None = None) -> str:
         """生成完整的 changelog"""
         lines = ["# 更新日志\n"]
 
