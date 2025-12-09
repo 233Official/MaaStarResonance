@@ -110,45 +110,16 @@ jobs:
         with:
           repository: MaaXYZ/MaaFramework
           fileName: "MAA-${{ matrix.platform }}-${{ matrix.arch }}*"
-          # 下载最新的 Release
-          # latest: true
           # 下载指定的 Release Tag
           tag: v5.2.0
           out-file-path: "deps"
           extract: true
-
-      # 获取 MFAAvalonia 最新的 tag | 过滤beta版本的tag
-      - name: Get latest MFAAvalonia tag
-        id: get_mfa_tag
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const res = await github.rest.repos.listTags({
-              owner: 'SweetSmellFox',
-              repo: 'MFAAvalonia',
-              per_page: 20
-            });
-
-            const filteredTags = res.data
-              .map(t => t.name)
-              .filter(name => !name.toLowerCase().includes('beta'));
-
-            if (filteredTags.length === 0) {
-              core.setFailed('获取MFAA不到任何非beta版本的TAG');
-              return;
-            }
-
-            const latestTag = filteredTags[0];
-            console.log('最新的MFAA正式版tag为：', latestTag);
-            core.setOutput('tag', latestTag);
 
       # 下载 MFAAvalonia 源码
       - name: Checkout MFAAvalonia source
         uses: actions/checkout@v6
         with:
           repository: SweetSmellFox/MFAAvalonia
-          # 使用获取到的最新正式版 tag
-          # ref: ${{ steps.get_mfa_tag.outputs.tag }}
           # 使用固定版本
           ref: v2.1.8
           path: MFA-src
