@@ -81,5 +81,115 @@
     "files.watcherExclude": {
         "releases/**": true
     },
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "gitCommitLintVscode.customType": [
+        {
+            "emoji": "✨",
+            "type": "feat",
+            "name": "引入新功能",
+            "description": "新功能"
+        },
+        {
+            "emoji": "🐛",
+            "type": "fix",
+            "name": "修复bug",
+            "description": "BUG"
+        },
+        {
+            "emoji": "🚀",
+            "type": "perf",
+            "name": "提高性能/优化",
+            "description": "优化"
+        },
+        {
+            "emoji": "🎨",
+            "type": "refactor",
+            "name": "改进/重构代码",
+            "description": "优化"
+        },
+        {
+            "emoji": "🥚",
+            "type": "format",
+            "name": "格式化代码",
+            "description": "格式化"
+        },
+        {
+            "emoji": "🚑",
+            "type": "patch",
+            "name": "添加重要补丁",
+            "description": "补丁"
+        },
+        {
+            "emoji": "💄",
+            "type": "style",
+            "name": "更新样式文件",
+            "description": "样式"
+        },
+        {
+            "emoji": "📚",
+            "type": "docs",
+            "name": "添加/更新文档",
+            "description": "文档"
+        },
+        {
+            "emoji": "🔧",
+            "type": "chore",
+            "name": "日常维护",
+            "description": "杂项"
+        },
+        {
+            "emoji": "🧩",
+            "type": "deps",
+            "name": "修改依赖版本",
+            "description": "依赖"
+        },
+        {
+            "emoji": "🔁",
+            "type": "revert",
+            "name": "还原之前的提交",
+            "description": "回滚"
+        },
+        {
+            "emoji": "🧪",
+            "type": "test",
+            "name": "增加测试代码",
+            "description": "测试"
+        },
+        {
+            "emoji": "📦",
+            "type": "file",
+            "name": "添加新文件",
+            "description": "新文件"
+        },
+        {
+            "emoji": "📌",
+            "type": "tag",
+            "name": "发布版本/添加标签",
+            "description": "书签"
+        },
+        {
+            "emoji": "🔧",
+            "type": "config",
+            "name": "修改配置文件",
+            "description": "配置"
+        },
+        {
+            "emoji": "⚙️",
+            "type": "ci",
+            "name": "Action持续集成相关修改",
+            "description": "持续集成"
+        },
+        {
+            "emoji": "🙈",
+            "type": "git",
+            "name": "添加或修改.gitignore文件",
+            "description": "不可见"
+        },
+        {
+            "emoji": "🎉",
+            "type": "init",
+            "name": "初次提交/初始化项目",
+            "description": "初始化"
+        }
+    ]
 }
