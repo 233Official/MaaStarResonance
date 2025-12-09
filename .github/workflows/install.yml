@@ -23,7 +23,7 @@ jobs:
   meta:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - id: set_tag
@@ -66,7 +66,7 @@ jobs:
         with:
           python-version: '3.13'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download wheels
         working-directory: ${{ github.workspace }}
@@ -100,7 +100,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -144,7 +144,7 @@ jobs:
 
       # 下载 MFAAvalonia 源码
       - name: Checkout MFAAvalonia source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: SweetSmellFox/MFAAvalonia
           # 使用获取到的最新正式版 tag
@@ -269,7 +269,7 @@ jobs:
       release_body: ${{ steps.git-cliff.outputs.content }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
