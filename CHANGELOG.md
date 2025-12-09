@@ -2,6 +2,18 @@
 
 ## 未发布
 
+### 🚀 性能优化
+
+- 优化 Release Info 生成机制, 不再使用 git cliff, 通过自定义 py 脚本实现 @233Official
+
+### 🎨 代码重构
+
+- 优化 changelog 生成脚本 @233Official
+
+### 📚 文档
+
+- 删除旧版本手写changelog @233Official
+
 ### 🧹 日常维护
 
 - 更新commit模板、cliff模板、pr模板，更新vscode配置文件 @azmiao
@@ -352,7 +364,7 @@
 
 ### ✨ 新功能
 
-- add mirrorchyan uploading @MistEO
+- add mirrorchyan uploading MistEO
 
 ### 🐛 Bug修复
 
@@ -381,7 +393,7 @@
 
 ### ⚙️ 持续集成
 
-- filename typos @MistEO
+- filename typos MistEO
 
 ## 0.3.0 (2025-11-10)
 
@@ -515,7 +527,7 @@
 
 ### 🚀 性能优化
 
-- 优化本地编译代码， 使其更合理 @Ayusummer
+- 优化本地编译代码， 使其更合理 233JG
 
 ### 📚 文档
 
@@ -533,9 +545,9 @@
 - ignore MaaFWDocs @233Official
 - 🔥 移除旧版本地打包脚本 @233Official
 - ✨ 打包 embed python @233Official
-- 🎨 目录结构调整 @Ayusummer
-- ignore embeddable python dir @Ayusummer
-- 🎨 auto format @Ayusummer
+- 🎨 目录结构调整 233JG
+- ignore embeddable python dir 233JG
+- 🎨 auto format 233JG
 - ignore poetry config files @233Official
 - 📝初版DPS分析 @233Official
 - 🚧 更新部分肉鸽配置 @233Official
@@ -556,18 +568,18 @@
 - add Android KeyEvent Json @233Official
 - add VSCode Github Copilot Coding Rules @233Official
 - 补充快捷调试配置 @233Official
-- 修改下项目名称 @Ayusummer
-- 新增全局 interface 默认字段 @Ayusummer
-- 添加VSC工作区扩展建议 - Prettier 用于格式化代码 @Ayusummer
-- 调整 OCR 模型配置脚本以适应项目新结构 @Ayusummer
-- vscode setting - 添加推荐扩展与 spell words @Ayusummer
-- 不再使用github action， 暂且归档 @Ayusummer
+- 修改下项目名称 233JG
+- 新增全局 interface 默认字段 233JG
+- 添加VSC工作区扩展建议 - Prettier 用于格式化代码 233JG
+- 调整 OCR 模型配置脚本以适应项目新结构 233JG
+- vscode setting - 添加推荐扩展与 spell words 233JG
+- 不再使用github action， 暂且归档 233JG
 - poetry 改 uv 管理项目依赖 @233Official
 
 ### 其他变更
 
-- 离线安装依赖 @Ayusummer
-- 下载 @Ayusummer
+- 离线安装依赖 233JG
+- 下载 233JG
 
 ## 0.0.3 (2025-09-25)
 
@@ -585,11 +597,11 @@
 
 ### 🔧 配置文件
 
-- 修改包体名称 @233Official
+- 修改包体名称 233PC
 
 ## 0.0.1 (2025-09-08)
 
 ### 🧹 日常维护
 
-- 📝 更新开发随笔 @233Official
+- 📝 更新开发随笔 233PC
 - Initial commit @233Official

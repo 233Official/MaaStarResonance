@@ -8,25 +8,31 @@
 - 智能获取真实 GitHub 用户名(支持多层策略)
 - 完美处理 squash merge 的子提交展开
 - 支持 emoji 格式的约定式提交
+- 支持本地昵称映射配置文件
 
 用户名获取策略(优先级从高到低):
-1. GitHub 邮箱格式提取: {id}+{username}@users.noreply.github.com -> username (自动)
-2. GitHub API 查询: 使用 GITHUB_TOKEN 查询邮箱对应的用户名 (自动,推荐在 CI/CD 中使用)
-3. 昵称回退: 使用原始 git 提交中的昵称 (当无法通过上述方式识别时)
+1. 本地昵称映射: 从 .vscode/git-nickname-username.json 读取预定义映射
+2. GitHub 邮箱格式提取: {id}+{username}@users.noreply.github.com -> username (自动)
+3. GitHub API 查询: 使用 GITHUB_TOKEN 查询邮箱对应的用户名 (自动,推荐在 CI/CD 中使用)
+4. 昵称回退: 使用原始 git 提交中的昵称 (当无法通过上述方式识别时)
 
 用法:
     python scripts/generate_changelog.py [--output CHANGELOG.md] [--latest]
 
-    # 本地测试示例 (自动提取 GitHub 邮箱格式)
+    # 本地测试示例 (使用昵称映射)
     python scripts/generate_changelog.py --latest
 
     # CI/CD 示例 (使用 token 查询所有用户名)
     GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} python scripts/generate_changelog.py -o CHANGELOG.md
+
+    # 指定昵称映射文件
+    python scripts/generate_changelog.py --nickname-map .vscode/git-nickname-username.json
 """
 
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from collections import defaultdict
@@ -40,6 +46,9 @@ from urllib.request import Request, urlopen
 # ============================================================================
 # 常量定义
 # ============================================================================
+
+# 默认昵称映射文件路径（相对于仓库根目录）
+DEFAULT_NICKNAME_MAP_PATH = ".vscode/git-nickname-username.json"
 
 # 约定式提交正则: type[emoji](scope): message
 CONVENTIONAL_COMMIT_PATTERN = re.compile(
@@ -181,9 +190,10 @@ class GitHubUserCache:
     """GitHub 用户名缓存与查询服务
 
     获取策略优先级:
-    1. 从 GitHub noreply 邮箱格式提取
-    2. 通过 GitHub API 查询
-    3. 返回 None（由调用方决定回退策略）
+    1. 本地昵称映射文件
+    2. 从 GitHub noreply 邮箱格式提取
+    3. 通过 GitHub API 查询
+    4. 返回 None（由调用方决定回退策略）
     """
 
     GITHUB_API_HEADERS = {
@@ -191,10 +201,15 @@ class GitHubUserCache:
     }
     API_TIMEOUT = 5
 
-    def __init__(self, email_to_names: dict[str, set[str]] | None = None) -> None:
+    def __init__(
+        self,
+        email_to_names: dict[str, set[str]] | None = None,
+        nickname_map: dict[str, str] | None = None,
+    ) -> None:
         self.cache: dict[str, str | None] = {}
         self.github_token = os.getenv("GITHUB_TOKEN")
         self.email_to_names = email_to_names or {}
+        self.nickname_map = nickname_map or {}
 
     def get_github_username(self, author_name: str, author_email: str) -> str | None:
         """获取用户的真实 GitHub 用户名"""
@@ -205,19 +220,23 @@ class GitHubUserCache:
         if cache_key in self.cache:
             return self.cache[cache_key]
 
-        username = self._resolve_username(author_email)
+        username = self._resolve_username(author_name, author_email)
         self.cache[cache_key] = username
         return username
 
-    def _resolve_username(self, email: str) -> str | None:
+    def _resolve_username(self, author_name: str, email: str) -> str | None:
         """按优先级解析用户名"""
-        # 策略 1: 从 noreply 邮箱提取
+        # 策略 1: 本地昵称映射
+        if author_name in self.nickname_map:
+            return self.nickname_map[author_name]
+
+        # 策略 2: 从 noreply 邮箱提取
         if email:
             username = self._extract_from_noreply_email(email)
             if username:
                 return username
 
-        # 策略 2: API 查询
+        # 策略 3: API 查询
         if self.github_token and email:
             return self._fetch_via_api(email)
 
@@ -285,10 +304,36 @@ class ChangelogGenerator:
     从 Git 仓库读取提交历史，解析约定式提交格式，生成格式化的 changelog。
     """
 
-    def __init__(self, repo_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        repo_path: Path | None = None,
+        nickname_map_path: Path | None = None,
+    ) -> None:
         self.repo_path = repo_path or Path.cwd()
         self.email_to_names = self._build_email_to_names_map()
-        self.user_cache = GitHubUserCache(self.email_to_names)
+        self.nickname_map = self._load_nickname_map(nickname_map_path)
+        self.user_cache = GitHubUserCache(self.email_to_names, self.nickname_map)
+
+    def _load_nickname_map(self, nickname_map_path: Path | None) -> dict[str, str]:
+        """加载昵称到用户名的映射文件"""
+        if nickname_map_path is None:
+            # 使用默认路径
+            nickname_map_path = self.repo_path / DEFAULT_NICKNAME_MAP_PATH
+
+        if not nickname_map_path.exists():
+            return {}
+
+        try:
+            with open(nickname_map_path, encoding="utf-8") as f:
+                data = json.load(f)
+                # 过滤掉 $schema 等元数据字段
+                return {
+                    k: v for k, v in data.items()
+                    if not k.startswith("$") and isinstance(v, str)
+                }
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"⚠️ 加载昵称映射文件失败: {e}", file=sys.stderr)
+            return {}
 
     def _run_git(self, *args) -> str:
         """运行 git 命令"""
@@ -661,7 +706,45 @@ class ChangelogGenerator:
         return self.generate_version_section(latest_tag, date, commits)
 
 
-def main():
+def _find_markdownlint() -> str | None:
+    """查找可用的 markdownlint 命令"""
+    # 优先查找 markdownlint-cli2（更现代）
+    for cmd in ["markdownlint-cli2", "markdownlint"]:
+        if shutil.which(cmd):
+            return cmd
+    return None
+
+
+def _run_markdownlint(file_path: Path, fix: bool = True) -> bool:
+    """运行 markdownlint 格式化文件
+
+    Args:
+        file_path: 要格式化的文件路径
+        fix: 是否自动修复
+
+    Returns:
+        是否成功执行
+    """
+    cmd = _find_markdownlint()
+    if not cmd:
+        return False
+
+    try:
+        args = [cmd]
+        if fix:
+            args.append("--fix")
+        args.append(str(file_path))
+
+        subprocess.run(args, check=True, capture_output=True)
+        return True
+    except subprocess.CalledProcessError:
+        # markdownlint 返回非零表示有问题，但 --fix 模式下已尝试修复
+        return True
+    except FileNotFoundError:
+        return False
+
+
+def main() -> None:
     """主函数"""
     import argparse
 
@@ -683,10 +766,20 @@ def main():
         type=Path,
         help="Git 仓库路径(默认为当前目录)",
     )
+    parser.add_argument(
+        "--nickname-map",
+        type=Path,
+        help=f"昵称映射文件路径(默认为 {DEFAULT_NICKNAME_MAP_PATH})",
+    )
+    parser.add_argument(
+        "--no-format",
+        action="store_true",
+        help="禁用 markdownlint 格式化",
+    )
 
     args = parser.parse_args()
 
-    generator = ChangelogGenerator(args.repo)
+    generator = ChangelogGenerator(args.repo, args.nickname_map)
 
     try:
         if args.latest:
@@ -694,6 +787,20 @@ def main():
             print(content)
         else:
             generator.generate_full_changelog(args.output)
+
+            # 尝试使用 markdownlint 格式化
+            if not args.no_format:
+                lint_cmd = _find_markdownlint()
+                if lint_cmd:
+                    if _run_markdownlint(args.output, fix=True):
+                        print(f"✅ 已使用 {lint_cmd} 格式化")
+                else:
+                    print(
+                        "⚠️ 未找到 markdownlint，建议安装以自动格式化:\n"
+                        "   npm install -g markdownlint-cli2\n"
+                        "   或手动格式化 CHANGELOG.md",
+                        file=sys.stderr,
+                    )
 
     except subprocess.CalledProcessError as e:
         print(f"❌ Git 命令执行失败: {e}", file=sys.stderr)

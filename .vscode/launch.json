@@ -53,6 +53,17 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             }
+        },
+        {
+            "name": "生成完整 changelog",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/generate_changelog.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--output",
+                "${workspaceFolder}/CHANGELOG.md"
+            ]
         }
     ]
 }

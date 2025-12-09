@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Git Nickname to GitHub Username Mapping",
+    "description": "Git 提交昵称到 GitHub 用户名的映射配置，用于 generate_changelog.py 正确生成 @username 链接",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema 引用"
+        },
+        "$comment": {
+            "type": "string",
+            "description": "配置文件说明"
+        }
+    },
+    "additionalProperties": {
+        "type": "string",
+        "description": "GitHub 用户名",
+        "pattern": "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}(\\[bot\\])?$"
+    },
+    "examples": [
+        {
+            "233": "233Official",
+            "azmiao": "azmiao"
+        }
+    ]
+}
