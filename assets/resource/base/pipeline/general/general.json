@@ -85,5 +85,40 @@
         },
         "next": "挂机自动批复入队申请"
     },
-    "Z-一号位幻想": {}
+    "Z-释放一号位幻想": {
+        "action": {
+            "type": "ClickKey",
+            "param": {
+                "key": 54
+            }
+        }
+    },
+    "每130s释放一次一号位幻想": {
+        "next": [
+            "Z-释放一号位幻想并继续循环",
+            "[JumpBack]从省电模式唤醒"
+        ],
+        // todo: 这里的 rate_limit 无法生效, 可能是 bug
+        "rate_limit": 130000, // 每130s释放一次
+        // 1day = 24h * 60min * 60s * 1000ms = 86400000ms
+        "timeout": 86400000
+    },
+    "Z-释放一号位幻想并继续循环": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/主页面任务图标.png"],
+                "roi": [22, 218, 26, 23]
+            }
+        },
+        "action": {
+            "type": "ClickKey",
+            "param": {
+                "key": 54
+            }
+        },
+        "next": "每130s释放一次一号位幻想",
+        // 每次释放后等待 130s 再继续下一轮
+        "post_delay": 130000
+    }
 }
