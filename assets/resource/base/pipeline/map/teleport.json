@@ -7,6 +7,14 @@
             }
         }
     },
+    "导航地图导航点": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "NavigatePoint"
+            }
+        }
+    },
     "获取参数-传送所需地图": {
         "action": {
             "type": "DoNothing"
@@ -23,6 +31,22 @@
             "dest_tele_point": ""
         }
     },
+    "获取参数-导航所需地图": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "dest_map": ""
+        }
+    },
+    "获取参数-导航所需导航点": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "dest_navigate_point": ""
+        }
+    },
     "图片识别是否已经打开地图": {
         "recognition": {
             "type": "TemplateMatch",
@@ -32,7 +56,16 @@
             }
         }
     },
-    "图片识别传送点是否可以直接传送": {
+    "图片识别地点是否可以直接传送": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["地图/地图传送点传送按钮.png"],
+                "roi": [1046, 641, 73, 32]
+            }
+        }
+    },
+    "图片识别地点是否可以直接导航": {
         "recognition": {
             "type": "TemplateMatch",
             "param": {

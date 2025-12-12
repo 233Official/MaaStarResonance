@@ -47,7 +47,7 @@ def get_max_restart_count(context: Context) -> int:
     return int(max_restart_count)
 
 
-def get_dest_map(context: Context) -> str:
+def get_dest_tele_map(context: Context) -> str:
     """获取传送所需地图参数"""
     dest_map_node = context.get_node_data("获取参数-传送所需地图")
     dest_map = (dest_map_node
@@ -67,6 +67,28 @@ def get_dest_tele_point(context: Context) -> str:
                          ) if dest_tele_point_node else ""
     logger.info(f"传送所需传送点参数: {dest_tele_point}")
     return dest_tele_point
+
+
+def get_dest_navi_map(context: Context) -> str:
+    """获取导航所需地图参数"""
+    dest_map_node = context.get_node_data("获取参数-导航所需地图")
+    dest_map = (dest_map_node
+                         .get("attach", {})
+                         .get("dest_map", "")
+                         ) if dest_map_node else ""
+    logger.info(f"导航所需地图参数: {dest_map}")
+    return dest_map
+
+
+def get_dest_navigate_point(context: Context) -> str:
+    """获取传送所需导航点参数"""
+    dest_navigate_point_node = context.get_node_data("获取参数-导航所需导航点")
+    dest_navigate_point = (dest_navigate_point_node
+                         .get("attach", {})
+                         .get("dest_navigate_point", "")
+                         ) if dest_navigate_point_node else ""
+    logger.info(f"导航所需导航点参数: {dest_navigate_point}")
+    return dest_navigate_point
 
 
 def get_chat_message_content(context: Context) -> str:
