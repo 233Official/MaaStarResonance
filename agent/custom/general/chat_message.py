@@ -67,7 +67,9 @@ def send_message(context: Context) -> bool:
     for channel_id in channel_id_list:
         # 3. 切换世界频道分线
         time.sleep(2)
-        change_channel(channel_id, context)
+        need_next = change_channel(channel_id, context)
+        if not need_next:
+            continue
         # 4. 点击输入框
         time.sleep(1)
         context.tasker.controller.post_click(190, 680)
@@ -95,9 +97,9 @@ def send_message(context: Context) -> bool:
             success_count += 1
             logger.info(f"已成功向聊天世界频道 {channel_id} 发送消息内容")
         else:
-            logger.error(f"向聊天世界频道 {channel_id} 发送消息内容失败")
+            logger.error(f"向聊天世界频道 {channel_id} 发送消息内容失败：识别不到发送按钮")
 
-    logger.info(f"===== 本轮发送世界频道消息成功：{success_count} / {len(channel_id_list)} ====")
+    logger.info(f"===== 本轮发送世界频道消息已经成功：{success_count} / {len(channel_id_list)} ====")
     return True
 
 
@@ -133,4 +135,7 @@ def change_channel(channel_id: str, context: Context, interval: float = 0.5) -> 
     if switch_result and switch_result.hit:
         logger.info(f"已成功切换到聊天世界频道: {channel_id}")
         return True
+
+    # TODO 后续需要校验是否真的切换成功，需要根据原来所在分线判断
+    logger.info(f"聊天世界频道: {channel_id} 切换失败")
     return False
