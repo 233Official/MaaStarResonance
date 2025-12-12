@@ -68,3 +68,24 @@ def get_dest_tele_point(context: Context) -> str:
     logger.info(f"传送所需传送点参数: {dest_tele_point}")
     return dest_tele_point
 
+
+def get_chat_message_content(context: Context) -> str:
+    """获取输入聊天框的消息内容参数"""
+    message_content_node = context.get_node_data("获取参数-输入聊天框的消息内容")
+    message_content = (message_content_node
+                         .get("attach", {})
+                         .get("content", "")
+                         ) if message_content_node else ""
+    logger.info(f"输入聊天框的消息内容参数: {message_content}")
+    return message_content
+
+
+def get_chat_channel_id_list(context: Context) -> list[str]:
+    """获取需要发送消息的世界频道分线ID参数"""
+    channel_ids_node = context.get_node_data("获取参数-需要发送消息的世界频道分线ID")
+    channel_ids = (channel_ids_node
+                         .get("attach", {})
+                         .get("channel_ids", "")
+                         ) if channel_ids_node else ""
+    logger.info(f"输入聊天框的消息内容参数: {channel_ids}")
+    return channel_ids.split(",")

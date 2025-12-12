@@ -120,5 +120,56 @@
         "next": "每130s释放一次一号位幻想",
         // 每次释放后等待 130s 再继续下一轮
         "post_delay": 130000
+    },
+    "世界聊天频道发言": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "SendMessage"
+            }
+        }
+    },
+    "检测聊天按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/聊天按钮.png"],
+                "roi": [424, 542, 129, 127],
+                "green_mask": true
+            }
+        }
+    },
+    "检测发送消息按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/发送消息按钮.png"],
+                "roi": [712, 611, 197, 109]
+            }
+        }
+    },
+    "输入聊天框内容": {
+        "action": {
+            "type": "InputText",
+            "param": {
+                "input_text": ""
+            }
+        }
+    },
+    "获取参数-输入聊天框的消息内容": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "content": ""
+        }
+    },
+    "获取参数-需要发送消息的世界频道分线ID": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "channel_ids": ""
+        }
     }
 }
