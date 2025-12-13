@@ -33,7 +33,7 @@ def get_restart_for_except(context: Context) -> bool:
                           .get("restart_for_except", True)
                           ) if restart_for_except_node else True
     logger.info(f"是否重启游戏参数参数: {restart_for_except}")
-    return restart_for_except
+    return bool(restart_for_except)
 
 
 def get_max_restart_count(context: Context) -> int:
@@ -55,7 +55,7 @@ def get_dest_tele_map(context: Context) -> str:
                          .get("dest_map", "")
                          ) if dest_map_node else ""
     logger.info(f"传送所需地图参数: {dest_map}")
-    return dest_map
+    return str(dest_map)
 
 
 def get_dest_tele_point(context: Context) -> str:
@@ -66,7 +66,7 @@ def get_dest_tele_point(context: Context) -> str:
                          .get("dest_tele_point", "")
                          ) if dest_tele_point_node else ""
     logger.info(f"传送所需传送点参数: {dest_tele_point}")
-    return dest_tele_point
+    return str(dest_tele_point)
 
 
 def get_dest_navi_map(context: Context) -> str:
@@ -77,18 +77,63 @@ def get_dest_navi_map(context: Context) -> str:
                          .get("dest_map", "")
                          ) if dest_map_node else ""
     logger.info(f"导航所需地图参数: {dest_map}")
-    return dest_map
+    return str(dest_map)
 
 
 def get_dest_navigate_point(context: Context) -> str:
-    """获取传送所需导航点参数"""
+    """获取导航所需导航点参数"""
     dest_navigate_point_node = context.get_node_data("获取参数-导航所需导航点")
     dest_navigate_point = (dest_navigate_point_node
                          .get("attach", {})
                          .get("dest_navigate_point", "")
                          ) if dest_navigate_point_node else ""
     logger.info(f"导航所需导航点参数: {dest_navigate_point}")
-    return dest_navigate_point
+    return str(dest_navigate_point)
+
+
+def get_chat_loop_limit(context: Context) -> int:
+    """获取聊天框发消息的次数上限参数"""
+    loop_limit_node = context.get_node_data("获取参数-聊天框发消息的次数上限")
+    loop_limit = (loop_limit_node
+                         .get("attach", {})
+                         .get("limit", 0)
+                         ) if loop_limit_node else 0
+    logger.info(f"聊天框发消息的次数上限参数: {loop_limit}")
+    return int(loop_limit)
+
+
+def get_chat_loop_interval(context: Context) -> int:
+    """获取聊天框发消息的周期参数"""
+    loop_interval_node = context.get_node_data("获取参数-聊天框发消息的周期")
+    loop_interval = (loop_interval_node
+                         .get("attach", {})
+                         .get("loop_interval", 120)
+                         ) if loop_interval_node else 120
+    logger.info(f"聊天框发消息的周期参数: {loop_interval}")
+    return int(loop_interval)
+
+
+def get_chat_channel(context: Context) -> str:
+    """获取聊天框频道参数"""
+    chat_channel_node = context.get_node_data("获取参数-输入聊天框频道")
+    chat_channel = (chat_channel_node
+                         .get("attach", {})
+                         .get("channel", "世界")
+                         ) if chat_channel_node else "世界"
+    logger.info(f"输入聊天框频道参数: {chat_channel}")
+    return str(chat_channel)
+
+
+def get_chat_channel_id_list(context: Context) -> list[str]:
+    """获取需要发送消息的世界频道分线ID参数"""
+    channel_ids_node = context.get_node_data("获取参数-需要发送消息的世界频道分线ID")
+    channel_ids = (channel_ids_node
+                         .get("attach", {})
+                         .get("channel_ids", "")
+                         ) if channel_ids_node else ""
+    channel_id_list = str(channel_ids).split(",") if channel_ids else []
+    logger.info(f"输入聊天框的消息内容参数: {channel_id_list}")
+    return channel_id_list
 
 
 def get_chat_message_content(context: Context) -> str:
@@ -99,15 +144,4 @@ def get_chat_message_content(context: Context) -> str:
                          .get("content", "")
                          ) if message_content_node else ""
     logger.info(f"输入聊天框的消息内容参数: {message_content}")
-    return message_content
-
-
-def get_chat_channel_id_list(context: Context) -> list[str]:
-    """获取需要发送消息的世界频道分线ID参数"""
-    channel_ids_node = context.get_node_data("获取参数-需要发送消息的世界频道分线ID")
-    channel_ids = (channel_ids_node
-                         .get("attach", {})
-                         .get("channel_ids", "")
-                         ) if channel_ids_node else ""
-    logger.info(f"输入聊天框的消息内容参数: {channel_ids}")
-    return channel_ids.split(",")
+    return str(message_content)

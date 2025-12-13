@@ -121,11 +121,19 @@
         // 每次释放后等待 130s 再继续下一轮
         "post_delay": 130000
     },
-    "世界聊天频道发言": {
+    "聊天频道发言": {
         "action": {
             "type": "Custom",
             "param": {
                 "custom_action": "SendMessage"
+            }
+        }
+    },
+    "周期性聊天频道发言": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "SendMessageLoop"
             }
         }
     },
@@ -156,12 +164,12 @@
             }
         }
     },
-    "获取参数-输入聊天框的消息内容": {
+    "获取参数-输入聊天框频道": {
         "action": {
             "type": "DoNothing"
         },
         "attach": {
-            "content": ""
+            "channel": ""
         }
     },
     "获取参数-需要发送消息的世界频道分线ID": {
@@ -170,6 +178,30 @@
         },
         "attach": {
             "channel_ids": ""
+        }
+    },
+    "获取参数-输入聊天框的消息内容": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "content": ""
+        }
+    },
+    "获取参数-聊天框发消息的周期": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "loop_interval": 120
+        }
+    },
+    "获取参数-聊天框发消息的次数上限": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "limit": 0
         }
     }
 }

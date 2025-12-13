@@ -26,18 +26,6 @@
             "path": [
                 "{PROJECT_DIR}/resource/base"
             ]
-        },
-        {
-            "name": "国际服（暂未支持）",
-            "path": [
-                "{PROJECT_DIR}/resource/global"
-            ]
-        },
-        {
-            "name": "日服（暂未支持）",
-            "path": [
-                "{PROJECT_DIR}/resource/jp"
-            ]
         }
     ],
     "agent": {
@@ -58,11 +46,8 @@
             "option": [
                 "自动购买鱼竿选择",
                 "自动购买鱼饵选择",
-                "如遇到不可恢复异常是否重启游戏"
-            ],
-            "advanced": [
                 "需要的最大成功钓鱼数量",
-                "最大重启游戏次数限制"
+                "如遇到不可恢复异常是否重启游戏"
             ]
         },
         {
@@ -85,11 +70,21 @@
             "entry": "每130s释放一次一号位幻想"
         },
         {
-            "name": "世界聊天频道发言",
-            "entry": "世界聊天频道发言",
-            "advanced": [
-                "需要发送消息的世界频道分线ID",
-                "输入聊天框的消息内容"
+            "name": "聊天频道发言",
+            "entry": "聊天频道发言",
+            "option": [
+                "输入聊天框的消息内容",
+                "需要发送消息的频道"
+            ]
+        },
+        {
+            "name": "周期性聊天频道发言",
+            "entry": "周期性聊天频道发言",
+            "option": [
+                "发送消息的周期间隔",
+                "聊天框发消息的次数上限",
+                "输入聊天框的消息内容",
+                "需要发送消息的频道"
             ]
         },
         {
@@ -111,7 +106,7 @@
         {
             "name": "重启并登录星痕共鸣",
             "entry": "重启并登录星痕共鸣",
-            "advanced": [
+            "option": [
                 "登录超时时长",
                 "场景切换超时时长"
             ]
@@ -264,11 +259,37 @@
                 }
             ]
         },
+        "需要的最大成功钓鱼数量": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "最大成功钓鱼数量",
+                    "description": "需要的最大成功钓鱼数量，默认设置0为无限钓鱼，钓到足够数量的鱼就停止任务",
+                    "pipeline_type": "int",
+                    "default": "0"
+                }
+            ],
+            "pipeline_override": {
+                "启动自动钓鱼入口": {
+                    "action": {
+                        "param": {
+                            "custom_action_param": {
+                                "max_success_fishing_count": "{最大成功钓鱼数量}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "如遇到不可恢复异常是否重启游戏": {
             "type": "select",
+            "default_case": "是",
             "cases": [
                 {
                     "name": "是",
+                    "option": [
+                        "最大重启游戏次数限制"
+                    ],
                     "pipeline_override": {
                         "获取参数-是否重启游戏": {
                             "attach": {
@@ -288,6 +309,62 @@
                     }
                 }
             ]
+        },
+        "最大重启游戏次数限制": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "最大重启游戏次数",
+                    "description": "如遇到不可恢复异常时，允许的最大重启游戏次数，默认5次，超过后任务终止",
+                    "pattern_msg": "int",
+                    "default": "5"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-最大重启游戏次数限制": {
+                    "attach": {
+                        "max_restart_count": "{最大重启游戏次数}"
+                    }
+                }
+            }
+        },
+        "默认超时时长": {
+            "type": "input",
+            "label": "默认超时时长（秒）",
+            "inputs": [
+                {
+                    "name": "登录超时时长",
+                    "description": "星痕共鸣启动游戏准备登录前的超时时长，单位为秒，不填默认240秒",
+                    "pattern_msg": "int",
+                    "default": "240"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-登录超时时长": {
+                    "attach": {
+                        "login_timeout": "{登录超时时长}"
+                    }
+                }
+            }
+        },
+        "场景切换超时时长": {
+            "type": "input",
+            "label": "场景切换超时时长（秒）",
+            "inputs": [
+                {
+                    "name": "场景切换超时时长",
+                    "description": "星痕共鸣进入游戏后等待地图加载的超时时间，单位为秒，不填默认90秒",
+                    "pattern_msg": "int",
+                    "default": "90"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-登录超时时长": {
+                    "attach": {
+                        "area_change_timeout": "{场景切换超时时长}"
+                    }
+                }
+            }
         },
         "采集方案": {
             "type": "select",
@@ -315,6 +392,122 @@
                     }
                 }
             ]
+        },
+        "发送消息的周期间隔": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "发送消息的周期间隔",
+                    "description": "循环的间隔，单位为秒，默认120秒",
+                    "pipeline_type": "int",
+                    "default": "120"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-聊天框发消息的周期": {
+                    "attach": {
+                        "loop_interval": "{发送消息的周期间隔}"
+                    }
+                }
+            }
+        },
+        "聊天框发消息的次数上限": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "发消息的次数上限",
+                    "description": "循环发消息的次数上限，默认0无限次数",
+                    "pipeline_type": "int",
+                    "default": "0"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-聊天框发消息的次数上限": {
+                    "attach": {
+                        "limit": "{发消息的次数上限}"
+                    }
+                }
+            }
+        },
+        "输入聊天框的消息内容": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "聊天框的消息内容",
+                    "pipeline_type": "string"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-输入聊天框的消息内容": {
+                    "attach": {
+                        "content": "{聊天框的消息内容}"
+                    }
+                }
+            }
+        },
+        "需要发送消息的频道": {
+            "type": "select",
+            "cases": [
+                {
+                    "name": "综合",
+                    "pipeline_override": {
+                        "获取参数-输入聊天框频道": {
+                            "attach": {
+                                "channel": "综合"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "世界",
+                    "option": [
+                        "需要发送消息的世界频道分线ID"
+                    ],
+                    "pipeline_override": {
+                        "获取参数-输入聊天框频道": {
+                            "attach": {
+                                "channel": "世界"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "协会",
+                    "pipeline_override": {
+                        "获取参数-输入聊天框频道": {
+                            "attach": {
+                                "channel": "协会"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "队伍",
+                    "pipeline_override": {
+                        "获取参数-输入聊天框频道": {
+                            "attach": {
+                                "channel": "队伍"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "需要发送消息的世界频道分线ID": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "世界频道分线ID",
+                    "pipeline_type": "string"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-需要发送消息的世界频道分线ID": {
+                    "attach": {
+                        "channel_ids": "{世界频道分线ID}"
+                    }
+                }
+            }
         },
         "目的传送地图选择": {
             "type": "select",
@@ -847,132 +1040,6 @@
                     }
                 }
             ]
-        }
-    },
-    "advanced": {
-        "需要的最大成功钓鱼数量": {
-            "field": [
-                "需要的最大成功钓鱼数量"
-            ],
-            "type": [
-                "int"
-            ],
-            "default": [
-                "0"
-            ],
-            "pipeline_override": {
-                "启动自动钓鱼入口": {
-                    "action": {
-                        "param": {
-                            "custom_action_param": {
-                                "max_success_fishing_count": "{需要的最大成功钓鱼数量}"
-                            }
-                        }
-                    }
-                }
-            },
-            "doc": "需要的最大成功钓鱼数量，默认设置0为无限钓鱼"
-        },
-        "最大重启游戏次数限制": {
-            "field": [
-                "最大重启游戏次数限制"
-            ],
-            "type": [
-                "int"
-            ],
-            "default": [
-                "5"
-            ],
-            "pipeline_override": {
-                "获取参数-最大重启游戏次数限制": {
-                    "attach": {
-                        "max_restart_count": "{最大重启游戏次数限制}"
-                    }
-                }
-            },
-            "doc": "如遇到不可恢复异常时，允许的最大重启游戏次数，默认5次，超过后任务终止"
-        },
-        "登录超时时长": {
-            "field": [
-                "登录超时时长（秒）"
-            ],
-            "type": [
-                "int"
-            ],
-            "default": [
-                "240"
-            ],
-            "pipeline_override": {
-                "获取参数-登录超时时长": {
-                    "attach": {
-                        "login_timeout": "{登录超时时长（秒）}"
-                    }
-                }
-            },
-            "doc": "星痕共鸣启动游戏准备登录前的超时时长，单位为秒，不填默认240秒"
-        },
-        "场景切换超时时长": {
-            "field": [
-                "场景切换超时时长（秒）"
-            ],
-            "type": [
-                "int"
-            ],
-            "default": [
-                "90"
-            ],
-            "pipeline_override": {
-                "获取参数-登录超时时长": {
-                    "attach": {
-                        "area_change_timeout": "{场景切换超时时长（秒）}"
-                    }
-                }
-            },
-            "doc": "星痕共鸣进入游戏后等待地图加载的超时时间，单位为秒，不填默认90秒"
-        },
-        "需要发送消息的世界频道分线ID": {
-            "field": [
-                "需要发送消息的世界频道分线ID"
-            ],
-            "type": [
-                "string"
-            ],
-            "default": [
-                ""
-            ],
-            "pipeline_override": {
-                "获取参数-需要发送消息的世界频道分线ID": {
-                    "action": {
-                        "type": "DoNothing"
-                    },
-                    "attach": {
-                        "channel_ids": "{需要发送消息的世界频道分线ID}"
-                    }
-                }
-            },
-            "doc": "需要发送消息的世界频道分线ID，可以多个，用英文逗号隔开；形如：1,91,233"
-        },
-        "输入聊天框的消息内容": {
-            "field": [
-                "输入聊天框的消息内容"
-            ],
-            "type": [
-                "string"
-            ],
-            "default": [
-                ""
-            ],
-            "pipeline_override": {
-                "获取参数-输入聊天框的消息内容": {
-                    "action": {
-                        "type": "DoNothing"
-                    },
-                    "attach": {
-                        "content": "{输入聊天框的消息内容}"
-                    }
-                }
-            },
-            "doc": "需要发送的聊天消息内容"
         }
     }
 }
