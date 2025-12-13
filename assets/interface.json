@@ -11,13 +11,7 @@
     "controller": [
         {
             "name": "模拟器",
-            "type": "Adb",
-            "adb": {
-                // 输入方式：EmulatorExtras > Maatouch > MinitouchAndAdbKey > AdbShell => 按位或 1 | 2 | 4 | 8 为：15
-                "input": 15,
-                // 截图方式：EmulatorExtras > RawWithGzip > Encode > EncodeToFileAndPull => 按位或 1 | 2 | 4 | 64 为：71
-                "screencap": 71
-            }
+            "type": "Adb"
         }
     ],
     "resource": [
@@ -284,6 +278,7 @@
         "如遇到不可恢复异常是否重启游戏": {
             "type": "select",
             "default_case": "是",
+            "description": "由于钓鱼可能遇到游戏分线回收/游戏闪退等问题，所以默认开启该选项，保证在自动处理异常无法恢复时自动重启游戏，注意需要保证游戏登录状态没有过期",
             "cases": [
                 {
                     "name": "是",
@@ -328,9 +323,9 @@
                 }
             }
         },
-        "默认超时时长": {
+        "登录超时时长": {
             "type": "input",
-            "label": "默认超时时长（秒）",
+            "label": "登录超时时长（秒）",
             "inputs": [
                 {
                     "name": "登录超时时长",
@@ -398,7 +393,7 @@
             "inputs": [
                 {
                     "name": "发送消息的周期间隔",
-                    "description": "循环的间隔，单位为秒，默认120秒",
+                    "description": "循环发送消息任务的间隔，单位为秒，默认120秒，不可低于30秒，建议设置长一点，通俗一点就是给1,2,3频道都发完消息后，等多长时间再进行下一次发1,2,3频道的消息",
                     "pipeline_type": "int",
                     "default": "120"
                 }
@@ -416,7 +411,7 @@
             "inputs": [
                 {
                     "name": "发消息的次数上限",
-                    "description": "循环发消息的次数上限，默认0无限次数",
+                    "description": "循环发送消息任务的次数上限，默认0无限次数",
                     "pipeline_type": "int",
                     "default": "0"
                 }
@@ -434,6 +429,7 @@
             "inputs": [
                 {
                     "name": "聊天框的消息内容",
+                    "description": "请勿滥用！",
                     "pipeline_type": "string"
                 }
             ],
@@ -447,6 +443,7 @@
         },
         "需要发送消息的频道": {
             "type": "select",
+            "description": "目前支持 综合、世界、协会、队伍 频道，不在队伍中将不会发出消息",
             "cases": [
                 {
                     "name": "综合",
@@ -498,7 +495,8 @@
             "inputs": [
                 {
                     "name": "世界频道分线ID",
-                    "pipeline_type": "string"
+                    "pipeline_type": "string",
+                    "default": "需要发送消息的世界频道分线ID，频道ID必须为纯数字，支持输入多个，用英文逗号间隔，形如：1,201,302"
                 }
             ],
             "pipeline_override": {
