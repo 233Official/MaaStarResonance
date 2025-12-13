@@ -83,6 +83,7 @@ def send_message_loop(context: Context, loop_interval, limit, check_interval = 2
 def send_message(context: Context) -> bool:
     # 退出省电模式
     default_exit_power_save(context)
+    time.sleep(1)
 
     # 本轮成功次数
     success_count = 0

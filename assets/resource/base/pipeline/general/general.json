@@ -142,7 +142,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": ["general/聊天按钮.png"],
-                "roi": [424, 542, 129, 127],
+                "roi": [471, 588, 37, 36],
                 "green_mask": true
             }
         }
@@ -152,7 +152,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": ["general/发送消息按钮.png"],
-                "roi": [712, 611, 197, 109]
+                "roi": [769, 665, 87, 30]
             }
         }
     },
