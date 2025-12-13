@@ -2,7 +2,7 @@
 <div align="center">
 <img alt="LOGO" src="README.assets/logo_transparent.png" width="256" height="256" />
 
-# MaaStarResonance
+# 星痕共鸣 MAA 小助手
 
 基于图像识别的星痕共鸣自动化工具
 
@@ -30,7 +30,21 @@
 
 ---
 
-## References
+## 声明与许可
+
+### 开源许可
+
+本项目采用 [`AGPL-3.0`](LICENSE) 许可证进行开源
+
+### 免责声明
+
+- 本资源按“现状”提供，不附带任何形式的明示或暗示担保。使用者需自行承担所有风险。
+- 作者不对因使用本资源而导致的任何直接、间接或结果性损失承担责任。
+- 基于本资源进行的任何商业行为均与原作者无关，使用者不得暗示任何官方关联或认可。
+
+---
+
+## 资源引用
 
 - 项目图标来源: [艾露娜Q版表情包全套高清修复分享｜星痕共鸣｜腾讯频道](https://pd.qq.com/g/pd34199182/post/B_e60f346878db0d001441152189808449200X60)
 
@@ -102,3 +116,8 @@ UI 由 [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia)  大力支持
 协会直接搜ID进即可，也欢迎其他协会前来合会~
 
 ![image-20251125113159](README.assets/image-20251125113159.png)
+
+## 友情链接
+
+- [另一款 MAA Star Resonance](https://github.com/26F-Studio/maa-star-resonance)
+  这是一个由 [Particle_G](https://github.com/ParticleG) 开发的星痕共鸣MAA小助手，使用 Electron + 文本图像识别 + ADB模拟控制 技术实现
