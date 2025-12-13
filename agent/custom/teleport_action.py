@@ -11,12 +11,14 @@ from agent.attach.common_attach import get_dest_tele_map, get_dest_navigate_poin
 from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
 from agent.constant.map_point import MAP_POINT_DATA, NAVIGATE_DATA
 from agent.custom.app_manage_action import get_area_change_timeout
+from agent.custom.general.power_saving_mode import exit_power_saving_mode
 from agent.logger import logger
 
 
 @AgentServer.custom_action("TeleportPoint")
 class TeleportPointAction(CustomAction):
 
+    @exit_power_saving_mode()
     def run(
         self,
         context: Context,
@@ -34,6 +36,7 @@ class TeleportPointAction(CustomAction):
 @AgentServer.custom_action("NavigatePoint")
 class NavigatePointAction(CustomAction):
 
+    @exit_power_saving_mode()
     def run(
         self,
         context: Context,
@@ -64,10 +67,10 @@ def teleport_or_navigate(context: Context, dest_map: str, dest_point: str, type_
     """
     # 0. 基本参数判断
     if dest_map not in point_data:
-        logger.exception(f"暂不支持的地图：{dest_map}，可能是命名不同或暂未支持")
+        logger.error(f"暂不支持的地图：{dest_map}，可能是命名不同或暂未支持")
         return False
     if dest_point not in point_data[dest_map]:
-        logger.exception(f"暂不支持的{type_str}点：{dest_map}-{dest_point}，可能是命名不同或暂未支持")
+        logger.error(f"暂不支持的{type_str}点：{dest_map}-{dest_point}，可能是命名不同或暂未支持")
         return False
     # 场景切换超时时间
     area_change_timeout = get_area_change_timeout(context)
@@ -110,7 +113,7 @@ def teleport_or_navigate(context: Context, dest_map: str, dest_point: str, type_
             },
         )
         if not ocr_result or not ocr_result.hit:
-            logger.exception(f"无法识别到地点名字")
+            logger.error(f"无法识别到地点名字")
             return False
 
         # 匹配图标名优先用别称
@@ -129,7 +132,7 @@ def teleport_or_navigate(context: Context, dest_map: str, dest_point: str, type_
         point_x = int(rect.x + rect.w / 2)
         point_y = int(rect.y + rect.h / 2)
         # 选择地点
-        context.tasker.controller.post_click(point_x, point_y)
+        context.tasker.controller.post_click(point_x, point_y).wait()
         time.sleep(2)
         # 再次判断是否可以直接过去
         img = context.tasker.controller.post_screencap().wait().get()
@@ -137,11 +140,11 @@ def teleport_or_navigate(context: Context, dest_map: str, dest_point: str, type_
             f"图片识别地点是否可以直接{type_str}", img
         )
         if not is_direct_tp or not is_direct_tp.hit:
-            logger.exception(f"{type_str}失败：无法找到{type_str}按钮")
+            logger.error(f"{type_str}失败：无法找到{type_str}按钮")
             return False
 
     # 4. 点击按钮过去
-    context.tasker.controller.post_click(1060, 656)
+    context.tasker.controller.post_click(1000, 650).wait()
     logger.info(f"点击进行{type_str}至 [{dest_map}：{dest_point}] 等待{type_str}完成...")
 
     # 5. 等待进入游戏主页面 | TODO 导航结束判断需要优化
@@ -173,11 +176,11 @@ def switch_map(context: Context, dest_map: str) -> bool:
     img = context.tasker.controller.post_screencap().wait().get()
     is_open_map: RecognitionDetail | None = context.run_recognition("图片识别是否已经打开地图", img)
     if not is_open_map or not is_open_map.hit:
-        logger.exception("无法打开地图，请检查是否在剧情中或其他异常情况！")
+        logger.error("无法打开地图，请检查是否在剧情中或其他异常情况！")
         return False
 
     # 3. 点击左下角按钮展开地图
-    context.tasker.controller.post_click(150, 666)
+    context.tasker.controller.post_click(150, 666).wait()
     time.sleep(1)
 
     # 4. OCR搜索地图名字并点击
@@ -190,7 +193,7 @@ def switch_map(context: Context, dest_map: str) -> bool:
         },
     )
     if not ocr_result or not ocr_result.hit:
-        logger.exception("无法识别到地图名字！")
+        logger.error("无法识别到地图名字！")
         return False
     # 获得最好结果坐标
     item = ocr_result.best_result
@@ -199,5 +202,5 @@ def switch_map(context: Context, dest_map: str) -> bool:
     point_x = int(rect.x + rect.w / 2)
     point_y = int(rect.y + rect.h / 2)
     # 选择地图
-    context.tasker.controller.post_click(point_x, point_y)
+    context.tasker.controller.post_click(point_x, point_y).wait()
     return True

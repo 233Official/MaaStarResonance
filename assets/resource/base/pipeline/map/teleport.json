@@ -69,8 +69,8 @@
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "template": ["地图/地图传送点传送按钮.png"],
-                "roi": [1046, 641, 73, 32]
+                "template": ["地图/地图导航点导航按钮.png"],
+                "roi": [956, 644, 57, 28]
             }
         }
     }
