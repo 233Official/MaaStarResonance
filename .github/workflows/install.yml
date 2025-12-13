@@ -111,7 +111,7 @@ jobs:
           repository: MaaXYZ/MaaFramework
           fileName: "MAA-${{ matrix.platform }}-${{ matrix.arch }}*"
           # 下载指定的 Release Tag
-          tag: v5.2.0
+          tag: v5.2.5
           out-file-path: "deps"
           extract: true
 
@@ -121,7 +121,7 @@ jobs:
         with:
           repository: SweetSmellFox/MFAAvalonia
           # 使用固定版本
-          ref: v2.1.8
+          ref: v2.2.0
           path: MFA-src
           fetch-depth: 1
 
