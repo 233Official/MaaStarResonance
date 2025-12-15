@@ -78,7 +78,7 @@ jobs:
             --abi cp313 `
             --dest resource/wheels/win-x64
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-win-x64
           path: resource/wheels/win-x64
@@ -257,7 +257,7 @@ jobs:
             echo "Skipping copy MFA for Android."
           fi 
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: MaaStarResonance-${{ matrix.platform }}-${{ matrix.arch }}
           path: "install"
