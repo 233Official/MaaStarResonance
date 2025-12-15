@@ -194,12 +194,35 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
     Returns:
         切换成功与否
     """
+    # 没有频道ID字典 | 说明不是世界频道直接进行下一步
     if not channel_id_dict:
         return True
+    
+    # 检测切换前的频道ID
     time.sleep(2)
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    old_channel: RecognitionDetail | None = context.run_recognition(
+        "通用文字识别",
+        img,
+        pipeline_override={
+            "通用文字识别": {"expected": "[0-9]+", "roi": [324, 177, 30, 30]}
+        },
+    )
+    if not old_channel or not old_channel.hit:
+        logger.warning("无法识别到切换前的频道ID，将跳过此次发送！")
+        return False
+    old_channel_id = old_channel.best_result.text  # type: ignore
+    logger.info(f"切换前的频道ID：{old_channel_id}")
+
+    # 判断是否已经符合要求
+    if str(old_channel_id) == channel_id:
+        logger.info("当前已经是所需要发送的频道了，将开始发送消息...")
+        return True
+
     # 点击开始切换
     context.tasker.controller.post_click(275, 41).wait()
     time.sleep(2)
+
     # 输入
     for digit in channel_id:
         if digit not in channel_id_dict:
@@ -207,8 +230,8 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
         x, y = channel_id_dict[digit]
         context.tasker.controller.post_click(x, y).wait()
         time.sleep(interval)
-    # 切换
-    time.sleep(2)
+
+    # 识别并点击切换按钮
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
     switch_result: RecognitionDetail | None = context.run_recognition(
         "通用文字识别",
@@ -217,10 +240,31 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
             "通用文字识别": {"expected": "OK", "roi": [339, 192, 39, 31]}
         },
     )
-    if switch_result and switch_result.hit:
-        context.tasker.controller.post_click(359, 208).wait()
-        logger.info(f"已成功切换到聊天世界频道: {channel_id}")
+    if not switch_result or not switch_result.hit:
+        logger.warning(f"聊天世界频道: {channel_id} 切换点击按钮失败，将跳过此次发送！")
+        return False
+    context.tasker.controller.post_click(359, 208).wait()
+    
+    # 检测切换后的频道ID
+    time.sleep(2)
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    new_channel: RecognitionDetail | None = context.run_recognition(
+        "通用文字识别",
+        img,
+        pipeline_override={
+            "通用文字识别": {"expected": "[0-9]+", "roi": [324, 177, 30, 30]}
+        },
+    )
+    if not new_channel or not new_channel.hit:
+        logger.warning("无法识别到切换后频道ID，可能识别有误，但仍将继续完成此次发送！")
         return True
+    new_channel_id = new_channel.best_result.text  # type: ignore
+    logger.info(f"切换后频道ID：{new_channel_id}")
 
-    logger.info(f"聊天世界频道: {channel_id} 切换失败")
-    return False
+    # 判断是否成功切换
+    if str(new_channel_id) != channel_id:
+        logger.warning("频道切换失败，可能是频道人数已满，将跳过此次发送！")
+        return False
+
+    logger.info(f"世界频道切换成功：{old_channel_id} -> {channel_id}，将开始发送消息...")
+    return True
