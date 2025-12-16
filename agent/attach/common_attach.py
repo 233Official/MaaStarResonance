@@ -145,3 +145,14 @@ def get_chat_message_content(context: Context) -> str:
                          ) if message_content_node else ""
     logger.info(f"输入聊天框的消息内容参数: {message_content}")
     return str(message_content)
+
+
+def get_chat_message_need_team(context: Context) -> bool:
+    """获取需要发送的消息是否需要队伍人数信息参数"""
+    need_team_node = context.get_node_data("获取参数-需要发送的消息是否需要队伍人数信息")
+    need_team = (need_team_node
+                         .get("attach", {})
+                         .get("need_number", False)
+                         ) if need_team_node else False
+    logger.info(f"需要发送的消息是否需要队伍人数信息参数: {need_team}")
+    return bool(need_team)

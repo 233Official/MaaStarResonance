@@ -7,7 +7,8 @@ from maa.custom_action import CustomAction
 
 from agent.attach.common_attach import get_chat_channel, get_chat_loop_interval, get_chat_loop_limit, \
     get_chat_message_content, \
-    get_chat_channel_id_list
+    get_chat_channel_id_list, get_chat_message_need_team
+from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
 from agent.constant.world_channel import CHANNEL_DATA
 from agent.custom.general.power_saving_mode import default_exit_power_save
 from agent.logger import logger
@@ -89,12 +90,13 @@ def send_message(context: Context) -> bool:
     success_count = 0
 
     # 0. 变量检查
-    message_content = get_chat_message_content(context)
-    if not message_content:
+    message_content_raw = get_chat_message_content(context)
+    if not message_content_raw:
         logger.error("需要发送的消息内容为空，请先设置内容")
         return False
     channel_name = get_chat_channel(context)
     channel_id_list = get_chat_channel_id_list(context)
+    need_team = get_chat_message_need_team(context)
 
     # 1. 检测并打开聊天框
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
@@ -142,14 +144,22 @@ def send_message(context: Context) -> bool:
         if context.tasker.stopping:
             context.run_action("ESC")
             return True
-        # 3. 切换世界频道分线
+
+        # 3. 获取队伍人数信息
+        if need_team:
+            current_num, total_num = get_team_info(context)
+            message_content = handle_message(message_content_raw, current_num, total_num)
+        else:
+            message_content = message_content_raw
+
+        # 4. 切换世界频道分线
         need_next = change_channel(channel_id, channel_id_dict, context, 1)
         if not need_next:
             continue
-        # 4. 点击输入框
+        # 5. 点击输入框
         time.sleep(2)
         context.tasker.controller.post_click(275, 680).wait()
-        # 5. 输入内容
+        # 6. 输入内容
         time.sleep(2)
         context.run_action("输入聊天框内容", pipeline_override={
             "输入聊天框内容": {
@@ -161,10 +171,10 @@ def send_message(context: Context) -> bool:
                 }
             }
         })
-        # 6. 点击确定按钮
+        # 7. 点击确定按钮
         time.sleep(2)
         context.tasker.controller.post_click(1217, 668).wait()
-        # 7. 检测并点击发送图标
+        # 8. 检测并点击发送图标
         time.sleep(2)
         img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
         send_button: RecognitionDetail | None = context.run_recognition("检测发送消息按钮", img)
@@ -176,6 +186,8 @@ def send_message(context: Context) -> bool:
             logger.error(f"向 {channel_name} 频道 {channel_id} 发送消息内容失败：识别不到发送按钮")
 
     logger.info(f"===== 本轮发送 {channel_name} 频道消息已经成功：{success_count} / {len(channel_id_list)} ====")
+
+    # 9. 结束并关闭
     time.sleep(2)
     context.run_action("ESC")
     return True
@@ -268,3 +280,73 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
 
     logger.info(f"世界频道切换成功：{old_channel_id} -> {channel_id}，将开始发送消息...")
     return True
+
+
+def get_team_info(context: Context) -> tuple[int, int]:
+    """
+    获取队伍信息，必须是加入协会状态
+
+    Args:
+        context: 控制器上下文
+
+    Returns:
+        当前队伍人数，队伍总人数
+    """
+    # 先按U打开协会页面
+    time.sleep(2)
+    context.tasker.controller.post_click_key(ANDROID_KEY_EVENT_DATA["KEYCODE_U"]).wait()
+
+    # 识别并点击左侧协会成员列表按钮
+    time.sleep(2)
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    clan_members_button: RecognitionDetail | None = context.run_recognition("检测协会成员列表按钮", img)  # TODO Pipiline未实现
+    if not clan_members_button or not clan_members_button.hit:
+        logger.warning("未检测到协会成员列表按钮")
+        return 0, 0
+    context.tasker.controller.post_click(0, 0).wait()  # TODO 点击位置未实现
+
+    # 点击协会成员列表的第一个人：就是自己
+    time.sleep(2)
+    context.tasker.controller.post_click(0, 0).wait()  # TODO 点击位置未实现
+
+    # 识别弹出的自己的名片中关于队伍的信息
+    time.sleep(2)
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    team_number: RecognitionDetail | None = context.run_recognition(
+        "通用文字识别",
+        img,
+        pipeline_override={
+            "通用文字识别": {"expected": "[0-9]+ */ *[0-9]+", "roi": [0, 0, 0, 0]}  # TODO 点击位置未实现
+        },
+    )
+    if not team_number or not team_number.hit:
+        logger.warning("未检测到个人名片中的队伍信息")
+        return 0, 0
+
+    # 关闭页面 TODO 需要校验退出是否正确
+    time.sleep(1)
+    context.run_action("ESC")
+    time.sleep(1)
+    context.run_action("ESC")
+
+    # 解析并返回
+    team_number_str = team_number.best_result.text  # type: ignore
+    team_number_split = team_number_str.split("/", 1)
+    return int(team_number_split[0].strip()), int(team_number_split[1].strip())
+
+
+def handle_message(raw_msg: str, current_num: int = 0, total_num: int = 0) -> str:
+    """
+    处理发送消息的变量替换
+
+    Args:
+        raw_msg: 原始消息
+        current_num: 当前队伍人数
+        total_num: 队伍总人数
+
+    Returns:
+        替换变量后的发送消息
+    """
+    raw_msg = raw_msg.replace("${当前人数}", str(current_num))
+    raw_msg = raw_msg.replace("${总人数}", str(total_num))
+    return raw_msg

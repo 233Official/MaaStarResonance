@@ -156,6 +156,15 @@
             }
         }
     },
+    "检测协会成员列表按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/检测协会成员列表按钮.png"],
+                "roi": [0, 0, 0, 0]
+            }
+        }
+    },
     "输入聊天框内容": {
         "action": {
             "type": "InputText",
@@ -186,6 +195,14 @@
         },
         "attach": {
             "content": ""
+        }
+    },
+    "获取参数-需要发送的消息是否需要队伍人数信息": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "need_number": false
         }
     },
     "获取参数-聊天框发消息的周期": {
