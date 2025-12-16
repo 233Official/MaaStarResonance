@@ -149,6 +149,7 @@ def send_message(context: Context) -> bool:
         if need_team:
             current_num, total_num = get_team_info(context)
             message_content = handle_message(message_content_raw, current_num, total_num)
+            time.sleep(1)
         else:
             message_content = message_content_raw
 
@@ -299,15 +300,15 @@ def get_team_info(context: Context) -> tuple[int, int]:
     # 识别并点击左侧协会成员列表按钮
     time.sleep(2)
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-    clan_members_button: RecognitionDetail | None = context.run_recognition("检测协会成员列表按钮", img)  # TODO Pipiline未实现
+    clan_members_button: RecognitionDetail | None = context.run_recognition("检测协会成员列表按钮", img)
     if not clan_members_button or not clan_members_button.hit:
         logger.warning("未检测到协会成员列表按钮")
         return 0, 0
-    context.tasker.controller.post_click(0, 0).wait()  # TODO 点击位置未实现
+    context.tasker.controller.post_click(46, 185).wait()
 
     # 点击协会成员列表的第一个人：就是自己
     time.sleep(2)
-    context.tasker.controller.post_click(0, 0).wait()  # TODO 点击位置未实现
+    context.tasker.controller.post_click(431, 216).wait()
 
     # 识别弹出的自己的名片中关于队伍的信息
     time.sleep(2)
@@ -316,14 +317,15 @@ def get_team_info(context: Context) -> tuple[int, int]:
         "通用文字识别",
         img,
         pipeline_override={
-            "通用文字识别": {"expected": "[0-9]+ */ *[0-9]+", "roi": [0, 0, 0, 0]}  # TODO 点击位置未实现
+            "通用文字识别": {"expected": "[0-9]+ */ *[0-9]+ *.*", "roi": [596, 327, 162, 20]}
         },
     )
     if not team_number or not team_number.hit:
         logger.warning("未检测到个人名片中的队伍信息")
         return 0, 0
 
-    # 关闭页面 TODO 需要校验退出是否正确
+    time.sleep(1)
+    context.run_action("ESC")
     time.sleep(1)
     context.run_action("ESC")
     time.sleep(1)
@@ -331,7 +333,7 @@ def get_team_info(context: Context) -> tuple[int, int]:
 
     # 解析并返回
     team_number_str = team_number.best_result.text  # type: ignore
-    team_number_split = team_number_str.split("/", 1)
+    team_number_split = team_number_str.replace("自定义", "").split("/", 1)
     return int(team_number_split[0].strip()), int(team_number_split[1].strip())
 
 

@@ -160,8 +160,8 @@
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "template": ["general/检测协会成员列表按钮.png"],
-                "roi": [0, 0, 0, 0]
+                "template": ["general/协会成员列表图标.png"],
+                "roi": [24, 160, 45, 45]
             }
         }
     },
