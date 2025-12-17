@@ -1,3 +1,4 @@
+import re
 import time
 
 import numpy
@@ -10,6 +11,7 @@ from agent.attach.common_attach import get_chat_channel, get_chat_loop_interval,
     get_chat_channel_id_list, get_chat_message_need_team
 from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
 from agent.constant.world_channel import CHANNEL_DATA
+from agent.custom.general.general import ensure_main_page, default_ensure_main_page
 from agent.custom.general.power_saving_mode import default_exit_power_save
 from agent.logger import logger
 
@@ -37,6 +39,7 @@ class SendMessageLoopAction(CustomAction):
 @AgentServer.custom_action("SendMessage")
 class SendMessageAction(CustomAction):
 
+    @ensure_main_page(strict=True)
     def run(
         self,
         context: Context,
@@ -72,6 +75,7 @@ def send_message_loop(context: Context, loop_interval, limit, check_interval = 2
 
         # 只有当累计等待时间达到或超过 loop_interval 才发送
         if elapsed >= loop_interval:
+            default_ensure_main_page(context, strict=False)
             send_message(context)
             send_count += 1
             # 把已累计时间清零（或减去一个周期，用于更精细的补偿）
@@ -147,8 +151,8 @@ def send_message(context: Context) -> bool:
 
         # 3. 获取队伍人数信息
         if need_team:
-            current_num, total_num = get_team_info(context)
-            message_content = handle_message(message_content_raw, current_num, total_num)
+            current_num, total_num, team_name = get_team_info(context)
+            message_content = handle_message(message_content_raw, current_num, total_num, team_name)
             time.sleep(1)
         else:
             message_content = message_content_raw
@@ -190,7 +194,7 @@ def send_message(context: Context) -> bool:
 
     # 9. 结束并关闭
     time.sleep(2)
-    context.run_action("ESC")
+    default_ensure_main_page(context, strict=False)
     return True
 
 
@@ -283,7 +287,7 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
     return True
 
 
-def get_team_info(context: Context) -> tuple[int, int]:
+def get_team_info(context: Context) -> tuple[int, int, str]:
     """
     获取队伍信息，必须是加入协会状态
 
@@ -303,11 +307,11 @@ def get_team_info(context: Context) -> tuple[int, int]:
     clan_members_button: RecognitionDetail | None = context.run_recognition("检测协会成员列表按钮", img)
     if not clan_members_button or not clan_members_button.hit:
         logger.warning("未检测到协会成员列表按钮")
-        return 0, 0
+        return 0, 0, ''
     context.tasker.controller.post_click(46, 185).wait()
 
-    # 点击协会成员列表的第一个人：就是自己
-    time.sleep(2)
+    # 点击协会成员列表的第一个人：就是自己 | 这里等待5秒，因为服务器可能很卡
+    time.sleep(5)
     context.tasker.controller.post_click(431, 216).wait()
 
     # 识别弹出的自己的名片中关于队伍的信息
@@ -317,27 +321,29 @@ def get_team_info(context: Context) -> tuple[int, int]:
         "通用文字识别",
         img,
         pipeline_override={
-            "通用文字识别": {"expected": "[0-9]+ */ *[0-9]+ *.*", "roi": [596, 327, 162, 20]}
+            "通用文字识别": {"expected": "[0-9]+ */ *[0-9]+.*", "roi": [596, 327, 162, 20]}
         },
     )
     if not team_number or not team_number.hit:
         logger.warning("未检测到个人名片中的队伍信息")
-        return 0, 0
-
-    time.sleep(1)
-    context.run_action("ESC")
-    time.sleep(1)
-    context.run_action("ESC")
-    time.sleep(1)
-    context.run_action("ESC")
+        return 0, 0, ''
 
     # 解析并返回
     team_number_str = team_number.best_result.text  # type: ignore
-    team_number_split = team_number_str.replace("自定义", "").split("/", 1)
-    return int(team_number_split[0].strip()), int(team_number_split[1].strip())
+    # 再次正则解析
+    search = re.search(r'([0-9]+) */ *([0-9]+)(.*)', team_number_str)
+    if not search:
+        logger.warning("未检测到个人名片中的队伍信息")
+        return 0, 0, ''
+    current, total, team_name = int(search.group(1).strip()), int(search.group(2).strip()), search.group(3).strip()
+    logger.info(f"队伍名：{team_name} | 队伍人数：{current} / {total}")
+
+    time.sleep(2)
+    default_ensure_main_page(context, strict=False)
+    return current, total, team_name
 
 
-def handle_message(raw_msg: str, current_num: int = 0, total_num: int = 0) -> str:
+def handle_message(raw_msg: str, current_num: int = 0, total_num: int = 0, team_name: str = '') -> str:
     """
     处理发送消息的变量替换
 
@@ -345,10 +351,12 @@ def handle_message(raw_msg: str, current_num: int = 0, total_num: int = 0) -> st
         raw_msg: 原始消息
         current_num: 当前队伍人数
         total_num: 队伍总人数
+        team_name: 游戏中的队伍名
 
     Returns:
         替换变量后的发送消息
     """
     raw_msg = raw_msg.replace("${当前人数}", str(current_num))
     raw_msg = raw_msg.replace("${总人数}", str(total_num))
+    raw_msg = raw_msg.replace("${队伍名}", team_name)
     return raw_msg
