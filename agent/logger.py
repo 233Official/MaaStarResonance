@@ -7,18 +7,20 @@ import sys
 from loguru import logger as _logger
 
 
-def format_record(record):
-    """根据日志级别生成前缀并拼接消息."""
+def sink_function(message):
+    """根据日志级别生成前缀并拼接消息"""
+    record = message.record
     level_name = record["level"].name
     prefix = level_name.lower() + ":"
-    return f"{prefix} [{record['time'].strftime('%Y-%m-%d %H:%M:%S')}] {record['message']}\n"
+    text = f"{prefix} [{record['time'].strftime('%Y-%m-%d %H:%M:%S')}] {record['message']}\n"
+    # 输出到 stdout
+    sys.stdout.write(text)
 
 
 # 重新配置默认输出，确保格式统一且线程安全。
 _logger.remove()
 _logger.add(
-    sys.stdout,
-    format=format_record,
+    sink_function,
     # level="INFO",
     level="DEBUG",
     enqueue=True,
