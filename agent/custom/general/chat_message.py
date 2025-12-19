@@ -7,8 +7,7 @@ from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
 from agent.attach.common_attach import get_chat_channel, get_chat_loop_interval, get_chat_loop_limit, \
-    get_chat_message_content, \
-    get_chat_channel_id_list, get_chat_message_need_team
+    get_chat_message_content, get_chat_channel_id_list, get_chat_message_need_team, get_full_team_force_send
 from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
 from agent.constant.world_channel import CHANNEL_DATA
 from agent.custom.general.general import default_ensure_main_page
@@ -102,10 +101,13 @@ def send_message(context: Context) -> bool:
     channel_name = get_chat_channel(context)
     channel_id_list = get_chat_channel_id_list(context)
     need_team = get_chat_message_need_team(context)
+    force_send = get_full_team_force_send(context)
 
     # 1. 获取队伍人数信息(如果需要)
     if need_team:
-        current_num, total_num, team_name = get_team_info(context)
+        current_num, total_num, team_name = get_team_info(context, force_send)
+        if not total_num:
+            return False
         message_content = handle_message(message_content_raw, current_num, total_num, team_name)
         time.sleep(1)
     else:
@@ -288,12 +290,13 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
     return True
 
 
-def get_team_info(context: Context) -> tuple[int, int, str]:
+def get_team_info(context: Context, force_send: bool = False) -> tuple[int, int, str]:
     """
     获取队伍信息，必须是加入协会状态
 
     Args:
         context: 控制器上下文
+        force_send: 队伍已满时是否还需要发送消息
 
     Returns:
         当前队伍人数，队伍总人数
@@ -307,7 +310,7 @@ def get_team_info(context: Context) -> tuple[int, int, str]:
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
     clan_members_button: RecognitionDetail | None = context.run_recognition("检测协会成员列表按钮", img)
     if not clan_members_button or not clan_members_button.hit:
-        logger.warning("未检测到协会成员列表按钮")
+        logger.error("未检测到协会成员列表按钮!")
         return 0, 0, ''
     context.tasker.controller.post_click(46, 185).wait()
 
@@ -326,7 +329,7 @@ def get_team_info(context: Context) -> tuple[int, int, str]:
         },
     )
     if not team_number or not team_number.hit:
-        logger.warning("未检测到个人名片中的队伍信息")
+        logger.error("未检测到个人名片中的队伍信息")
         return 0, 0, ''
 
     # 解析并返回
@@ -334,10 +337,14 @@ def get_team_info(context: Context) -> tuple[int, int, str]:
     # 再次正则解析
     search = re.search(r'([0-9]+) */ *([0-9]+)(.*)', team_number_str)
     if not search:
-        logger.warning("未检测到个人名片中的队伍信息")
+        logger.error("未检测到个人名片中的队伍信息")
         return 0, 0, ''
     current, total, team_name = int(search.group(1).strip()), int(search.group(2).strip()), search.group(3).strip()
     logger.info(f"队伍名：{team_name} | 队伍人数：{current} / {total}")
+
+    if not force_send and current >= total:
+        logger.warning("当前队伍人数已满，将跳过此次发送消息！")
+        return 0, 0, ''
 
     time.sleep(2)
     default_ensure_main_page(context, strict=False)

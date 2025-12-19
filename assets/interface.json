@@ -452,6 +452,9 @@
             "cases": [
                 {
                     "name": "是",
+                    "option": [
+                        "队伍已满时是否还需要发送消息"
+                    ],
                     "pipeline_override": {
                         "获取参数-需要发送的消息是否需要队伍人数信息": {
                             "attach": {
@@ -472,9 +475,36 @@
                 }
             ]
         },
+        "队伍已满时是否还需要发送消息": {
+            "type": "select",
+            "default_case": "否",
+            "description": "当队伍已满时是否还需要发送消息，默认选'否'<br>- 如果选了'否'，当队伍已满时本次将不会发送消息<br>- 如果选了'是'，即使队伍已满也会发送消息",
+            "cases": [
+                {
+                    "name": "是",
+                    "pipeline_override": {
+                        "获取参数-队伍已满时是否还需要发送消息": {
+                            "attach": {
+                                "force_send": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "否",
+                    "pipeline_override": {
+                        "获取参数-队伍已满时是否还需要发送消息": {
+                            "attach": {
+                                "force_send": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
         "需要发送消息的频道": {
             "type": "select",
-            "description": "目前支持 综合、世界、协会、队伍 频道，不在队伍中将不会发出消息",
+            "description": "目前支持 综合、世界、协会、队伍 频道，不在队伍频道中将不会发出消息",
             "cases": [
                 {
                     "name": "综合",

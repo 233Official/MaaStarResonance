@@ -196,6 +196,14 @@
             "need_number": false
         }
     },
+    "获取参数-队伍已满时是否还需要发送消息": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "force_send": false
+        }
+    },
     "获取参数-聊天框发消息的周期": {
         "action": {
             "type": "DoNothing"

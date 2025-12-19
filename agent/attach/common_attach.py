@@ -156,3 +156,14 @@ def get_chat_message_need_team(context: Context) -> bool:
                          ) if need_team_node else False
     logger.info("需要发送的消息是否需要队伍人数信息: {}", need_team)
     return bool(need_team)
+
+
+def get_full_team_force_send(context: Context) -> bool:
+    """获取队伍已满时是否还需要发送消息参数"""
+    force_send_node = context.get_node_data("获取参数-队伍已满时是否还需要发送消息")
+    force_send = (force_send_node
+                         .get("attach", {})
+                         .get("force_send", False)
+                         ) if force_send_node else False
+    logger.info("队伍已满时是否还需要发送消息: {}", force_send)
+    return bool(force_send)
