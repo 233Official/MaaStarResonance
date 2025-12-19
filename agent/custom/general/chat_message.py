@@ -11,7 +11,7 @@ from agent.attach.common_attach import get_chat_channel, get_chat_loop_interval,
     get_chat_channel_id_list, get_chat_message_need_team
 from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
 from agent.constant.world_channel import CHANNEL_DATA
-from agent.custom.general.general import ensure_main_page, default_ensure_main_page
+from agent.custom.general.general import default_ensure_main_page
 from agent.custom.general.power_saving_mode import default_exit_power_save
 from agent.logger import logger
 
@@ -39,7 +39,6 @@ class SendMessageLoopAction(CustomAction):
 @AgentServer.custom_action("SendMessage")
 class SendMessageAction(CustomAction):
 
-    @ensure_main_page(strict=True)
     def run(
         self,
         context: Context,
@@ -75,7 +74,6 @@ def send_message_loop(context: Context, loop_interval, limit, check_interval = 2
 
         # 只有当累计等待时间达到或超过 loop_interval 才发送
         if elapsed >= loop_interval:
-            default_ensure_main_page(context, strict=False)
             send_message(context)
             send_count += 1
             # 把已累计时间清零（或减去一个周期，用于更精细的补偿）
@@ -88,6 +86,9 @@ def send_message_loop(context: Context, loop_interval, limit, check_interval = 2
 def send_message(context: Context) -> bool:
     # 退出省电模式
     default_exit_power_save(context)
+    time.sleep(1)
+    # 确保回到主界面
+    default_ensure_main_page(context, strict=False)
     time.sleep(1)
 
     # 本轮成功次数
@@ -222,7 +223,7 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
         "通用文字识别",
         img,
         pipeline_override={
-            "通用文字识别": {"expected": "[0-9]+", "roi": [261, 27, 32, 26]}
+            "通用文字识别": {"expected": "[0-9]+", "roi": [234, 22, 75, 32]}
         },
     )
     if not old_channel or not old_channel.hit:
@@ -254,11 +255,11 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
         "通用文字识别",
         img,
         pipeline_override={
-            "通用文字识别": {"expected": "OK", "roi": [261, 27, 32, 26]}
+            "通用文字识别": {"expected": "OK", "roi": [339, 191, 40, 35]}
         },
     )
     if not switch_result or not switch_result.hit:
-        logger.warning(f"聊天世界频道: {channel_id} 切换点击按钮失败，将跳过此次发送！")
+        logger.warning(f"聊天世界频道: {channel_id} 识别切换频道按钮失败，将跳过此次发送！")
         return False
     context.tasker.controller.post_click(359, 208).wait()
     
@@ -269,7 +270,7 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
         "通用文字识别",
         img,
         pipeline_override={
-            "通用文字识别": {"expected": "[0-9]+", "roi": [324, 177, 30, 30]}
+            "通用文字识别": {"expected": "[0-9]+", "roi": [234, 22, 75, 32]}
         },
     )
     if not new_channel or not new_channel.hit:
@@ -301,8 +302,8 @@ def get_team_info(context: Context) -> tuple[int, int, str]:
     time.sleep(2)
     context.tasker.controller.post_click_key(ANDROID_KEY_EVENT_DATA["KEYCODE_U"]).wait()
 
-    # 识别并点击左侧协会成员列表按钮
-    time.sleep(2)
+    # 识别并点击左侧协会成员列表按钮 | 这里等待5秒，因为服务器可能很卡
+    time.sleep(5)
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
     clan_members_button: RecognitionDetail | None = context.run_recognition("检测协会成员列表按钮", img)
     if not clan_members_button or not clan_members_button.hit:
@@ -314,8 +315,8 @@ def get_team_info(context: Context) -> tuple[int, int, str]:
     time.sleep(5)
     context.tasker.controller.post_click(431, 216).wait()
 
-    # 识别弹出的自己的名片中关于队伍的信息
-    time.sleep(2)
+    # 识别弹出的自己的名片中关于队伍的信息 | 这里等待5秒，因为服务器可能很卡
+    time.sleep(5)
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
     team_number: RecognitionDetail | None = context.run_recognition(
         "通用文字识别",
