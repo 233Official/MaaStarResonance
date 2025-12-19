@@ -102,7 +102,15 @@ def send_message(context: Context) -> bool:
     channel_id_list = get_chat_channel_id_list(context)
     need_team = get_chat_message_need_team(context)
 
-    # 1. 检测并打开聊天框
+    # 1. 获取队伍人数信息(如果需要)
+    if need_team:
+        current_num, total_num, team_name = get_team_info(context)
+        message_content = handle_message(message_content_raw, current_num, total_num, team_name)
+        time.sleep(1)
+    else:
+        message_content = message_content_raw
+
+    # 2. 检测并打开聊天框
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
     chat_button: RecognitionDetail | None = context.run_recognition("检测聊天按钮", img)
     if not chat_button or not chat_button.hit:
@@ -110,7 +118,7 @@ def send_message(context: Context) -> bool:
         return False
     context.tasker.controller.post_click(490, 600).wait()
 
-    # 2. 切换到对应频道
+    # 3. 切换到对应频道
     wait_times = 0
     need_next = False
     channel_dict = CHANNEL_DATA.get(channel_name, {})
@@ -149,15 +157,7 @@ def send_message(context: Context) -> bool:
             context.run_action("ESC")
             return True
 
-        # 3. 获取队伍人数信息
-        if need_team:
-            current_num, total_num, team_name = get_team_info(context)
-            message_content = handle_message(message_content_raw, current_num, total_num, team_name)
-            time.sleep(1)
-        else:
-            message_content = message_content_raw
-
-        # 4. 切换世界频道分线
+        # 4. 切换世界频道分线（如果需要）
         need_next = change_channel(channel_id, channel_id_dict, context, 1)
         if not need_next:
             continue
@@ -222,7 +222,7 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
         "通用文字识别",
         img,
         pipeline_override={
-            "通用文字识别": {"expected": "[0-9]+", "roi": [324, 177, 30, 30]}
+            "通用文字识别": {"expected": "[0-9]+", "roi": [261, 27, 32, 26]}
         },
     )
     if not old_channel or not old_channel.hit:
@@ -254,7 +254,7 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
         "通用文字识别",
         img,
         pipeline_override={
-            "通用文字识别": {"expected": "OK", "roi": [339, 192, 39, 31]}
+            "通用文字识别": {"expected": "OK", "roi": [261, 27, 32, 26]}
         },
     )
     if not switch_result or not switch_result.hit:
