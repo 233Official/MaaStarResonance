@@ -66,6 +66,7 @@
         {
             "name": "聊天频道发言",
             "entry": "聊天频道发言",
+            "description": "如需在自动战斗时发送建议关闭大招防止闪屏",
             "option": [
                 "输入聊天框的消息内容",
                 "需要发送消息的频道",
@@ -75,6 +76,7 @@
         {
             "name": "周期性聊天频道发言",
             "entry": "周期性聊天频道发言",
+            "description": "如需在自动战斗时发送建议关闭大招防止闪屏",
             "option": [
                 "发送消息的周期间隔",
                 "聊天框发消息的次数上限",
@@ -1050,6 +1052,19 @@
                             }
                         }
                     }
+                },
+                {
+                    "name": "月影之野",
+                    "option": [
+                        "月影之野导航点选择"
+                    ],
+                    "pipeline_override": {
+                        "获取参数-导航所需地图": {
+                            "attach": {
+                                "dest_map": "月影之野"
+                            }
+                        }
+                    }
                 }
             ]
         },
@@ -1057,11 +1072,26 @@
             "type": "select",
             "cases": [
                 {
-                    "name": "LV60浮游之茧",
+                    "name": "Lv60浮游之茧",
                     "pipeline_override": {
                         "获取参数-导航所需导航点": {
                             "attach": {
-                                "dest_navigate_point": "LV60浮游之茧"
+                                "dest_navigate_point": "Lv60浮游之茧"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "月影之野导航点选择": {
+            "type": "select",
+            "cases": [
+                {
+                    "name": "Lv75浮游之茧",
+                    "pipeline_override": {
+                        "获取参数-导航所需导航点": {
+                            "attach": {
+                                "dest_navigate_point": "Lv75浮游之茧"
                             }
                         }
                     }

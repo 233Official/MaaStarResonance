@@ -11,6 +11,7 @@ from agent.attach.common_attach import get_dest_tele_map, get_dest_navigate_poin
 from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
 from agent.constant.map_point import MAP_POINT_DATA, NAVIGATE_DATA
 from agent.custom.app_manage_action import get_area_change_timeout
+from agent.custom.general.general import default_ensure_main_page
 from agent.custom.general.power_saving_mode import exit_power_saving_mode
 from agent.logger import logger
 
@@ -146,8 +147,16 @@ def teleport_or_navigate(context: Context, dest_map: str, dest_point: str, type_
     # 4. 点击按钮过去
     context.tasker.controller.post_click(1000, 650).wait()
     logger.info(f"点击进行{type_str}至 [{dest_map}：{dest_point}] 等待{type_str}完成...")
+    time.sleep(5)
 
-    # 5. 等待进入游戏主页面 | TODO 导航结束判断需要优化
+    # 5. 再次识别是否已经打开地图：是就说明当前状态无法导航
+    img = context.tasker.controller.post_screencap().wait().get()
+    is_open_map: RecognitionDetail | None = context.run_recognition("图片识别是否已经打开地图", img)
+    if is_open_map and is_open_map.hit:
+        logger.error("检测到当前状态无法导航，请检查当前是否无法上载具！")
+        return False
+
+    # 6. 等待进入游戏主页面
     start_time = time.time()
     elapsed_time = 0
     while elapsed_time <= area_change_timeout and not context.tasker.stopping:
@@ -156,12 +165,12 @@ def teleport_or_navigate(context: Context, dest_map: str, dest_point: str, type_
         area_change_result: RecognitionDetail | None = context.run_recognition("图片识别是否在主页面", img)
         if area_change_result and area_change_result.hit:
             del area_change_result, img
-            logger.info(f"检测到已经成功切换场景，传送已完成，如果是导航请等待到达目的地点！")
+            logger.info(f"检测到已经成功切换场景，传送已完成，如果是导航请自行等待到达目的地点！")
             return True
         del area_change_result, img
         time.sleep(2)
 
-    # 6. 超时未进入游戏主页面
+    # 7. 超时未进入游戏主页面
     logger.error(f"{type_str}切换场景超时，未检测到主页面，请检查应用状态！")
     return False
 
@@ -176,8 +185,17 @@ def switch_map(context: Context, dest_map: str) -> bool:
     img = context.tasker.controller.post_screencap().wait().get()
     is_open_map: RecognitionDetail | None = context.run_recognition("图片识别是否已经打开地图", img)
     if not is_open_map or not is_open_map.hit:
-        logger.error("无法打开地图，请检查是否在剧情中或其他异常情况！")
-        return False
+        logger.warning("无法打开地图，开始尝试先回到主界面...")
+        default_ensure_main_page(context, strict=True)
+        # 再次打开地图
+        context.tasker.controller.post_click_key(ANDROID_KEY_EVENT_DATA["KEYCODE_M"]).wait()
+        time.sleep(3)
+        # 再次检测
+        img = context.tasker.controller.post_screencap().wait().get()
+        is_open_map: RecognitionDetail | None = context.run_recognition("图片识别是否已经打开地图", img)
+        if not is_open_map or not is_open_map.hit:
+            logger.error("仍然无法打开地图，请检查是否在剧情中或其他异常情况！")
+            return False
 
     # 3. 点击左下角按钮展开地图
     context.tasker.controller.post_click(150, 666).wait()
@@ -193,14 +211,26 @@ def switch_map(context: Context, dest_map: str) -> bool:
         },
     )
     if not ocr_result or not ocr_result.hit:
-        logger.error("无法识别到地图名字！")
-        return False
-    # 获得最好结果坐标
+        # 5. 第一次识别失败：说明地图可能比较多，需要滚动一下再次识别
+        logger.info("第一次识别失败，尝试滚动后再次识别地图名字...")
+        context.tasker.controller.post_swipe(100, 606, 100, 120, 1500).wait()
+        img = context.tasker.controller.post_screencap().wait().get()
+        ocr_result: RecognitionDetail | None = context.run_recognition(
+            "通用文字识别",
+            img,
+            pipeline_override={
+                "通用文字识别": {"expected": dest_map, "roi": [13, 288, 246, 341]}
+            },
+        )
+        if not ocr_result or not ocr_result.hit:
+            logger.error("两次识别后还是无法识别到地图名字，地图切换失败！")
+            return False
+    # 6. 获得最好结果坐标
     item = ocr_result.best_result
     rect = Rect(*item.box)  # type: ignore
     logger.info(f"目的地图： {rect}, {item.text}")  # type: ignore
     point_x = int(rect.x + rect.w / 2)
     point_y = int(rect.y + rect.h / 2)
-    # 选择地图
+    # 7. 选择地图
     context.tasker.controller.post_click(point_x, point_y).wait()
     return True
