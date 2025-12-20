@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "本地打包-windowsx86_64",
+            "name": "本地打包-windowsx86_64_latest",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/scripts/build_all_platforms.py",
@@ -63,6 +63,41 @@
             "args": [
                 "--output",
                 "${workspaceFolder}/CHANGELOG.md"
+            ]
+        },
+        {
+            "name": "本地打包-windowsx86_64(指定版本-Args)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/build_all_platforms.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--only-os",
+                "win",
+                "--only-arch",
+                "x86_64",
+                "--maafw-version",
+                "v5.2.6",
+                "--mfaa-version",
+                "v2.2.2"
+            ]
+        },
+        {
+            "name": "本地打包-windowsx86_64(指定版本与github-token-ENV)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/build_all_platforms.py",
+            "console": "integratedTerminal",
+            "env": {
+                "MAAFW_VERSION": "v5.2.6",
+                "MFAA_VERSION": "v2.2.2",
+                "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
+            },
+            "args": [
+                "--only-os",
+                "win",
+                "--only-arch",
+                "x86_64"
             ]
         }
     ]
