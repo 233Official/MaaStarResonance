@@ -5,13 +5,13 @@ from __future__ import annotations
 import sys
 from datetime import datetime
 
-from loguru import logger as _logger, Message, Record
+from loguru import logger as _logger
 
 
-def sink_function(message: Message) -> None:
+def sink_function(message) -> None:
     """根据日志级别生成前缀并拼接消息"""
     try:
-        record: Record = message.record
+        record = message.record
         level_name = record.get('level', 'INFO').name
         prefix = level_name.lower() + ":"
         log_time = record.get('time', datetime.now()).strftime('%Y-%m-%d %H:%M:%S')
