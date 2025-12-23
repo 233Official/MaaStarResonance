@@ -3,19 +3,25 @@
 from __future__ import annotations
 
 import sys
+from datetime import datetime
 
-from loguru import logger as _logger
+from loguru import logger as _logger, Message, Record
 
 
-def sink_function(message):
+def sink_function(message: Message) -> None:
     """根据日志级别生成前缀并拼接消息"""
-    record = message.record
-    level_name = record["level"].name
-    prefix = level_name.lower() + ":"
-    text = f"{prefix} [{record['time'].strftime('%Y-%m-%d %H:%M:%S')}] {record['message']}\n"
-    # 输出到 stdout
-    sys.stdout.write(text)
-
+    try:
+        record: Record = message.record
+        level_name = record.get('level', 'INFO').name
+        prefix = level_name.lower() + ":"
+        log_time = record.get('time', datetime.now()).strftime('%Y-%m-%d %H:%M:%S')
+        msg = record.get('message', '')
+        # 重新根据格式要求组合
+        text = f"{prefix} [{log_time}] {msg}\n"
+        sys.stdout.write(text)
+        sys.stdout.flush()
+    except Exception as e:
+        sys.stderr.write(f"error: [LOG SINK ERROR] {e}\n")
 
 # 重新配置默认输出，确保格式统一且线程安全。
 _logger.remove()
