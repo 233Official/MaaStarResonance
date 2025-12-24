@@ -121,7 +121,7 @@ jobs:
         with:
           repository: SweetSmellFox/MFAAvalonia
           # 使用固定版本
-          ref: v2.2.5
+          ref: v2.2.6
           path: MFA-src
           fetch-depth: 1
 
