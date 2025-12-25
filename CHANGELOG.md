@@ -482,7 +482,7 @@
 
 ### 📚 文档
 
-- 更细自动刷茧文档(#5) @233Official
+- 更新自动刷茧文档(#5) @233Official
 - S2 自动刷茧主体流程设计(#5) @233Official
 - 更新新手上路文档与README @233Official
 - update readme @233Official
