@@ -110,47 +110,18 @@ jobs:
         with:
           repository: MaaXYZ/MaaFramework
           fileName: "MAA-${{ matrix.platform }}-${{ matrix.arch }}*"
-          # 下载最新的 Release
-          # latest: true
           # 下载指定的 Release Tag
-          tag: v5.2.0
+          tag: v5.3.0-beta.5
           out-file-path: "deps"
           extract: true
-
-      # 获取 MFAAvalonia 最新的 tag | 过滤beta版本的tag
-      - name: Get latest MFAAvalonia tag
-        id: get_mfa_tag
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const res = await github.rest.repos.listTags({
-              owner: 'SweetSmellFox',
-              repo: 'MFAAvalonia',
-              per_page: 20
-            });
-
-            const filteredTags = res.data
-              .map(t => t.name)
-              .filter(name => !name.toLowerCase().includes('beta'));
-
-            if (filteredTags.length === 0) {
-              core.setFailed('获取MFAA不到任何非beta版本的TAG');
-              return;
-            }
-
-            const latestTag = filteredTags[0];
-            console.log('最新的MFAA正式版tag为：', latestTag);
-            core.setOutput('tag', latestTag);
 
       # 下载 MFAAvalonia 源码
       - name: Checkout MFAAvalonia source
         uses: actions/checkout@v6
         with:
           repository: SweetSmellFox/MFAAvalonia
-          # 使用获取到的最新正式版 tag
-          # ref: ${{ steps.get_mfa_tag.outputs.tag }}
           # 使用固定版本
-          ref: v2.1.8
+          ref: v2.2.6
           path: MFA-src
           fetch-depth: 1
 
@@ -266,22 +237,34 @@ jobs:
     name: Generate changelog
     runs-on: ubuntu-latest
     outputs:
-      release_body: ${{ steps.git-cliff.outputs.content }}
+      release_body: ${{ steps.generate-changelog.outputs.content }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Generate a changelog
-        uses: orhun/git-cliff-action@v4
-        id: git-cliff
+      - name: Setup Python
+        uses: actions/setup-python@v6
         with:
-          config: .github/cliff.toml
-          args: -vv --latest --strip header
+          python-version: '3.13'
+
+      - name: Generate changelog with Python script
+        id: generate-changelog
         env:
-          OUTPUT: CHANGES.md
-          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 生成最新版本的 changelog
+          python scripts/generate_changelog.py --latest > CHANGES.md
+          
+          # 将内容输出到 GitHub Actions output
+          {
+            echo 'content<<EOF'
+            cat CHANGES.md
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+          
+          echo "✅ Changelog 已生成"
 
   release:
     if: ${{ needs.meta.outputs.is_release == 'true' }}

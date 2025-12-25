@@ -13,3 +13,7 @@ MD041: false
 # 与项目的 Prettier printWidth(120) 对齐，避免 README 中长链接/徽章频繁报警
 MD013:
   line_length: 120
+
+# MD024/duplicate-heading - Duplicate headings
+# 允许重复标题（有时为了结构清晰可能需要重复使用相同标题
+MD024: false

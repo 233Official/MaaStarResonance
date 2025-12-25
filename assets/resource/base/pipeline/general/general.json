@@ -25,7 +25,7 @@
             }
         }
     },
-    "检测今日不再弹出按钮-1": {
+    "检测今日不再弹出按钮": {
         "recognition": {
             "type": "OCR",
             "param": {
@@ -34,13 +34,190 @@
             }
         }
     },
-    "检测今日不再弹出按钮-2": {
+    "同意申请与邀请入队": {
         "recognition": {
-            "type": "OCR",
+            "type": "TemplateMatch",
             "param": {
-                "expected": ["不再弹出"],
-                "roi": [187, 592, 144, 36]
+                "template": ["队伍/邀请入队的副本名称前面的图标.png"],
+                "roi": [860, 163, 13, 14]
             }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [1217, 148, 27, 25]
+            }
+        }
+    },
+    "挂机自动批复入队申请": {
+        // 循环 24h 检测并同意入队申请
+        "next": [
+            "自动批复入队申请并继续循环",
+            "[JumpBack]从省电模式唤醒"
+        ],
+        // 每轮识别最多消耗 8s = 8000ms, 入队批复等待最长 10s
+        "rate_limit": 8000,
+        // 1day = 24h * 60min * 60s * 1000ms = 86400000ms
+        "timeout": 86400000
+    },
+    "自动批复入队申请并继续循环": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["队伍/邀请入队的副本名称前面的图标.png"],
+                "roi": [860, 163, 13, 14]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [1217, 148, 27, 25]
+            }
+        },
+        "next": "挂机自动批复入队申请"
+    },
+    "Z-释放一号位幻想": {
+        "action": {
+            "type": "ClickKey",
+            "param": {
+                "key": 54
+            }
+        }
+    },
+    "每130s释放一次一号位幻想": {
+        "next": [
+            "Z-释放一号位幻想并继续循环",
+            "[JumpBack]从省电模式唤醒"
+        ],
+        // todo: 这里的 rate_limit 无法生效, 可能是 bug
+        "rate_limit": 130000, // 每130s释放一次
+        // 1day = 24h * 60min * 60s * 1000ms = 86400000ms
+        "timeout": 86400000
+    },
+    "Z-释放一号位幻想并继续循环": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/主页面任务图标.png"],
+                "roi": [22, 218, 26, 23]
+            }
+        },
+        "action": {
+            "type": "ClickKey",
+            "param": {
+                "key": 54
+            }
+        },
+        "next": "每130s释放一次一号位幻想",
+        // 每次释放后等待 130s 再继续下一轮
+        "post_delay": 130000
+    },
+    "聊天频道发言": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "SendMessage"
+            }
+        }
+    },
+    "周期性聊天频道发言": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "SendMessageLoop"
+            }
+        }
+    },
+    "检测聊天按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/聊天按钮.png"],
+                "roi": [471, 588, 37, 36],
+                "green_mask": true
+            }
+        }
+    },
+    "检测发送消息按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/发送消息按钮.png"],
+                "roi": [769, 665, 87, 30]
+            }
+        }
+    },
+    "检测协会成员列表按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/协会成员列表图标.png"],
+                "roi": [24, 160, 45, 45]
+            }
+        }
+    },
+    "输入聊天框内容": {
+        "action": {
+            "type": "InputText",
+            "param": {
+                "input_text": ""
+            }
+        }
+    },
+    "获取参数-输入聊天框频道": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "channel": ""
+        }
+    },
+    "获取参数-需要发送消息的世界频道分线ID": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "channel_ids": ""
+        }
+    },
+    "获取参数-输入聊天框的消息内容": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "content": ""
+        }
+    },
+    "获取参数-需要发送的消息是否需要队伍人数信息": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "need_number": false
+        }
+    },
+    "获取参数-队伍已满时是否还需要发送消息": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "force_send": false
+        }
+    },
+    "获取参数-聊天框发消息的周期": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "loop_interval": 120
+        }
+    },
+    "获取参数-聊天框发消息的次数上限": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "limit": 0
         }
     }
 }

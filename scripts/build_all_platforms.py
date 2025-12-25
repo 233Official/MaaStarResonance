@@ -172,7 +172,30 @@ def get_latest_release_info(repo: str, token: Optional[str]) -> Tuple[str, List[
     """返回 (tag_name, assets)。
 
     为后续缓存使用提供 tag 名字。"""
-    data = api_get_json(f"https://api.github.com/repos/{repo}/releases/latest", token)
+    return get_release_info(repo, token, version=None)
+
+
+def get_release_info(
+    repo: str, token: Optional[str], version: Optional[str] = None
+) -> Tuple[str, List[dict]]:
+    """获取指定版本或最新版本的 release 信息。
+
+    Args:
+        repo: GitHub 仓库名，格式为 owner/name
+        token: GitHub token(可选)
+        version: 指定版本标签，如 v2.0.0, 若为 None 则获取最新版本
+
+    Returns:
+        (tag_name, assets) 元组
+    """
+    if version:
+        url = f"https://api.github.com/repos/{repo}/releases/tags/{version}"
+        info(f"获取 {repo} 的指定版本: {version}")
+    else:
+        url = f"https://api.github.com/repos/{repo}/releases/latest"
+        info(f"获取 {repo} 的最新版本")
+
+    data = api_get_json(url, token)
     tag_raw = data.get("tag_name")
     if not isinstance(tag_raw, str) or not tag_raw:
         fail(f"未能获取 {repo} 最新 release tag")
@@ -446,7 +469,6 @@ def build_one(
         if src.is_file():
             shutil.copy2(src, staging_root / doc)
 
-
     # 拷贝 resource 目录
     res_src = SOURCE_COPY_DST_DIR / "resource"
     res_dst = staging_root / "resource"
@@ -592,6 +614,16 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--tag", dest="tag", help="版本标签，如 v1.2.3；若省略，将自动生成临时标记"
     )
     ap.add_argument(
+        "--maafw-version",
+        dest="maafw_version",
+        help="指定 MaaFramework 版本标签，如 v2.0.0；若省略，使用最新版本",
+    )
+    ap.add_argument(
+        "--mfaa-version",
+        dest="mfaa_version",
+        help="指定 MFAAvalonia 版本标签，如 v1.5.0；若省略，使用最新版本",
+    )
+    ap.add_argument(
         "--skip-deps",
         action="store_true",
         help="跳过依赖(MaaFramework/MFAAvalonia)下载",
@@ -656,12 +688,25 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     # 预先获取上游 release 信息（减少重复请求与下载）
     log_section("获取上游依赖 release 信息（用于缓存）")
-    maafw_info: Tuple[str, List[dict]] = get_latest_release_info(
-        "MaaXYZ/MaaFramework", token
+    selected_maafw_version = args.maafw_version or os.environ.get("MAAFW_VERSION")
+    selected_mfaa_version = args.mfaa_version or os.environ.get("MFAA_VERSION")
+    if selected_maafw_version:
+        info(f"使用指定的 MaaFramework 版本: {selected_maafw_version}")
+    else:
+        info("未指定 MaaFramework 版本，使用最新版本")
+    if selected_mfaa_version:
+        info(f"使用指定的 MFAAvalonia 版本: {selected_mfaa_version}")
+    else:
+        info("未指定 MFAAvalonia 版本，使用最新版本")
+
+    maafw_info: Tuple[str, List[dict]] = get_release_info(
+        "MaaXYZ/MaaFramework", token, version=selected_maafw_version
     )
     mfa_avalonia_info: Optional[Tuple[str, List[dict]]] = None
     try:
-        mfa_avalonia_info = get_latest_release_info("SweetSmellFox/MFAAvalonia", token)
+        mfa_avalonia_info = get_release_info(
+            "SweetSmellFox/MFAAvalonia", token, version=selected_mfaa_version
+        )
     except Exception as e:
         warn(f"获取 MFAAvalonia release 失败: {e} — 将跳过 MFA 部分")
 

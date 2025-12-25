@@ -70,7 +70,7 @@ wheels = [
 
 [[package]]
 name = "maafw"
-version = "5.2.0"
+version = "5.3.0b5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "maaagentbinary" },
@@ -78,17 +78,17 @@ dependencies = [
     { name = "strenum" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/30/27/232fde9f1cdce504d64b1dccb821918c08f444c1821c7cacdbf3c184d46c/maafw-5.2.0-py3-none-macosx_13_0_arm64.whl", hash = "sha256:5ac16ed1ac5db096db42731ad4df76b178a5796e5f582bf2247f856d5e84c81c", size = 15177989, upload-time = "2025-12-06T17:25:46.145Z" },
-    { url = "https://files.pythonhosted.org/packages/f1/94/84865fdfb6f497a3949ac3370179d04eecae60f14d6fac8a5b188d2ebe7f/maafw-5.2.0-py3-none-macosx_13_0_x86_64.whl", hash = "sha256:bb2d5b32165d00f3734a61216c3f02460d677d28ae15363933848bcbc98db627", size = 17118460, upload-time = "2025-12-06T17:25:48.467Z" },
-    { url = "https://files.pythonhosted.org/packages/cd/35/d548c472393ac223b09c4e2ae645a60101b91608dda52bf368b8b44fe7d6/maafw-5.2.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:2266f5d9026fe2b85f3bb5e0a6143be1a0cd3025603fb5b941c25ccf58d3e4a4", size = 51769808, upload-time = "2025-12-06T17:25:51.133Z" },
-    { url = "https://files.pythonhosted.org/packages/f9/80/9d7b6d58ef5ebe0ebd3b0cc86ab1548ab2fccca57db3706008a28db80636/maafw-5.2.0-py3-none-manylinux2014_x86_64.whl", hash = "sha256:d248f2b9c23413a73fac6f909cf6d00a60b43039507c16a1fbee9bf9778fa949", size = 52927486, upload-time = "2025-12-06T17:25:54.105Z" },
-    { url = "https://files.pythonhosted.org/packages/ea/aa/6d9bdb29040cfa423d3b2927554ac67d8c21d4ec8b1eaf4adfe481373846/maafw-5.2.0-py3-none-win_amd64.whl", hash = "sha256:666c17cbbcec2327c05be9824d3cf7345afd532d49f93b7674e7f8d73989135d", size = 25189338, upload-time = "2025-12-06T17:25:57.178Z" },
-    { url = "https://files.pythonhosted.org/packages/82/93/881c0726f3b6d219745399dc6bc04bafea099fa0999438d2d0d3c003c0a9/maafw-5.2.0-py3-none-win_arm64.whl", hash = "sha256:08289749e75de2d5627719f6b5605f73f79aee5aec1b2339ca16a7d623c97b37", size = 23903500, upload-time = "2025-12-06T17:25:59.601Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/03/6e980c6982c4266cebb5d50841a55bc5d63b82337e1deac34bfdce8d4653/maafw-5.3.0b5-py3-none-macosx_13_0_arm64.whl", hash = "sha256:d58b9e57a2b8eaafaba90bb505235bdd820fb1016fdf6e93757c7512bf77294a", size = 15337510, upload-time = "2025-12-19T18:50:37.232Z" },
+    { url = "https://files.pythonhosted.org/packages/e4/81/49ee7be6babf9e3b8c645ea190dcd1b57b0204d8ad487bbddb700aaa19de/maafw-5.3.0b5-py3-none-macosx_13_0_x86_64.whl", hash = "sha256:444a0be664b195132ac810b0559acf7026e1f59c6a17e4a59c503eb60ef7bef7", size = 17295640, upload-time = "2025-12-19T18:50:39.105Z" },
+    { url = "https://files.pythonhosted.org/packages/29/0b/4a1e8629386a246675f818e8deb18d064bbacf7397738d05b5ad9cd8be23/maafw-5.3.0b5-py3-none-manylinux2014_aarch64.whl", hash = "sha256:d69a80acd4075ee63e3cc9442210aa4508dd8f21511df664bb8490ed088dea36", size = 16140715, upload-time = "2025-12-19T18:50:41.207Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/45/455dbfc27ff475de57cfb2696060c31a44acdcc969db7ab2db48eecde38b/maafw-5.3.0b5-py3-none-manylinux2014_x86_64.whl", hash = "sha256:00957d1d35d9acc8e2dea71db9e444d869f8ee7e4911ea88c721874b20d6c1fb", size = 18005100, upload-time = "2025-12-19T18:50:43.101Z" },
+    { url = "https://files.pythonhosted.org/packages/0d/65/835ba436835ed9b5d5610f1564628abe022f95b2f8af45aebbd786dfefaa/maafw-5.3.0b5-py3-none-win_amd64.whl", hash = "sha256:759696af459f75644e8b506ff2372b37b58a1fc16a1d012a4466c31e068cd106", size = 25379988, upload-time = "2025-12-19T18:50:45.342Z" },
+    { url = "https://files.pythonhosted.org/packages/66/f6/d547cc7ea99ce1c4276d7b62f1ab7798c640b43220d3efcd7341c2723703/maafw-5.3.0b5-py3-none-win_arm64.whl", hash = "sha256:40636cc1a95cbfc16d276ff5f75c9423b87d1854e2c93c774fb0c3632f7a90d1", size = 24101561, upload-time = "2025-12-19T18:50:47.726Z" },
 ]
 
 [[package]]
 name = "maastarresonance"
-version = "0.5.8"
+version = "0.6.0"
 source = { virtual = "." }
 dependencies = [
     { name = "loguru" },
@@ -103,7 +103,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "maafw", specifier = "==5.2.0" },
+    { name = "maafw", specifier = "==5.3.0b5" },
     { name = "pip", specifier = ">=25.3" },
     { name = "pre-commit", specifier = ">=4.5.0" },
     { name = "rapidfuzz", specifier = ">=3.14.3" },

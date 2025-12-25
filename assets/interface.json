@@ -6,18 +6,12 @@
     "github": "https://github.com/233Official/MaaStarResonance",
     "mirrorchyan_rid": "MaaStarResonance",
     "mirrorchyan_multiplatform": true,
-    "version": "v0.5.8",
+    "version": "v0.6.0",
     "title": "星痕共鸣MAA小助手",
     "controller": [
         {
             "name": "模拟器",
-            "type": "Adb",
-            "adb": {
-                // 输入方式：EmulatorExtras > Maatouch > MinitouchAndAdbKey > AdbShell => 按位或 1 | 2 | 4 | 8 为：15
-                "input": 15,
-                // 截图方式：EmulatorExtras > RawWithGzip > Encode > EncodeToFileAndPull => 按位或 1 | 2 | 4 | 64 为：71
-                "screencap": 71
-            }
+            "type": "Adb"
         }
     ],
     "resource": [
@@ -25,18 +19,6 @@
             "name": "国服",
             "path": [
                 "{PROJECT_DIR}/resource/base"
-            ]
-        },
-        {
-            "name": "国际服（暂未支持）",
-            "path": [
-                "{PROJECT_DIR}/resource/global"
-            ]
-        },
-        {
-            "name": "日服（暂未支持）",
-            "path": [
-                "{PROJECT_DIR}/resource/jp"
             ]
         }
     ],
@@ -53,6 +35,62 @@
     },
     "task": [
         {
+            "name": "自动钓鱼",
+            "entry": "启动自动钓鱼入口",
+            "description": "请确保选择的鱼竿和鱼饵已经解锁，否则会出现异常",
+            "option": [
+                "自动购买鱼竿选择",
+                "自动购买鱼饵选择",
+                "需要的最大成功钓鱼数量",
+                "如遇到不可恢复异常是否重启游戏"
+            ]
+        },
+        {
+            "name": "简易采集",
+            "entry": "简易采集",
+            "option": [
+                "采集方案"
+            ]
+        },
+        {
+            "name": "领取今日活跃度奖励",
+            "entry": "领取今日活跃度奖励"
+        },
+        {
+            "name": "挂机自动批复入队申请",
+            "entry": "挂机自动批复入队申请"
+        },
+        {
+            "name": "每130s释放一次一号位幻想",
+            "entry": "每130s释放一次一号位幻想"
+        },
+        {
+            "name": "聊天频道发言",
+            "entry": "聊天频道发言",
+            "description": "如需在自动战斗时发送建议关闭大招防止闪屏",
+            "option": [
+                "输入聊天框的消息内容",
+                "需要发送消息的频道",
+                "发送的消息是否需要队伍信息(额外注意)"
+            ]
+        },
+        {
+            "name": "周期性聊天频道发言",
+            "entry": "周期性聊天频道发言",
+            "description": "如需在自动战斗时发送建议关闭大招防止闪屏",
+            "option": [
+                "发送消息的周期间隔",
+                "聊天框发消息的次数上限",
+                "输入聊天框的消息内容",
+                "需要发送消息的频道",
+                "发送的消息是否需要队伍信息(额外注意)"
+            ]
+        },
+        {
+            "name": "自动挂Lv10茧",
+            "entry": "自动挂Lv10茧"
+        },
+        {
             "name": "启动星痕共鸣",
             "entry": "启动指定APP"
         },
@@ -67,7 +105,7 @@
         {
             "name": "重启并登录星痕共鸣",
             "entry": "重启并登录星痕共鸣",
-            "advanced": [
+            "option": [
                 "登录超时时长",
                 "场景切换超时时长"
             ]
@@ -75,34 +113,6 @@
         {
             "name": "自动协会狩猎",
             "entry": "自动协会狩猎"
-        },
-        {
-            "name": "自动挂Lv10茧",
-            "entry": "自动挂Lv10茧"
-        },
-        {
-            "name": "简易采集",
-            "entry": "简易采集",
-            "option": [
-                "采集方案"
-            ]
-        },
-        {
-            "name": "自动钓鱼",
-            "entry": "启动自动钓鱼入口",
-            "option": [
-                "自动购买鱼竿选择",
-                "自动购买鱼饵选择",
-                "如遇到不可恢复异常是否重启游戏"
-            ],
-            "advanced": [
-                "需要的最大成功钓鱼数量",
-                "最大重启游戏次数限制"
-            ]
-        },
-        {
-            "name": "领取今日活跃度奖励",
-            "entry": "领取今日活跃度奖励"
         },
         {
             "name": "打开一键连招",
@@ -124,7 +134,14 @@
             "name": "地图传送",
             "entry": "传送地图传送点",
             "option": [
-                "目的地图选择"
+                "目的传送地图选择"
+            ]
+        },
+        {
+            "name": "地图导航",
+            "entry": "导航地图导航点",
+            "option": [
+                "目的导航地图选择"
             ]
         }
     ],
@@ -135,16 +152,9 @@
                 {
                     "name": "普通鱼竿",
                     "pipeline_override": {
-                        "选择并购买需要的鱼竿": {
-                            "action": {
-                                "param": {
-                                    "target": [
-                                        806,
-                                        158,
-                                        80,
-                                        25
-                                    ]
-                                }
+                        "获取参数-需要购买的鱼竿配件": {
+                            "attach": {
+                                "item_name": "普通鱼竿"
                             }
                         }
                     }
@@ -152,16 +162,9 @@
                 {
                     "name": "强韧鱼竿",
                     "pipeline_override": {
-                        "选择并购买需要的鱼竿": {
-                            "action": {
-                                "param": {
-                                    "target": [
-                                        1012,
-                                        160,
-                                        80,
-                                        23
-                                    ]
-                                }
+                        "获取参数-需要购买的鱼竿配件": {
+                            "attach": {
+                                "item_name": "强韧鱼竿"
                             }
                         }
                     }
@@ -169,16 +172,9 @@
                 {
                     "name": "柔韧鱼竿",
                     "pipeline_override": {
-                        "选择并购买需要的鱼竿": {
-                            "action": {
-                                "param": {
-                                    "target": [
-                                        187,
-                                        418,
-                                        77,
-                                        26
-                                    ]
-                                }
+                        "获取参数-需要购买的鱼竿配件": {
+                            "attach": {
+                                "item_name": "柔韧鱼竿"
                             }
                         }
                     }
@@ -191,16 +187,9 @@
                 {
                     "name": "普通鱼饵",
                     "pipeline_override": {
-                        "选择并购买需要的鱼饵": {
-                            "action": {
-                                "param": {
-                                    "target": [
-                                        188,
-                                        158,
-                                        77,
-                                        25
-                                    ]
-                                }
+                        "获取参数-需要购买的鱼饵配件": {
+                            "attach": {
+                                "item_name": "普通鱼饵"
                             }
                         }
                     }
@@ -208,16 +197,9 @@
                 {
                     "name": "不空军鱼饵",
                     "pipeline_override": {
-                        "选择并购买需要的鱼饵": {
-                            "action": {
-                                "param": {
-                                    "target": [
-                                        385,
-                                        159,
-                                        96,
-                                        25
-                                    ]
-                                }
+                        "获取参数-需要购买的鱼饵配件": {
+                            "attach": {
+                                "item_name": "不空军鱼饵"
                             }
                         }
                     }
@@ -225,27 +207,47 @@
                 {
                     "name": "特制鱼饵",
                     "pipeline_override": {
-                        "选择并购买需要的鱼饵": {
-                            "action": {
-                                "param": {
-                                    "target": [
-                                        599,
-                                        157,
-                                        78,
-                                        26
-                                    ]
-                                }
+                        "获取参数-需要购买的鱼饵配件": {
+                            "attach": {
+                                "item_name": "特制鱼饵"
                             }
                         }
                     }
                 }
             ]
         },
+        "需要的最大成功钓鱼数量": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "最大成功钓鱼数量",
+                    "description": "需要的最大成功钓鱼数量，默认设置0为无限钓鱼，钓到足够数量的鱼就停止任务",
+                    "pipeline_type": "int",
+                    "default": "0"
+                }
+            ],
+            "pipeline_override": {
+                "启动自动钓鱼入口": {
+                    "action": {
+                        "param": {
+                            "custom_action_param": {
+                                "max_success_fishing_count": "{最大成功钓鱼数量}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "如遇到不可恢复异常是否重启游戏": {
             "type": "select",
+            "default_case": "是",
+            "description": "由于钓鱼可能遇到游戏分线回收/游戏闪退等问题，所以默认开启该选项，保证在自动处理异常无法恢复时自动重启游戏，注意需要保证游戏登录状态没有过期",
             "cases": [
                 {
                     "name": "是",
+                    "option": [
+                        "最大重启游戏次数限制"
+                    ],
                     "pipeline_override": {
                         "获取参数-是否重启游戏": {
                             "attach": {
@@ -265,6 +267,62 @@
                     }
                 }
             ]
+        },
+        "最大重启游戏次数限制": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "最大重启游戏次数",
+                    "description": "如遇到不可恢复异常时，允许的最大重启游戏次数，默认5次，超过后任务终止",
+                    "pattern_msg": "int",
+                    "default": "5"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-最大重启游戏次数限制": {
+                    "attach": {
+                        "max_restart_count": "{最大重启游戏次数}"
+                    }
+                }
+            }
+        },
+        "登录超时时长": {
+            "type": "input",
+            "label": "登录超时时长（秒）",
+            "inputs": [
+                {
+                    "name": "登录超时时长",
+                    "description": "星痕共鸣启动游戏准备登录前的超时时长，单位为秒，不填默认240秒",
+                    "pattern_msg": "int",
+                    "default": "240"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-登录超时时长": {
+                    "attach": {
+                        "login_timeout": "{登录超时时长}"
+                    }
+                }
+            }
+        },
+        "场景切换超时时长": {
+            "type": "input",
+            "label": "场景切换超时时长（秒）",
+            "inputs": [
+                {
+                    "name": "场景切换超时时长",
+                    "description": "星痕共鸣进入游戏后等待地图加载的超时时间，单位为秒，不填默认90秒",
+                    "pattern_msg": "int",
+                    "default": "90"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-登录超时时长": {
+                    "attach": {
+                        "area_change_timeout": "{场景切换超时时长}"
+                    }
+                }
+            }
         },
         "采集方案": {
             "type": "select",
@@ -293,7 +351,183 @@
                 }
             ]
         },
-        "目的地图选择": {
+        "发送消息的周期间隔": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "发送消息的周期间隔",
+                    "description": "循环发送消息任务的间隔，单位为秒，默认120秒，不可低于30秒，建议设置长一点，通俗一点就是给1,2,3频道都发完消息后，等多长时间再进行下一次发1,2,3频道的消息",
+                    "pipeline_type": "int",
+                    "default": "120"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-聊天框发消息的周期": {
+                    "attach": {
+                        "loop_interval": "{发送消息的周期间隔}"
+                    }
+                }
+            }
+        },
+        "聊天框发消息的次数上限": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "发消息的次数上限",
+                    "description": "循环发送消息任务的次数上限，默认0无限次数",
+                    "pipeline_type": "int",
+                    "default": "0"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-聊天框发消息的次数上限": {
+                    "attach": {
+                        "limit": "{发消息的次数上限}"
+                    }
+                }
+            }
+        },
+        "输入聊天框的消息内容": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "聊天框的消息内容",
+                    "description": "请勿滥用！",
+                    "pipeline_type": "string"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-输入聊天框的消息内容": {
+                    "attach": {
+                        "content": "{聊天框的消息内容}"
+                    }
+                }
+            }
+        },
+        "发送的消息是否需要队伍信息(额外注意)": {
+            "type": "select",
+            "default_case": "否",
+            "description": "消息中是否需要包含'当前队伍人数'或'队伍总人数上限'或'游戏中队伍名'，如果不需要强烈建议选'否'<br>- 如果选了'否'，默认为'否'，仅发送固定内容消息<br>- 如果选了'是'，请在消息内容中带上'${当前人数}'或'${总人数}'或'${队伍名}'中的至少一个，发送时会替代对应的字符串为实际的队伍信息<br>举个例子：<br>2线巫医挂经验队伍来人，队伍当前人数：${当前人数}/${总人数}",
+            "cases": [
+                {
+                    "name": "是",
+                    "option": [
+                        "队伍已满时是否还需要发送消息"
+                    ],
+                    "pipeline_override": {
+                        "获取参数-需要发送的消息是否需要队伍人数信息": {
+                            "attach": {
+                                "need_number": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "否",
+                    "pipeline_override": {
+                        "获取参数-需要发送的消息是否需要队伍人数信息": {
+                            "attach": {
+                                "need_number": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "队伍已满时是否还需要发送消息": {
+            "type": "select",
+            "default_case": "否",
+            "description": "当队伍已满时是否还需要发送消息，默认选'否'<br>- 如果选了'否'，当队伍已满时本次将不会发送消息<br>- 如果选了'是'，即使队伍已满也会发送消息",
+            "cases": [
+                {
+                    "name": "是",
+                    "pipeline_override": {
+                        "获取参数-队伍已满时是否还需要发送消息": {
+                            "attach": {
+                                "force_send": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "否",
+                    "pipeline_override": {
+                        "获取参数-队伍已满时是否还需要发送消息": {
+                            "attach": {
+                                "force_send": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "需要发送消息的频道": {
+            "type": "select",
+            "description": "目前支持 综合、世界、协会、队伍 频道，不在队伍频道中将不会发出消息",
+            "cases": [
+                {
+                    "name": "综合",
+                    "pipeline_override": {
+                        "获取参数-输入聊天框频道": {
+                            "attach": {
+                                "channel": "综合"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "世界",
+                    "option": [
+                        "需要发送消息的世界频道分线ID"
+                    ],
+                    "pipeline_override": {
+                        "获取参数-输入聊天框频道": {
+                            "attach": {
+                                "channel": "世界"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "协会",
+                    "pipeline_override": {
+                        "获取参数-输入聊天框频道": {
+                            "attach": {
+                                "channel": "协会"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "队伍",
+                    "pipeline_override": {
+                        "获取参数-输入聊天框频道": {
+                            "attach": {
+                                "channel": "队伍"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "需要发送消息的世界频道分线ID": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "世界频道分线ID",
+                    "pipeline_type": "string",
+                    "description": "需要发送消息的世界频道分线ID，频道ID必须为纯数字，支持输入多个，用英文逗号间隔，形如：1,201,302"
+                }
+            ],
+            "pipeline_override": {
+                "获取参数-需要发送消息的世界频道分线ID": {
+                    "attach": {
+                        "channel_ids": "{世界频道分线ID}"
+                    }
+                }
+            }
+        },
+        "目的传送地图选择": {
             "type": "select",
             "cases": [
                 {
@@ -791,88 +1025,67 @@
                     }
                 }
             ]
-        }
-    },
-    "advanced": {
-        "需要的最大成功钓鱼数量": {
-            "field": [
-                "需要的最大成功钓鱼数量"
-            ],
-            "type": [
-                "int"
-            ],
-            "default": [
-                "0"
-            ],
-            "pipeline_override": {
-                "启动自动钓鱼入口": {
-                    "action": {
-                        "param": {
-                            "custom_action_param": {
-                                "max_success_fishing_count": "{需要的最大成功钓鱼数量}"
+        },
+        "目的导航地图选择": {
+            "type": "select",
+            "cases": [
+                {
+                    "name": "巴哈马尔高原",
+                    "option": [
+                        "巴哈马尔高原导航点选择"
+                    ],
+                    "pipeline_override": {
+                        "获取参数-导航所需地图": {
+                            "attach": {
+                                "dest_map": "巴哈马尔高原"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "月影之野",
+                    "option": [
+                        "月影之野导航点选择"
+                    ],
+                    "pipeline_override": {
+                        "获取参数-导航所需地图": {
+                            "attach": {
+                                "dest_map": "月影之野"
                             }
                         }
                     }
                 }
-            },
-            "doc": "需要的最大成功钓鱼数量，默认设置0为无限钓鱼"
+            ]
         },
-        "最大重启游戏次数限制": {
-            "field": [
-                "最大重启游戏次数限制"
-            ],
-            "type": [
-                "int"
-            ],
-            "default": [
-                "5"
-            ],
-            "pipeline_override": {
-                "获取参数-最大重启游戏次数限制": {
-                    "attach": {
-                        "max_restart_count": "{最大重启游戏次数限制}"
+        "巴哈马尔高原导航点选择": {
+            "type": "select",
+            "cases": [
+                {
+                    "name": "Lv60浮游之茧",
+                    "pipeline_override": {
+                        "获取参数-导航所需导航点": {
+                            "attach": {
+                                "dest_navigate_point": "Lv60浮游之茧"
+                            }
+                        }
                     }
                 }
-            },
-            "doc": "如遇到不可恢复异常时，允许的最大重启游戏次数，默认5次，超过后任务终止"
+            ]
         },
-        "登录超时时长": {
-            "field": [
-                "登录超时时长（秒）"
-            ],
-            "type": [
-                "int"
-            ],
-            "default": [
-                "240"
-            ],
-            "pipeline_override": {
-                "获取参数-登录超时时长": {
-                    "attach": {
-                        "login_timeout": "{登录超时时长（秒）}"
+        "月影之野导航点选择": {
+            "type": "select",
+            "cases": [
+                {
+                    "name": "Lv75浮游之茧",
+                    "pipeline_override": {
+                        "获取参数-导航所需导航点": {
+                            "attach": {
+                                "dest_navigate_point": "Lv75浮游之茧"
+                            }
+                        }
                     }
                 }
-            },
-            "doc": "星痕共鸣启动游戏准备登录前的超时时长，单位为秒，不填默认240秒"
-        },
-        "场景切换超时时长": {
-            "field": [
-                "场景切换超时时长（秒）"
-            ],
-            "type": [
-                "int"
-            ],
-            "default": [
-                "90"
-            ],
-            "pipeline_override": {
-                "获取参数-登录超时时长": {
-                    "attach": {
-                        "area_change_timeout": "{场景切换超时时长（秒）}"
-                    }
-                }
-            },
-            "doc": "星痕共鸣进入游戏后等待地图加载的超时时间，单位为秒，不填默认90秒"
+            ]
         }
     }
 }

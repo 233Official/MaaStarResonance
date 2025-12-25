@@ -81,6 +81,18 @@
             }
         }
     },
+    "获取参数-需要购买的鱼竿配件": {
+        "action": "DoNothing",
+        "attach": {
+            "item_name": "普通鱼竿"
+        }
+    },
+    "获取参数-需要购买的鱼饵配件": {
+        "action": "DoNothing",
+        "attach": {
+            "item_name": "普通鱼饵"
+        }
+    },
     // 钓鱼时的检查
     "检测是否在抛竿界面": {
         "recognition": {

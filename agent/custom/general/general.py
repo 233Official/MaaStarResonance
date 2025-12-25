@@ -1,11 +1,10 @@
 from __future__ import annotations
 
+import json
 import time
 import traceback
 from functools import wraps
 from typing import Any, Callable
-import json
-import numpy
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
@@ -27,6 +26,9 @@ class ReturnMainPageAction(CustomAction):
         try:
             # 按返回键直到回到主页面，最多按10次防止死循环
             for _ in range(10):
+                # 任务强制中止判断
+                if context.tasker.stopping:
+                    return False
                 img = context.tasker.controller.post_screencap().wait().get()
                 is_main_page: RecognitionDetail | None = context.run_recognition(
                     "图片识别是否在主页面", img
@@ -71,37 +73,62 @@ def ensure_main_page(
     def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(fn)
         def wrapper(self: CustomAction, context: Context, *args: Any, **kwargs: Any):
-            try:
-                for _ in range(max_retry):
-                    img = context.tasker.controller.post_screencap().wait().get()
-                    detail: RecognitionDetail | None = context.run_recognition(
-                        "图片识别是否在主页面", img
-                    )
-                    if detail and detail.hit:
-                        logger.info("[EnsureMainPage] 已在主页面")
-                        break
-                    context.tasker.controller.post_click_key(
-                        ANDROID_KEY_EVENT_DATA["KEYCODE_ESCAPE"]
-                    ).wait()
-                    time.sleep(max(0.0, interval_sec))
-                else:
-                    # for 未被 break，达到最大次数
-                    msg = "[EnsureMainPage] 无法回到主页面，已达到最大尝试次数"
-                    if strict:
-                        logger.error(msg)
-                        raise RuntimeError(msg)
-                    logger.error(msg)
-            except Exception as exc:  # pragma: no cover - 防御性保护
-                logger.exception(f"[EnsureMainPage] 执行前置回主页面逻辑失败: {exc}")
-                if strict:
-                    # 严格模式下失败直接中断
-                    raise
-
+            # 填充默认确保主界面方法
+            default_ensure_main_page(context, max_retry, interval_sec, strict)
             return fn(self, context, *args, **kwargs)
 
         return wrapper
 
     return decorator
+
+
+def default_ensure_main_page(
+        context: Context,
+        max_retry: int = 10,
+        interval_sec: float = 1.0,
+        strict: bool = False
+) -> None:
+    """
+    默认的确保主界面方法
+
+    Args:
+        context: 控制器上下文
+        max_retry: 最大重试次数（按返回键的最多次数）。
+        interval_sec: 每次尝试之间的等待秒数。
+        strict: True 时若最终仍未回到主页面则抛出异常；
+                False 时仅记录错误日志后继续执行被装饰的方法。
+
+    Returns:
+        None
+    """
+    try:
+        for _ in range(max_retry):
+            # 任务强制中止判断
+            if context.tasker.stopping:
+                break
+            img = context.tasker.controller.post_screencap().wait().get()
+            detail: RecognitionDetail | None = context.run_recognition(
+                "图片识别是否在主页面", img
+            )
+            if detail and detail.hit:
+                logger.info("[EnsureMainPage] 已在主页面")
+                break
+            context.tasker.controller.post_click_key(
+                ANDROID_KEY_EVENT_DATA["KEYCODE_ESCAPE"]
+            ).wait()
+            time.sleep(max(0.0, interval_sec))
+        else:
+            # for 未被 break，达到最大次数
+            msg = "[EnsureMainPage] 无法回到主页面，已达到最大尝试次数"
+            if strict:
+                logger.error(msg)
+                raise RuntimeError(msg)
+            logger.error(msg)
+    except Exception as exc:  # pragma: no cover - 防御性保护
+        logger.exception(f"[EnsureMainPage] 执行前置回主页面逻辑失败: {exc}")
+        if strict:
+            # 严格模式下失败直接中断
+            raise
 
 
 # 复合识别器：所有指定节点都识别成功才算成功
@@ -131,11 +158,11 @@ class AllMatchRecognition(CustomRecognition):
             nodes: list[str] = params.get("nodes", [])
         except (json.JSONDecodeError, TypeError) as e:
             logger.error(f"[AllMatch] 参数解析失败: {e}")
-            return CustomRecognition.AnalyzeResult(box=None, detail=f"{'hit': False}")
+            return CustomRecognition.AnalyzeResult(box=None, detail={'hit': False})
 
         if not nodes:
             logger.error("[AllMatch] 节点列表为空")
-            return CustomRecognition.AnalyzeResult(box=None, detail=f"{'hit': False}")
+            return CustomRecognition.AnalyzeResult(box=None, detail={'hit': False})
         # 用于存储最后一个成功的识别结果
         last_detail: RecognitionDetail | None = None
 
@@ -143,12 +170,15 @@ class AllMatchRecognition(CustomRecognition):
         image = argv.image
 
         for i, node_name in enumerate(nodes):
+            # 任务强制中止判断
+            if context.tasker.stopping:
+                return CustomRecognition.AnalyzeResult(box=None, detail={'hit': False})
             reco_detail = context.run_recognition(node_name, image, {})
 
             if reco_detail is None or reco_detail.box is None:
                 # 任一节点识别失败，整体失败
                 logger.error(f"[AllMatch] 节点 '{node_name}' 识别失败，终止")
-                return CustomRecognition.AnalyzeResult(box=None, detail="{hit: False}")
+                return CustomRecognition.AnalyzeResult(box=None, detail={'hit': False})
 
             # 记录结果
             last_detail = reco_detail
@@ -156,7 +186,7 @@ class AllMatchRecognition(CustomRecognition):
         logger.info(f"[AllMatch] 全部 {len(nodes)} 个节点识别成功")
         return CustomRecognition.AnalyzeResult(
             box=last_detail.box if last_detail else None,
-            detail=f"{{'hit': True, 'detail': 'All {len(nodes)} nodes matched successfully'}}",
+            detail={'hit': True, 'detail': f'All {len(nodes)} nodes matched successfully'},
         )
 
 
@@ -174,9 +204,12 @@ class AnyMatchRecognition(CustomRecognition):
             params = json.loads(argv.custom_recognition_param)
             nodes: list[str] = params.get("nodes", [])
         except (json.JSONDecodeError, TypeError):
-            return CustomRecognition.AnalyzeResult(box=None, detail=f"{'hit': False}")
+            return CustomRecognition.AnalyzeResult(box=None, detail={'hit': False})
 
         for node_name in nodes:
+            # 任务强制中止判断
+            if context.tasker.stopping:
+                return CustomRecognition.AnalyzeResult(box=None, detail={'hit': False})
             reco_detail = context.run_recognition(node_name, argv.image, {})
             if reco_detail and reco_detail.box is not None:
                 detail = json.dumps(
@@ -188,7 +221,7 @@ class AnyMatchRecognition(CustomRecognition):
                 )
                 return CustomRecognition.AnalyzeResult(
                     box=reco_detail.box,
-                    detail=f"{{'hit': True,'detail': {detail}}}",
+                    detail={'hit': True,'detail': detail},
                 )
 
-        return CustomRecognition.AnalyzeResult(box=None, detail=f"{'hit': False}")
+        return CustomRecognition.AnalyzeResult(box=None, detail={'hit': False})
