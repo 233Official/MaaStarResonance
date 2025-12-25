@@ -292,14 +292,17 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
 
 def get_team_info(context: Context, force_send: bool = False) -> tuple[int, int, str]:
     """
-    获取队伍信息，必须是加入协会状态
+    获取队伍信息，必须是加入协会状态。
 
     Args:
-        context: 控制器上下文
-        force_send: 队伍已满时是否还需要发送消息
+        context: 控制器上下文。
+        force_send: 队伍已满时是否还需要发送消息。
 
     Returns:
-        当前队伍人数，队伍总人数
+        tuple[int, int, str]: 一个包含三个元素的元组，
+            依次为当前队伍人数、队伍总人数和队伍名称。当未能成功识别
+            队伍信息，或队伍已满且 ``force_send`` 为 False 时，返回
+            ``(0, 0, "")`` 表示未获取到有效的队伍信息或本次发送被跳过。
     """
     # 先按U打开协会页面
     time.sleep(2)
