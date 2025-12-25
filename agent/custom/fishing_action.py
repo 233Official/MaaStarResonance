@@ -444,6 +444,8 @@ class AutoFishingAction(CustomAction):
             )
             if not ocr_result or not ocr_result.hit:
                 logger.error(f"[任务准备] 购买{fish_equipment}失败，未识别到购买目标")
+                context.run_action("ESC")
+                time.sleep(2)
                 return
 
             # 3.3 获得最好结果坐标
