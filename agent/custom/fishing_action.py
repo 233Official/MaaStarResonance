@@ -2,7 +2,7 @@ import time
 
 import numpy
 from maa.agent.agent_server import AgentServer
-from maa.context import Context, RecognitionDetail
+from maa.context import Context, RecognitionDetail, Rect
 from maa.custom_action import CustomAction
 
 from agent.attach.common_attach import get_restart_for_except, get_max_restart_count, get_fish_equipment
