@@ -55,6 +55,7 @@
 
 ### 🧹 日常维护
 
+- changelog强制UTF-8解码 @azmiao
 - Update agent/custom/general/chat_message.py @azmiao (Co-authored: Copilot)
 - Update CHANGELOG.md @azmiao (Co-authored: sourcery-ai[bot])
 - 更新BUG反馈的模板 @azmiao
