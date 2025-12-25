@@ -340,10 +340,10 @@ class ChangelogGenerator:
         result = subprocess.run(
             ["git", "-C", str(self.repo_path), *args],
             capture_output=True,
-            text=True,
+            text=False,
             check=True,
         )
-        return result.stdout
+        return result.stdout.decode("utf-8")
 
     def _build_email_to_names_map(self) -> dict[str, set[str]]:
         """构建邮箱到用户名的映射 (同一邮箱可能有多个用户名)

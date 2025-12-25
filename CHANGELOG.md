@@ -2,20 +2,62 @@
 
 ## 未发布
 
+### ✨ 新功能
+
+- 离线打包支持指定mfaa,maafw版本(#66) @233Official
+- 消息发送功能新增选项，控制队伍已满时是否还需发送 @azmiao
+- 发送消息功能新增可选检测队伍人数功能 @azmiao
+- 尝试新增地图导航功能 @azmiao
+- 尝试新增游戏聊天消息发送功能，部分静态资源来自Particle_G @azmiao
+- 挂机自动批复入队申请 @233Official
+
+### 🐛 Bug修复
+
+- 修复Rect引用缺失 @azmiao
+- 尝试修复未解锁的钓鱼配件位置不同的问题，#71 @azmiao
+- 去除会报错的类型声明 @azmiao
+- 尝试修复潜在的异步队列下字符串格式化异常导致的日志不打印问题 @azmiao
+- 修复消息发送逻辑错误和补充坐标 @azmiao
+- 尝试修复弹窗广告检测beta @azmiao
+- 修复默认值错误 @azmiao
+- 补充导航功能所需资源和数据 @azmiao
+
 ### 🚀 性能优化
 
+- 优化传送导航部分场景检测和操作，新增75级茧的导航选项 @azmiao
+- 优化消息发送逻辑，提高稳定性 @azmiao
+- 优化消息发送部分场景处理，补充队伍名变量读取，优化接口描述 @azmiao
+- 优化通用方法中的任务中断检测，修复部分变量赋值问题 @azmiao
+- 优化弹窗广告处理逻辑，同步钓鱼时的广告处理 @azmiao
+- 补充坐标和匹配图标 @azmiao
+- 聊天框频道发言新增频道切换成功检测 @azmiao
+- 尝试提高聊天检测识别率 @azmiao
+- 优化 CHANGELOG 生成逻辑, 添加本地昵称用户名映射 @233Official
 - 优化 Release Info 生成机制, 不再使用 git cliff, 通过自定义 py 脚本实现 @233Official
 
 ### 🎨 代码重构
 
+- [核心] 更换logger中format格式化为sink，防止变量参数被意外格式化 @azmiao
+- 重构部分聊天消息发送逻辑，新增对应选项参数 @azmiao
+- 优化聊天消息发送功能 @azmiao
 - 优化 changelog 生成脚本 @233Official
+
+### 🥚 格式化
+
+- 优化购买道具的异常退出逻辑，优化接口描述 @azmiao
+- 顺便统一格式化一下attach中的打印 @azmiao
 
 ### 📚 文档
 
+- 更新README @azmiao
+- 更新README，更新用户手册 @azmiao
 - 删除旧版本手写changelog @233Official
 
 ### 🧹 日常维护
 
+- Update agent/custom/general/chat_message.py @azmiao (Co-authored: Copilot)
+- Update CHANGELOG.md @azmiao (Co-authored: sourcery-ai[bot])
+- 更新BUG反馈的模板 @azmiao
 - 更新commit模板、cliff模板、pr模板，更新vscode配置文件 @azmiao
 
 ### 🧩 修改依赖
@@ -25,6 +67,20 @@
 - *(deps)* bump actions/upload-artifact from 4 to 5 @dependabot[bot]
 - *(deps)* bump actions/download-artifact from 4 to 6 @dependabot[bot]
 - *(deps)* bump actions/checkout from 4 to 6 @dependabot[bot]
+- MFAA更新至v2.2.6 @azmiao
+- MaaFw更新至v5.3.0-beta.5，MFAA更新至v2.2.5 @azmiao
+- MFAA更新至2.2.4 @azmiao
+- MFAA更新至v2.2.2 @azmiao
+- MaaFw更新至5.2.6，MFAA更新至2.2.1 @azmiao
+- MaaFw更新至5.2.5，MFAA更新至2.2.0 @azmiao
+
+### 🧪 测试
+
+- 每130s释放一次一号位幻想 @233Official
+
+### 🔧 配置文件
+
+- 更新 Github Copilot 全局提示词 @233Official
 
 ### ⚙️ 持续集成
 
@@ -177,7 +233,7 @@
 ### 🔧 配置文件
 
 - 修改只拉取MFAA最新TAG对应的单次提交的代码 @azmiao
-- 新增Dependabot自动更新依赖 @azmiao
+- 新增DependaBot自动更新依赖 @azmiao
 - 修改PR提交模板说明 @azmiao
 
 ## 0.5.4 (2025-11-20)
@@ -482,7 +538,7 @@
 
 ### 📚 文档
 
-- 更新自动刷茧文档(#5) @233Official
+- 更细自动刷茧文档(#5) @233Official
 - S2 自动刷茧主体流程设计(#5) @233Official
 - 更新新手上路文档与README @233Official
 - update readme @233Official
