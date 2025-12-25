@@ -177,7 +177,7 @@
 ### 🔧 配置文件
 
 - 修改只拉取MFAA最新TAG对应的单次提交的代码 @azmiao
-- 新增DependaBot自动更新依赖 @azmiao
+- 新增Dependabot自动更新依赖 @azmiao
 - 修改PR提交模板说明 @azmiao
 
 ## 0.5.4 (2025-11-20)
