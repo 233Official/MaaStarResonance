@@ -3,6 +3,17 @@ from maa.context import Context
 from agent.logger import logger
 
 
+def get_fish_equipment(context: Context, type_str: str) -> str:
+    """获取钓鱼配件参数"""
+    fish_equipment_node = context.get_node_data(f"获取参数-需要购买的{type_str}配件")
+    fish_equipment = (fish_equipment_node
+                     .get("attach", {})
+                     .get("item_name", f"普通{type_str}")
+                     ) if fish_equipment_node else f"普通{type_str}"
+    logger.info("需要购买的{}: {}", type_str, fish_equipment)
+    return str(fish_equipment)
+
+
 def get_login_timeout(context: Context) -> int:
     """获取登录超时时长参数"""
     login_timeout_node = context.get_node_data("获取参数-登录超时时长")

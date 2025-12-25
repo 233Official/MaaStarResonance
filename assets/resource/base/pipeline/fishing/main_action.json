@@ -114,24 +114,6 @@
             }
         }
     },
-    "选择并购买需要的鱼竿": {
-        "post_delay": 1000,
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [806, 158, 80, 25]
-            }
-        }
-    },
-    "选择并购买需要的鱼饵": {
-        "post_delay": 1000,
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [188, 158, 77, 25]
-            }
-        }
-    },
     // 使用鱼竿和鱼饵
     "点击使用鱼竿": {
         "recognition": {

@@ -5,12 +5,12 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail
 from maa.custom_action import CustomAction
 
-from agent.attach.common_attach import get_restart_for_except, get_max_restart_count
+from agent.attach.common_attach import get_restart_for_except, get_max_restart_count, get_fish_equipment
 from agent.constant.fish import FISH_LIST
 from agent.custom.app_manage_action import restart_and_login_xhgm, wait_for_switch
 from agent.custom.general.ad_close import close_ad
-from agent.utils.fuzzy_utils import get_best_match_single
 from agent.logger import logger
+from agent.utils.fuzzy_utils import get_best_match_single
 from agent.utils.other_utils import print_center_block
 from agent.utils.param_utils import CustomActionParam
 from agent.utils.time_utlls import format_seconds_to_hms
@@ -145,10 +145,11 @@ class AutoFishingAction(CustomAction):
                 add_task="检测是否需要添加鱼竿",
                 add_action="点击添加鱼竿",
                 buy_task="检测是否需要购买鱼竿",
-                buy_actions=[
-                "点击前往购买鱼竿页面",
-                "选择并购买需要的鱼竿",
-                "点击钓鱼配件购买按钮"
+                buy_action_prefix=[
+                    "点击前往购买鱼竿页面"
+                ],
+                buy_action_suffix=[
+                    "点击钓鱼配件购买按钮"
                 ],
                 use_action="点击使用鱼竿"
             )
@@ -160,12 +161,13 @@ class AutoFishingAction(CustomAction):
                 add_task="检测是否需要添加鱼饵",
                 add_action="点击添加鱼饵",
                 buy_task="检测是否需要购买鱼饵",
-                buy_actions=[
-                "点击前往购买鱼饵页面",
-                "选择并购买需要的鱼饵",
-                "点击钓鱼配件最大数量按钮",
-                "点击钓鱼配件购买按钮",
-                "点击确认购买按钮"
+                buy_action_prefix=[
+                    "点击前往购买鱼饵页面"
+                ],
+                buy_action_suffix=[
+                    "点击钓鱼配件最大数量按钮",
+                    "点击钓鱼配件购买按钮",
+                    "点击确认购买按钮"
                 ],
                 use_action="点击使用鱼饵"
             )
@@ -384,7 +386,8 @@ class AutoFishingAction(CustomAction):
         add_task: str,
         add_action: str,
         buy_task: str,
-        buy_actions: list[str],
+        buy_action_prefix: list[str],
+        buy_action_suffix: list[str],
         use_action: str
     ) -> None:
         """
@@ -396,7 +399,8 @@ class AutoFishingAction(CustomAction):
             add_task: 检测是否需要添加配件任务名称
             add_action: 点击添加配件动作名称
             buy_task: 检测是否需要购买配件任务名称
-            buy_actions: 购买配件动作名称列表
+            buy_action_prefix: 购买配件前的动作名称列表
+            buy_action_suffix: 购买配件后的动作名称列表
             use_action: 点击使用配件动作名称
             
         Returns:
@@ -423,15 +427,47 @@ class AutoFishingAction(CustomAction):
                 logger.info(f"[任务准备] 当前将购买1个{type_str}")
             else:
                 logger.info(f"[任务准备] 当前将购买200个{type_str}")
-            # 执行一连串购买步骤
-            for act in buy_actions:
+            # 3.1 执行一连串购买前步骤
+            for act in buy_action_prefix:
+                context.run_action(act)
+                time.sleep(2)
+
+            # 3.2 执行检测购买目标
+            fish_equipment = get_fish_equipment(context, type_str)
+            img = context.tasker.controller.post_screencap().wait().get()
+            ocr_result: RecognitionDetail | None = context.run_recognition(
+                "通用文字识别",
+                img,
+                pipeline_override={
+                    "通用文字识别": {"expected": fish_equipment, "roi": [134, 153, 1022, 297]}
+                },
+            )
+            if not ocr_result or not ocr_result.hit:
+                logger.error(f"[任务准备] 购买{fish_equipment}失败，未识别到购买目标")
+                return
+
+            # 3.3 获得最好结果坐标
+            item = ocr_result.best_result
+            rect = Rect(*item.box)  # type: ignore
+            logger.info(f"识别到配件目标： {rect}, {item.text}")  # type: ignore
+            point_x = int(rect.x + rect.w / 2)
+            point_y = int(rect.y + rect.h / 2)
+
+            # 3.4 点击购买目标
+            context.tasker.controller.post_click(point_x, point_y).wait()
+            time.sleep(2)
+
+            # 3.5 执行一连串购买后步骤
+            for act in buy_action_suffix:
                 context.run_action(act)
                 time.sleep(2)
             logger.info(f"[任务准备] {type_str}购买完成，将退回钓鱼界面")
-            # 购买完回到钓鱼界面
+
+            # 3.6 购买完回到钓鱼界面
             context.run_action("ESC")
             time.sleep(2)
-            # 再次检测和点击添加按钮
+
+            # 3.7 再次检测和点击添加按钮
             img = context.tasker.controller.post_screencap().wait().get()
             context.run_recognition(add_task, img)
             context.run_action(add_action)
