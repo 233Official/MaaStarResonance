@@ -50,7 +50,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/233Official/MaaStarResonance/docs/',
+            'https://github.com/233Official/MaaStarResonance/',
         },
         blog: {
           showReadingTime: true,
@@ -61,7 +61,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/233Official/MaaStarResonance/docs/',
+            'https://github.com/233Official/MaaStarResonance/',
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
@@ -108,6 +108,12 @@ const config = {
             label: '开发者文档',
           },
           {
+            type: 'docSidebar',
+            sidebarId: 'aboutSidebar',
+            position: 'left',
+            label: '关于',
+          },
+          {
             href: 'https://github.com/233Official/MaaStarResonance',
             label: 'GitHub',
             position: 'right',
@@ -115,7 +121,7 @@ const config = {
         ],
       },
       footer: {
-        style: 'dark',
+        style: 'light',
         links: [
           {
             title: 'Docs',
@@ -131,6 +137,10 @@ const config = {
               {
                 label: '开发者文档',
                 to: '/docs/开发者文档',
+              },
+              {
+                label: '关于',
+                to: '/docs/关于',
               },
             ],
           },
