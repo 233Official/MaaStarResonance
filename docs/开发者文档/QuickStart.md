@@ -2,7 +2,7 @@
 
 > 只有当您想要开发 MAAStarResonance 时才需要看当前页面!
 >
-> 用户请转到 [MAAStarResonance使用手册](../新手上路/新手上路.md)
+> 用户请转到 [MAAStarResonance使用手册](/docs/用户文档/新手上路/新手上路.md)
 >
 > 开发 MaaFramework 或开发自己的项目请到 [MaaXYZ/MaaFramework](https://github.com/MaaXYZ/MaaFramework)
 >

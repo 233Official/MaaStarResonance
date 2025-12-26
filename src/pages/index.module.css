@@ -1,0 +1,48 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景层 */
+.hero::before,
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.hero::before {
+  background: linear-gradient(
+    135deg,
+    var(--ifm-background-color) 0%,
+    color-mix(
+      in srgb,
+      var(--ifm-background-color) 70%,
+      #7f7fff 30%
+    )
+  );
+  opacity: 0.8;
+}
+
+/* 网格层 */
+.hero::after {
+  background: linear-gradient(
+    45deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 50%,
+    transparent 75%,
+    rgba(255, 255, 255, 0.08) 75%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  background-size: 20px 20px;
+  opacity: 0.3;
+}
