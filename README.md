@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <div align="center">
-<img alt="LOGO" src="README.assets/logo_transparent.png" width="256" height="256" />
+<img alt="LOGO" src="static/img/logo_transparent.png" width="256" height="256" />
 
 # 星痕共鸣 MAA 小助手
 
@@ -26,7 +26,7 @@
 
 ## 界面预览
 
-![image-20251213170212](README.assets/image-20251213170212.png)
+![image-20251213170212](docs/关于/关于我们.assets/image-20251213170212.png)
 
 ---
 
@@ -115,7 +115,7 @@ UI 由 [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia)  大力支持
 
 协会直接搜ID进即可，也欢迎其他协会前来合会~
 
-![image-20251125113159](README.assets/image-20251125113159.png)
+![image-20251125113159](docs/关于/关于我们.assets/image-20251125113159.png)
 
 ## 友情链接
 
