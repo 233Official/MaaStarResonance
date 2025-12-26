@@ -5,7 +5,7 @@ function Home() {
   return (
     <Layout title="MaaStarResonance" description="基于MAAFW的星痕共鸣黑盒测试工具" wrapperClassName="home-page">
       <div className={styles.hero} >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', padding: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem' }}>
           {/* 主视觉区 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '2000px', margin: '0 auto' }}>
             {/* 左侧文字区 */}
