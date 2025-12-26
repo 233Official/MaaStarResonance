@@ -471,3 +471,6 @@ scripts/config.toml
 
 # MacOS
 .DS_Store
+
+# docusaurus 缓存目录
+.docusaurus/
