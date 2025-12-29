@@ -130,15 +130,15 @@ const config = {
               },
               {
                 label: '用户文档',
-                to: '/docs/用户文档/任务流说明',
+                to: '/docs/用户文档/用户手册入口',
               },
               {
                 label: '开发者文档',
-                to: '/docs/开发者文档',
+                to: '/docs/开发者文档/QuickStart',
               },
               {
                 label: '关于',
-                to: '/docs/关于',
+                to: '/docs/关于/关于我们',
               },
             ],
           },
