@@ -219,5 +219,21 @@
         "attach": {
             "limit": 0
         }
+    },
+    "切换分线": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "SwitchLine"
+            }
+        }
+    },
+    "获取参数-需要切换的世界分线ID列表": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "line_ids": ""
+        }
     }
 }
