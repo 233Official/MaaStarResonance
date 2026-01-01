@@ -536,6 +536,8 @@ class AutoFishingAction(CustomAction):
                     self.stop_reel_in(context)
                 if is_bow_pressed:
                     self.stop_bow(context)
+                # 按ESC回到主界面
+                default_ensure_main_page(context)
                 return True
 
             # ===== 获取截图 =====
