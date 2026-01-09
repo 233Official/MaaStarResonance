@@ -52,7 +52,7 @@ class NavigatePointAction(CustomAction):
         return teleport_or_navigate(context, dest_map, dest_navigate_point, "导航", NAVIGATE_DATA)
 
 
-def teleport_or_navigate(context: Context, dest_map: str, dest_point: str, type_str: str, point_data: dict) -> bool:
+def teleport_or_navigate(context: Context, dest_map: str | None, dest_point: str, type_str: str, point_data: dict) -> bool:
     """
     传送 或者 导航
     
