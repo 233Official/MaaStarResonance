@@ -58,7 +58,7 @@ def teleport_or_navigate(context: Context, dest_map: str, dest_point: str, type_
     
     Args:
         context: 控制器上下文
-        dest_map: 目的地图
+        dest_map: 目的地图 (不传会尝试根据 目的地点 去自动反查，查不到会返回：暂不支持的地图)
         dest_point: 目的地点
         type_str: 类型：传送 | 导航
         point_data: 地点数据MAP
@@ -67,6 +67,15 @@ def teleport_or_navigate(context: Context, dest_map: str, dest_point: str, type_
         是否成功
     """
     # 0. 基本参数判断
+    if not point_data:
+        logger.error(f"地点数据缺失！")
+        return False
+    if dest_map is None and dest_point is not None:
+        # 目的地点不为空，但目的地图为空：自动判断地图
+        for map_name, locations in point_data.items():
+            if dest_point in locations:
+                dest_map = map_name
+                break
     if dest_map not in point_data:
         logger.error(f"暂不支持的地图：{dest_map}，可能是命名不同或暂未支持")
         return False
