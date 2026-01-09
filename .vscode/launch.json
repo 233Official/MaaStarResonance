@@ -79,7 +79,7 @@
                 "--maafw-version",
                 "v5.3.2",
                 "--mfaa-version",
-                "v2.5.0"
+                "v2.5.1"
             ]
         },
         {
@@ -90,7 +90,7 @@
             "console": "integratedTerminal",
             "env": {
                 "MAAFW_VERSION": "v5.3.2",
-                "MFAA_VERSION": "v2.5.0",
+                "MFAA_VERSION": "v2.5.1",
                 "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
             },
             "args": [
