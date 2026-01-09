@@ -190,3 +190,14 @@ def get_world_line_id_list(context: Context) -> list[str]:
     line_id_list = str(line_ids).split(",") if line_ids else []
     logger.info("需要切换的世界分线ID列表: {}", line_id_list)
     return line_id_list
+
+
+def get_need_cocoon_name(context: Context) -> str:
+    """获取需要刷的茧参数"""
+    cocoon_node = context.get_node_data("获取参数-需要刷的茧")
+    cocoon_name = (cocoon_node
+                         .get("attach", {})
+                         .get("cocoon_name", "")
+                         ) if cocoon_node else ""
+    logger.info("需要刷的茧: {}", str(cocoon_name))
+    return str(cocoon_name)

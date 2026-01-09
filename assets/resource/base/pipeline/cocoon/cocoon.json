@@ -1,0 +1,19 @@
+{
+    "检测是否到达茧的入口": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["浮游之茧/进入溺梦之地图标.png"],
+                "roi": [840, 334, 27, 21]
+            }
+        }
+    },
+    "获取参数-需要刷的茧": {
+        "action": {
+            "type": "DoNothing"
+        },
+        "attach": {
+            "cocoon_name": ""
+        }
+    }
+}
