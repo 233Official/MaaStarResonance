@@ -50,6 +50,12 @@
 
 ---
 
+## 即将更新
+
+- 👉 [即将到来的更新](https://github.com/233Official/MaaStarResonance/compare)
+
+---
+
 ## 功能列表
 
 - 自动钓鱼
