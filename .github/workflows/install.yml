@@ -142,7 +142,7 @@ jobs:
         shell: pwsh
         run: |
           cd MFA-src
-          dotnet publish -c Release -r win-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }} --self-contained true
+          dotnet publish MFAAvalonia.Desktop/MFAAvalonia.Desktop.csproj -c Release -r win-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }} --self-contained true
           cd ..
           New-Item -ItemType Directory -Force -Path MFA | Out-Null
           Copy-Item -Path "MFA-src/bin/AnyCPU/Release/win-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}/publish/*" -Destination "MFA" -Recurse -Force
