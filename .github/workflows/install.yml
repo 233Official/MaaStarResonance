@@ -197,7 +197,7 @@ jobs:
 
       - name: Download wheels artifact
         if: matrix.platform == 'win' && matrix.arch == 'x86_64'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: wheels-win-x64
           path: resource/wheels/win-x64
@@ -271,7 +271,7 @@ jobs:
     needs: [meta, install, changelog]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           path: assets
 
