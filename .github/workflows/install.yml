@@ -19,6 +19,10 @@ on:
       - "**.py"
   workflow_dispatch:
 
+env:
+  MAA_FRAMEWORK_VERSION: "v5.8.1"
+  MFAA_VERSION: "v2.9.1"
+
 jobs:
   meta:
     runs-on: ubuntu-latest
@@ -111,41 +115,28 @@ jobs:
           repository: MaaXYZ/MaaFramework
           fileName: "MAA-${{ matrix.platform }}-${{ matrix.arch }}*"
           # 下载指定的 Release Tag
-          tag: v5.8.1
+          tag: ${{ env.MAA_FRAMEWORK_VERSION}}
           out-file-path: "deps"
           extract: true
 
-      # 下载 MFAAvalonia 源码
-      - name: Checkout MFAAvalonia source
-        uses: actions/checkout@v6
+
+      - name: Download MFAAvalonia
+        id: download_mfa
+        uses: robinraju/release-downloader@v1
         with:
           repository: SweetSmellFox/MFAAvalonia
-          # 使用固定版本
-          ref: v2.9.1
-          path: MFA-src
-          fetch-depth: 1
+          fileName: "MFAAvalonia-*-${{ (matrix.platform == 'win' && 'win')  }}-${{ (matrix.arch == 'x86_64' && 'x64') || (matrix.arch == 'aarch64' && 'arm64') }}*"
+          tag: ${{ env.MFAA_VERSION }}  
+          out-file-path: "MFA"
+          extract: true
 
-      # 替换图标文件
-      - name: Replace MFAAvalonia icon
+      - name: Clean up MFAAvalonia archive
+        shell: bash
         run: |
-          cp assets/logo.ico MFA-src/MFAAvalonia/Assets/logo.ico
-          echo "已替换 Windows 版 MFAAvalonia 的 logo.ico"
+          ARCHIVE_FILE_PATH="${{ fromJson(steps.download_mfa.outputs.downloaded_files)[0] }}"
+          rm -f "${ARCHIVE_FILE_PATH}"
+          echo "Archive cleanup command executed for MFAAvalonia."
 
-      # 设置 .NET 版本
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
-
-      # 编译修改过的 MFAAvalonia
-      - name: Build MFAAvaloni
-        shell: pwsh
-        run: |
-          cd MFA-src
-          dotnet publish MFAAvalonia.Desktop/MFAAvalonia.Desktop.csproj -c Release -r win-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }} --self-contained true
-          cd ..
-          New-Item -ItemType Directory -Force -Path MFA | Out-Null
-          Copy-Item -Path "MFA-src/bin/AnyCPU/Release/win-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}/publish/*" -Destination "MFA" -Recurse -Force
 
       # 缓存 resource 目录下的所有资源文件,以便后续 Action 运行时可以直接使用缓存的资源文件, 避免重复下载浪费时间和流量
       - name: Cache Resources
