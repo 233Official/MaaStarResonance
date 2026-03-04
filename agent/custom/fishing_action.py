@@ -9,6 +9,8 @@ from agent.attach.common_attach import get_restart_for_except, get_max_restart_c
 from agent.constant.fish import FISH_LIST
 from agent.custom.app_manage_action import restart_and_login_xhgm, wait_for_switch
 from agent.custom.general.ad_close import close_ad
+from agent.custom.general.general import default_ensure_main_page
+from agent.custom.general.world_line_switcher import switch_line
 from agent.logger import logger
 from agent.utils.fuzzy_utils import get_best_match_single
 from agent.utils.other_utils import print_center_block
@@ -288,17 +290,14 @@ class AutoFishingAction(CustomAction):
             del fishing_result, reeling_result, img
             return 0
         
-        # 4. 钓鱼台满人 | TODO 后续设计切线逻辑
+        # 4. 钓鱼台满人
         if has_fishing and reeling_result and not reeling_result.hit:
-            logger.error('[任务准备] 进入钓鱼台后未检测到抛竿按钮，可能钓鱼台已满，尝试自动重启游戏，但是还是建议手动处理！')
-            restart_result = restart_and_login_xhgm(context)
-            # 处理广告
-            close_ad(context)
-            self.restart_count += 1  # type: ignore
-            if restart_result:
-                return 1
-            else:
-                return -1
+            logger.warning('[任务准备] 进入钓鱼台后未检测到抛竿按钮，可能钓鱼台已满，尝试自动切换分线！')
+            time.sleep(2)
+            default_ensure_main_page(context)
+            time.sleep(2)
+            switch_line(context, ["40", "41", "42", "43", "44", "45", "46", "47", "48", "49"])
+            return 1
         
         # 5. 检查其他意外情况
         self.except_count += 1  # type: ignore
@@ -532,10 +531,13 @@ class AutoFishingAction(CustomAction):
             # ===== 最大收线时间保护 =====
             if now - first_start_time >= max_reel_time:
                 logger.warning(f"[执行钓鱼] 收线时间超过{max_reel_time}秒，强制结束本次钓鱼")
+                time.sleep(1)  # 缓冲1秒
                 if is_reel_pressed:
                     self.stop_reel_in(context)
                 if is_bow_pressed:
                     self.stop_bow(context)
+                # 按ESC回到主界面
+                default_ensure_main_page(context)
                 return True
 
             # ===== 获取截图 =====

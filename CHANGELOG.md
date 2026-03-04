@@ -1,91 +1,172 @@
 # 更新日志
 
-## 未发布
+## 0.6.2 (2026-03-05)
 
 ### ✨ 新功能
 
-- 离线打包支持指定mfaa,maafw版本(#66) @233Official
-- 消息发送功能新增选项，控制队伍已满时是否还需发送 @azmiao
-- 发送消息功能新增可选检测队伍人数功能 @azmiao
-- 尝试新增地图导航功能 @azmiao
-- 尝试新增游戏聊天消息发送功能，部分静态资源来自Particle_G @azmiao
-- 挂机自动批复入队申请 @233Official
+- 新增通用版本刷茧的开发版本 @azmiao
+- 新增切换分线功能和接口 @azmiao
 
 ### 🐛 Bug修复
 
-- 修复Rect引用缺失 @azmiao
-- 尝试修复未解锁的钓鱼配件位置不同的问题，#71 @azmiao
-- 去除会报错的类型声明 @azmiao
-- 尝试修复潜在的异步队列下字符串格式化异常导致的日志不打印问题 @azmiao
-- 修复消息发送逻辑错误和补充坐标 @azmiao
-- 尝试修复弹窗广告检测beta @azmiao
-- 修复默认值错误 @azmiao
-- 补充导航功能所需资源和数据 @azmiao
+- 补充类型声明 @azmiao
+- 修复钓鱼超时会强制重启游戏的BUG @azmiao
 
 ### 🚀 性能优化
 
-- 优化传送导航部分场景检测和操作，新增75级茧的导航选项 @azmiao
-- 优化消息发送逻辑，提高稳定性 @azmiao
-- 优化消息发送部分场景处理，补充队伍名变量读取，优化接口描述 @azmiao
-- 优化通用方法中的任务中断检测，修复部分变量赋值问题 @azmiao
-- 优化弹窗广告处理逻辑，同步钓鱼时的广告处理 @azmiao
-- 补充坐标和匹配图标 @azmiao
-- 聊天框频道发言新增频道切换成功检测 @azmiao
-- 尝试提高聊天检测识别率 @azmiao
-- 优化 CHANGELOG 生成逻辑, 添加本地昵称用户名映射 @233Official
-- 优化 Release Info 生成机制, 不再使用 git cliff, 通过自定义 py 脚本实现 @233Official
-
-### 🎨 代码重构
-
-- [核心] 更换logger中format格式化为sink，防止变量参数被意外格式化 @azmiao
-- 重构部分聊天消息发送逻辑，新增对应选项参数 @azmiao
-- 优化聊天消息发送功能 @azmiao
-- 优化 changelog 生成脚本 @233Official
-
-### 🥚 格式化
-
-- 优化购买道具的异常退出逻辑，优化接口描述 @azmiao
-- 顺便统一格式化一下attach中的打印 @azmiao
+- 地图传送导航支持自动根据传送点判断地图 @azmiao
+- 优化聊天框频道ID识别效果 @azmiao
+- 为自动钓鱼补充切换分线功能 @azmiao
 
 ### 📚 文档
 
-- 更新README @azmiao
-- 更新README，更新用户手册 @azmiao
-- 删除旧版本手写changelog @233Official
+- 更新部分文档和README @azmiao
+- 更新README.md @azmiao
+- 更新整理软件客户端的公告页面 @azmiao
+- 优化和修复文档站点部署 (#75) @azmiao
+- 更新和优化文档站点URL问题 @azmiao
+- 规范部分文档内容格式，防止出现broken url 和 broken author @azmiao
+- 更新客户端公告中的文档链接，顺便加个协会宣传（ @azmiao
 
 ### 🧹 日常维护
 
-- changelog强制UTF-8解码 @azmiao
-- Update agent/custom/general/chat_message.py @azmiao (Co-authored: Copilot)
-- Update CHANGELOG.md @azmiao (Co-authored: sourcery-ai[bot])
-- 更新BUG反馈的模板 @azmiao
-- 更新commit模板、cliff模板、pr模板，更新vscode配置文件 @azmiao
+- 版本统一调整为v0.6.2 @azmiao
+- 补充uv.lock @azmiao
 
 ### 🧩 修改依赖
 
+- 更新MaaFw至5.5.0，更新MFAA至2.5.7 @azmiao
+- MaaFw更新至v5.3.3 @azmiao
+- MFAA更新至v2.5.1 @azmiao
+- MaaFw更新v5.3.2，MFAA更新v2.5.0 @azmiao
+- MaaFw更新至v5.3.0，MFAA更新至v2.3.0 @azmiao
+
+### ⚙️ 持续集成
+
+- 尝试适配新版MFAA的编译流 @azmiao
+
+## 0.6.1 (2025-12-28)
+
+### ✨ 新功能
+
+- 新增自动化部署文档站点 (#74) @azmiao (Co-authored: sourcery-ai[bot])
+
+### 📚 文档
+
+- 新增初版文档页面和依赖 @azmiao (Co-authored: sourcery-ai[bot])
+- 更新更加简洁干净的文档主页面 @azmiao (Co-authored: sourcery-ai[bot])
+- 对多次使用的图片去重 @azmiao (Co-authored: sourcery-ai[bot])
+
+### 🧹 日常维护
+
+- 去除Vercel的评论功能 @azmiao (Co-authored: sourcery-ai[bot])
+- 补充去除不需要的配置 @azmiao (Co-authored: sourcery-ai[bot])
+- 补充去除不需要的静态文件 @azmiao (Co-authored: sourcery-ai[bot])
+
+### 🧩 修改依赖
+
+- MFAA更新至v2.2.7 @azmiao
+
+### 🔁 还原提交
+
+- 去除CI文档的手动构建，还是自动方便 @azmiao (Co-authored: sourcery-ai[bot])
+
+### ⚙️ 持续集成
+
+- 新增手动或TAG触发文档部署工作流 @azmiao (Co-authored: sourcery-ai[bot])
+
+## 0.6.0 (2025-12-25)
+
+### ✨ 新功能
+
+- 挂机自动批复入队申请 @azmiao (Co-authored: Copilot)
+- 尝试新增游戏聊天消息发送功能，部分静态资源来自Particle_G @azmiao (Co-authored: Copilot)
+- 尝试新增地图导航功能 @azmiao (Co-authored: Copilot)
+- 发送消息功能新增可选检测队伍人数功能 @azmiao (Co-authored: Copilot)
+- 消息发送功能新增选项，控制队伍已满时是否还需发送 @azmiao (Co-authored: Copilot)
+- 离线打包支持指定mfaa,maafw版本(#66) @azmiao (Co-authored: Copilot)
+
+### 🐛 Bug修复
+
+- 补充导航功能所需资源和数据 @azmiao (Co-authored: Copilot)
+- 修复默认值错误 @azmiao (Co-authored: Copilot)
+- 尝试修复弹窗广告检测beta @azmiao (Co-authored: Copilot)
+- 修复消息发送逻辑错误和补充坐标 @azmiao (Co-authored: Copilot)
+- 尝试修复潜在的异步队列下字符串格式化异常导致的日志不打印问题 @azmiao (Co-authored: Copilot)
+- 去除会报错的类型声明 @azmiao (Co-authored: Copilot)
+- 尝试修复未解锁的钓鱼配件位置不同的问题，#71 @azmiao (Co-authored: Copilot)
+- 修复Rect引用缺失 @azmiao (Co-authored: Copilot)
+
+### 🚀 性能优化
+
+- 优化 Release Info 生成机制, 不再使用 git cliff, 通过自定义 py 脚本实现 @azmiao (Co-authored: Copilot)
+- 优化 CHANGELOG 生成逻辑, 添加本地昵称用户名映射 @azmiao (Co-authored: Copilot)
+- 尝试提高聊天检测识别率 @azmiao (Co-authored: Copilot)
+- 聊天框频道发言新增频道切换成功检测 @azmiao (Co-authored: Copilot)
+- 补充坐标和匹配图标 @azmiao (Co-authored: Copilot)
+- 优化弹窗广告处理逻辑，同步钓鱼时的广告处理 @azmiao (Co-authored: Copilot)
+- 优化通用方法中的任务中断检测，修复部分变量赋值问题 @azmiao (Co-authored: Copilot)
+- 优化消息发送部分场景处理，补充队伍名变量读取，优化接口描述 @azmiao (Co-authored: Copilot)
+- 优化消息发送逻辑，提高稳定性 @azmiao (Co-authored: Copilot)
+- 优化传送导航部分场景检测和操作，新增75级茧的导航选项 @azmiao (Co-authored: Copilot)
+
+### 🎨 代码重构
+
+- 优化 changelog 生成脚本 @azmiao (Co-authored: Copilot)
+- 优化聊天消息发送功能 @azmiao (Co-authored: Copilot)
+- 重构部分聊天消息发送逻辑，新增对应选项参数 @azmiao (Co-authored: Copilot)
+- [核心] 更换logger中format格式化为sink，防止变量参数被意外格式化 @azmiao (Co-authored: Copilot)
+
+### 🥚 格式化
+
+- 顺便统一格式化一下attach中的打印 @azmiao (Co-authored: Copilot)
+- 优化购买道具的异常退出逻辑，优化接口描述 @azmiao (Co-authored: Copilot)
+
+### 📚 文档
+
+- 删除旧版本手写changelog @azmiao (Co-authored: Copilot)
+- 更新README，更新用户手册 @azmiao (Co-authored: Copilot)
+- 更新README @azmiao (Co-authored: Copilot)
+
+### 🧹 日常维护
+
+- 更新commit模板、cliff模板、pr模板，更新vscode配置文件 @azmiao (Co-authored: Copilot)
+- 更新BUG反馈的模板 @azmiao (Co-authored: Copilot)
+- changelog强制UTF-8解码 @azmiao (Co-authored: Copilot)
+
+### 🧩 修改依赖
+
+- *(deps)* bump actions/upload-artifact from 5 to 6 @dependabot[bot]
+- *(deps)* bump actions/download-artifact from 6 to 7 @dependabot[bot]
+- *(deps)* bump actions/cache from 4 to 5 @dependabot[bot]
 - *(deps)* bump actions/github-script from 7 to 8 @dependabot[bot]
 - *(deps)* bump actions/setup-python from 5 to 6 @dependabot[bot]
 - *(deps)* bump actions/upload-artifact from 4 to 5 @dependabot[bot]
 - *(deps)* bump actions/download-artifact from 4 to 6 @dependabot[bot]
 - *(deps)* bump actions/checkout from 4 to 6 @dependabot[bot]
-- MFAA更新至v2.2.6 @azmiao
-- MaaFw更新至v5.3.0-beta.5，MFAA更新至v2.2.5 @azmiao
-- MFAA更新至2.2.4 @azmiao
-- MFAA更新至v2.2.2 @azmiao
-- MaaFw更新至5.2.6，MFAA更新至2.2.1 @azmiao
-- MaaFw更新至5.2.5，MFAA更新至2.2.0 @azmiao
+- MaaFw更新至5.2.5，MFAA更新至2.2.0 @azmiao (Co-authored: Copilot)
+- MaaFw更新至5.2.6，MFAA更新至2.2.1 @azmiao (Co-authored: Copilot)
+- MFAA更新至v2.2.2 @azmiao (Co-authored: Copilot)
+- MFAA更新至2.2.4 @azmiao (Co-authored: Copilot)
+- MaaFw更新至v5.3.0-beta.5，MFAA更新至v2.2.5 @azmiao (Co-authored: Copilot)
+- MFAA更新至v2.2.6 @azmiao (Co-authored: Copilot)
 
 ### 🧪 测试
 
-- 每130s释放一次一号位幻想 @233Official
+- 每130s释放一次一号位幻想 @azmiao (Co-authored: Copilot)
+
+### 📌 发布
+
+- v0.6.0 (#72) @azmiao (Co-authored: Copilot)
+- v0.6.0 @azmiao (Co-authored: Copilot)
 
 ### 🔧 配置文件
 
-- 更新 Github Copilot 全局提示词 @233Official
+- 更新 Github Copilot 全局提示词 @azmiao (Co-authored: Copilot)
 
 ### ⚙️ 持续集成
 
-- 去除已经不需要的获取最新TAG任务 @azmiao
+- 去除已经不需要的获取最新TAG任务 @azmiao (Co-authored: Copilot)
 
 ## 0.5.8 (2025-12-08)
 

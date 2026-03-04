@@ -231,11 +231,12 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
     if not old_channel or not old_channel.hit:
         logger.warning("无法识别到切换前的频道ID，将跳过此次发送！")
         return False
-    old_channel_id = old_channel.best_result.text  # type: ignore
+    old_channel_id_raw = old_channel.best_result.text  # type: ignore
+    old_channel_id = re.search(r"\d+", old_channel_id_raw).group()  # type: ignore
     logger.info(f"切换前的频道ID：{old_channel_id}")
 
     # 判断是否已经符合要求
-    if str(old_channel_id) == channel_id:
+    if old_channel_id == channel_id:
         logger.info("当前已经是所需要发送的频道了，将开始发送消息...")
         return True
 
@@ -278,7 +279,8 @@ def change_channel(channel_id: str, channel_id_dict: dict, context: Context, int
     if not new_channel or not new_channel.hit:
         logger.warning("无法识别到切换后频道ID，可能识别有误，但仍将继续完成此次发送！")
         return True
-    new_channel_id = new_channel.best_result.text  # type: ignore
+    new_channel_id_raw = new_channel.best_result.text  # type: ignore
+    new_channel_id = re.search(r"\d+", new_channel_id_raw).group()  # type: ignore
     logger.info(f"切换后频道ID：{new_channel_id}")
 
     # 判断是否成功切换

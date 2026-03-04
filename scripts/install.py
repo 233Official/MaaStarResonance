@@ -120,6 +120,10 @@ def install_resource():
         working_dir / "assets" / "interface.json",
         install_path,
     )
+    shutil.copy2(
+        working_dir / "assets" / "logo.ico",
+        install_path,
+    )
 
     ## 先将 assets/interface.json  中的 // 注释全部去掉
     _strip_interface_json_comments(install_path / "interface.json")
