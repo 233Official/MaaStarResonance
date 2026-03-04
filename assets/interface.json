@@ -1,6 +1,5 @@
 {
     "interface_version": 2,
-    "contact": "CONTACT",
     "license": "LICENSE",
     "name": "MaaStarResonance",
     "github": "https://github.com/233Official/MaaStarResonance",
@@ -8,6 +7,9 @@
     "mirrorchyan_multiplatform": true,
     "version": "v0.6.2",
     "title": "星痕共鸣MAA小助手",
+    "icon": "logo.ico",
+    "contact": "ayusummer233@qq.com",
+    "description": "基于MAAFW的星痕共鸣黑盒测试工具",
     "controller": [
         {
             "name": "模拟器",
@@ -18,12 +20,12 @@
         {
             "name": "国服",
             "path": [
-                "{PROJECT_DIR}/resource/base"
+                "./resource/base"
             ]
         }
     ],
     "agent": {
-        // 使用项目下用 uv 管理的虚拟环境
+        // 使用项目下用 uv 管理的虚拟环境`
         "child_exec": "{PROJECT_DIR}/../.venv/Scripts/python.exe",
         // macOS
         // "child_exec": "{PROJECT_DIR}/../.venv/bin/python3",
