@@ -24,7 +24,7 @@
         "recognition": {
             "type": "ColorMatch",
             "param": {
-                "count": 16,
+                "count": 8,
                 "method": 40,
                 "lower": [12, 250, 207],
                 "upper": [24, 255, 255],

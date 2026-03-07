@@ -192,8 +192,6 @@ class AutoFishingAction(CustomAction):
                 if is_hooked and is_hooked.hit:
                     del is_hooked, img
                     logger.info("[执行钓鱼] 鱼鱼咬钩了！")
-                    # 点击收竿
-                    context.tasker.controller.post_click(1157, 587).wait()
                     break
                 time.sleep(0.5)
                 wait_for_fish_times += 1
@@ -206,7 +204,6 @@ class AutoFishingAction(CustomAction):
                 break
 
             # 6. 开始收线循环
-            time.sleep(0.4)
             need_next = self.reel_loop(context)
             # 没有下一次了，说明钓鱼被强制结束了
             if not need_next:
