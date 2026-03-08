@@ -94,15 +94,6 @@
         }
     },
     // 钓鱼时的检查
-    "检测是否在抛竿界面": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [51, 612, 32, 16],
-                "expected": ["等级"]
-            }
-        }
-    },
     "检查向左箭头": {
         "recognition": {
             "type": "TemplateMatch",
@@ -127,8 +118,9 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [785, 614, 55, 25],
-                "expected": ["\\d+%"]
+                "roi": [700, 610, 147, 32],
+                "expected": ["鱼线张力 *\\d+%"],
+                "only_rec": true
             }
         }
     }
