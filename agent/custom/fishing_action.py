@@ -489,7 +489,7 @@ class AutoFishingAction(CustomAction):
             - 最长收线时间${max_reel_time}秒
             - 首次按下收线键延迟${check_delay}秒再检测是否结束钓鱼
         1. 收线键的两种状态：
-            - 长按模式 -> 一直按住收线键 | 自动松开了就是模拟器问题
+            - 长按模式 -> 一直按住收线键
             - 节奏模式 -> 点击一次收线键后等待${reel_cooldown}秒，再次点击
         2. 初始状态 -> 收线键：长按模式；方向键：不动
         3. 识别到箭头：
@@ -509,7 +509,7 @@ class AutoFishingAction(CustomAction):
         """
 
         # ========== 可配置参数 ==========
-        loop_interval = 0.4  # 循环检测间隔
+        loop_interval = 0.3  # 循环检测间隔
         max_reel_time = 150  # 最长收线时间，防止意外卡死
         check_delay = 2 # 首次按下收线键的结束检测延迟
         reel_cooldown = 0.2  # 节奏模式下每次点击收线后的冷却时间  | 向上取整至循环检测间隔的倍数
