@@ -1,3 +1,4 @@
+import re
 import time
 
 import numpy
@@ -191,8 +192,9 @@ class AutoFishingAction(CustomAction):
                 if is_hooked and is_hooked.hit:
                     del is_hooked, img
                     logger.info("[执行钓鱼] 鱼鱼咬钩了！")
+                    self.click_reel(context)
                     break
-                time.sleep(0.5)
+                time.sleep(0.4)
                 wait_for_fish_times += 1
             # 超时还没检测到鱼鱼咬钩 | 重新开始检测环境
             if wait_for_fish_times >= 60:
@@ -209,7 +211,7 @@ class AutoFishingAction(CustomAction):
                 break
             time.sleep(3)
 
-            # 7.1 本次钓鱼完成，再次检测并点击继续钓鱼按钮进行第二次钓鱼
+            # 7.1 本次钓鱼完成，检测并点击继续钓鱼按钮进行第二次钓鱼
             img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
             is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
             if is_continue_fishing and is_continue_fishing.hit:
@@ -482,18 +484,22 @@ class AutoFishingAction(CustomAction):
     def reel_loop(self, context: Context) -> bool:
         """
         钓鱼循环逻辑：
+        0. 基础设置：
+            - 检测间隔${loop_interval}秒
+            - 最长收线时间${max_reel_time}秒
+            - 首次按下收线键延迟${check_delay}秒再检测是否结束钓鱼
         1. 收线键的两种状态：
-            - 初始模式 -> 一直按住收线键 | 目前可能出现按不住的情况，暂时换回初始节奏模式
-            - 节奏模式 -> 循环进行：按住${press_duration_reel}秒后停${release_duration_reel}秒
-        2. 初始状态 -> 收线键：初始模式；方向键：不动
+            - 长按模式 -> 一直按住收线键
+            - 节奏模式 -> 点击一次收线键后等待${reel_cooldown}秒，再次点击
+        2. 初始状态 -> 收线键：长按模式；方向键：不动
         3. 识别到箭头：
-            - 识别冷却期未到 -> 不改变之前两个按键的状态
-            - 同方向 -> 收线键：不改变之前的状态；方向键：再次朝对应方向按压${press_duration_bow}秒后松开
-            - 不同方向 -> 收线键：保持节奏模式；方向键：换对应方向按压${press_duration_bow}秒后松开
-            - 不同方向但前一次方向键未松开 -> 收线键：保持节奏模式；方向键：松开
+            - 识别冷却期${arrow_cooldown}未到 -> 不改变方向键
+            - 同方向 -> 不改变方向键
+            - 不同方向但前一次方向键已松开 -> 改变方向键长按
+            - 不同方向但前一次方向键未松开 -> 松开方向键
         4. 张力上限检测：
-            - 连续检测不通过 -> 不改变之前两个按键的状态
-            - 连续检测通过 -> 收线键：立即停止按压${tension_press_duration}秒，停止按压期间不可被箭头变化打断，随后重置节奏模式重新开始；方向键：不改变之前的状态
+            - 没超过${max_tension}% -> 收线键进入长按模式
+            - 超过${max_tension}% -> 收线键进入节奏模式
 
         Args:
             context: 控制器上下文
@@ -503,29 +509,27 @@ class AutoFishingAction(CustomAction):
         """
 
         # ========== 可配置参数 ==========
-        max_reel_time = 120  # 最长收线时间，防止意外卡死
-        press_duration_reel = 2.8  # 收线按压时长
-        release_duration_reel = 0.2  # 收线松开时长 | 收线松开时长 >= 循环检测间隔
-        press_duration_bow = 3.0  # 方向按压时长
-        loop_interval = 0.2  # 循环检测间隔 | 太短影响性能，太长影响收线
-        arrow_cooldown = 0.8  # 箭头方向冷却时间，冷却期内不再检测
-        tension_check_duration = 0.2  # 连续检测张力满的时间阈值
-        tension_press_duration = 1.6  # 张力满暂停收线的时间
+        loop_interval = 0.3  # 循环检测间隔
+        max_reel_time = 150  # 最长收线时间，防止意外卡死
+        check_delay = 2 # 首次按下收线键的结束检测延迟
+        reel_cooldown = 0.2  # 节奏模式下每次点击收线后的冷却时间  | 向上取整至循环检测间隔的倍数
+        arrow_cooldown = 0.2  # 箭头方向检测的冷却时间 | 向上取整至循环检测间隔的倍数
+        max_tension = 85  # 最大张力限制
+        max_no_tension_count = 8  # 连续多少次未检测到张力后，判定不在收线状态
 
         # ========== 状态变量 ==========
         first_start_time = time.time()  # 循环开始时间
-        is_first_cycle = True  # 是否是第一次循环
         is_reel_pressed = False  # 当前收线键状态
-        cycle_start_time = None  # 收线键节奏循环开始时间
-        last_arrow_detect_time = 0  # 上次确认箭头的时间戳
+        is_rhythm_mode = False  # False: 长按模式 / True: 节奏模式
+        init_time = first_start_time  # 首次按下收线键的时间
+        last_reel_click_time = 0.0  # 上次点击收线键的时间
+        last_arrow_detect_time = 0.0  # 上次确认箭头的时间戳
         last_arrow_direction = None  # 上次箭头方向
         is_bow_pressed = False  # 当前方向键状态
-        bow_release_time = 0  # 当前方向松开的时间
-        tension_peak_start_time = None  # 检测到张力已满的时间戳
-        tension_pause_deadline = 0  # 张力上限打断截至时间
+        no_tension_count = 0  # 连续未检测到张力的次数
 
         while self.check_running(context):
-            # 超过最长收线时间，强制结束本次钓鱼
+            loop_start_perf = time.perf_counter()
             now = time.time()
 
             # ===== 最大收线时间保护 =====
@@ -543,34 +547,40 @@ class AutoFishingAction(CustomAction):
             # ===== 获取截图 =====
             img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
 
-            # ===== 检查是否还在收线状态 =====
-            if not self.check_if_reeling(context, img):
-                self.used_bait_count += 1  # type: ignore
-                logger.info("[执行钓鱼] 当前已不在收线状态，等待一会检测继续钓鱼按钮...")
-                del img
-                if is_reel_pressed:
-                    self.stop_reel_in(context)
-                if is_bow_pressed:
-                    self.stop_bow(context)
-                return True
+            # ===== 张力检测 / 收线状态判断 =====
+            tension_hit: RecognitionDetail | None = context.run_recognition("检测张力百分比", img)
+            tension_num = None
+            if tension_hit and tension_hit.hit and tension_hit.best_result:
+                tension_raw_text = tension_hit.best_result.text  # type: ignore
+                tension_match = re.search(r"\d+", tension_raw_text)
+                if tension_match:
+                    tension_num = int(tension_match.group())
+                    no_tension_count = 0
 
-            # ===== 张力检测 =====
-            if tension_pause_deadline <= now:
-                tension_hit: RecognitionDetail | None = context.run_recognition("检测张力是否到达上限", img)
-                if tension_hit and tension_hit.hit:
-                    if tension_peak_start_time is None:
-                        # 第一次到张力上限时间点
-                        tension_peak_start_time = now
-                    elif now - tension_peak_start_time >= tension_check_duration:
-                        # 到张力上限了
-                        logger.info("[执行钓鱼] 张力到达上限 -> 收线键：强制暂停一会；方向键：不变化")
-                        tension_pause_deadline = now + tension_press_duration
-                        tension_peak_start_time = None
-                        # 重置节奏循环
-                        cycle_start_time = tension_pause_deadline
-                else:
-                    # 未到张力上限
-                    tension_peak_start_time = None
+                    target_rhythm_mode = tension_num >= max_tension
+                    if target_rhythm_mode != is_rhythm_mode:
+                        is_rhythm_mode = target_rhythm_mode
+                        if is_rhythm_mode:
+                            # 从长按切到节奏模式，先松开长按
+                            if is_reel_pressed and self.stop_reel_in(context):
+                                is_reel_pressed = False
+                            last_reel_click_time = 0.0
+                            logger.info(f"[执行钓鱼] 当前张力 {tension_num}% 超过{max_tension}% -> 收线键切换为 节奏模式")
+                        else:
+                            logger.info(f"[执行钓鱼] 当前张力 {tension_num}% 低于{max_tension}% -> 收线键切换为 长按模式")
+
+            # 首次开始收线后的保护时间内，不做“丢失张力即退出”的判断
+            if now - init_time > check_delay and tension_num is None:
+                no_tension_count += 1
+                if no_tension_count >= max_no_tension_count:
+                    self.used_bait_count += 1  # type: ignore
+                    logger.info(f"[执行钓鱼] 连续 {max_no_tension_count} 次未检测到张力，等待一会检测'继续钓鱼'按钮...")
+                    del img
+                    if is_reel_pressed:
+                        self.stop_reel_in(context)
+                    if is_bow_pressed:
+                        self.stop_bow(context)
+                    return True
 
             # ===== 箭头检测 =====
             confirmed_arrow = None
@@ -580,108 +590,46 @@ class AutoFishingAction(CustomAction):
             # 检测完就删除截图
             del img
 
-            # ===== 根据箭头结果处理按键状态 =====
-            if cycle_start_time is None and confirmed_arrow is None:
-                # 初始无箭头 -> 收线键：进入初始模式；方向键：不动
-                if not is_reel_pressed:
-                    logger.info("[执行钓鱼] 初始无箭头 -> 收线键：进入初始模式；方向键：松开")
-                    # 按住收线键 | 按两次防止出现异常
-                    if self.start_reel_in(context):
-                        if is_first_cycle:
-                            is_first_cycle = False
-                        else:
-                            is_reel_pressed = True
-                # 直接进入节奏模式 | 临时处理，防止按不住收线键的情况，后续不需要请注释下面一行
-                cycle_start_time = now
-
-            elif confirmed_arrow is not None and last_arrow_direction is None:
-                # 首次确认箭头方向 -> 收线键：开始节奏模式；方向键：按住一会后松开
-                logger.info(f"[执行钓鱼] 首次方向：{confirmed_arrow} -> 收线键：开始节奏模式；方向键：常规模式")
-                # 时间变量赋值
-                cycle_start_time = now
-                last_arrow_direction = confirmed_arrow
+            # ===== 根据箭头结果处理方向键状态 =====
+            if confirmed_arrow is not None:
                 last_arrow_detect_time = now
-                # 按住方向键
-                if self.start_bow(context, confirmed_arrow):
-                    is_bow_pressed = True
-                    bow_release_time = now + press_duration_bow
-
-            elif confirmed_arrow is not None and confirmed_arrow != last_arrow_direction:
-                # 时间变量赋值
-                cycle_start_time = now + release_duration_reel
-                last_arrow_direction = confirmed_arrow
-                last_arrow_detect_time = now
-                if is_bow_pressed:
-                    # 不同方向但前一次方向键未松开 -> 收线键：保持节奏模式；方向键：松开
-                    logger.info(f"[执行钓鱼] 方向变化(快) -> 收线键：保持节奏模式；方向键：松开")
-                    bow_release_time = now
-                else:
-                    # 不同方向 -> 收线键：保持节奏模式；方向键：按住一会后松开
-                    logger.info(f"[执行钓鱼] 方向变化：{confirmed_arrow} -> 收线键：保持节奏模式；方向键：常规模式")
-                    # 按住方向键
+                if last_arrow_direction is None:
+                    # 首次识别到箭头，按住方向键
                     if self.start_bow(context, confirmed_arrow):
                         is_bow_pressed = True
-                        bow_release_time = now + press_duration_bow
-
-            elif confirmed_arrow is not None and confirmed_arrow == last_arrow_direction:
-                # 相同方向 -> 收线键：不改变之前的状态；方向键：再次按住一会后松开
-                logger.info(f"[执行钓鱼] 方向未变 -> 收线键：不变化；方向键：重启常规模式")
-                last_arrow_detect_time = now
-                if self.start_bow(context, confirmed_arrow):
-                    is_bow_pressed = True
-                    bow_release_time = now + press_duration_bow
-
-            # ===== 节奏模式中统一控制收线逻辑 =====
-            if cycle_start_time is not None:
-                if now < tension_pause_deadline:
-                    # 张力上限暂停期间强制松开
-                    if is_reel_pressed and self.stop_reel_in(context):
-                        is_reel_pressed = False
+                        last_arrow_direction = confirmed_arrow
+                elif confirmed_arrow == last_arrow_direction:
+                    # 同方向：不改变方向键
+                    pass
+                elif is_bow_pressed:
+                    # 不同方向且当前还按着：先松开
+                    logger.info("[执行钓鱼] 方向变化且上次方向键未松开 -> 先松开方向键")
+                    if self.stop_bow(context):
+                        is_bow_pressed = False
                 else:
-                    # 正常节奏模式中根据时间判断是否收线
-                    elapsed = (now - cycle_start_time) % (press_duration_reel + release_duration_reel)
-                    if elapsed < press_duration_reel:
-                        # 需要按压
-                        if not is_reel_pressed and self.start_reel_in(context):
-                            is_reel_pressed = True
-                    else:
-                        # 需要松开
-                        if is_reel_pressed and self.stop_reel_in(context):
-                            is_reel_pressed = False
+                    # 不同方向且当前已松开：切换并按住新方向
+                    logger.info(f"[执行钓鱼] 方向变化 -> 切换并按住新方向: {confirmed_arrow}")
+                    if self.start_bow(context, confirmed_arrow):
+                        is_bow_pressed = True
+                        last_arrow_direction = confirmed_arrow
 
-            # ===== 方向键松开控制 =====
-            if is_bow_pressed and now >= bow_release_time:
-                self.stop_bow(context)
-                is_bow_pressed = False
+            # ===== 根据张力模式控制收线键 =====
+            if not is_rhythm_mode:
+                # 长按模式：持续按住收线键
+                if not is_reel_pressed and self.start_reel_in(context):
+                    is_reel_pressed = True
+            else:
+                # 点击节奏模式：点击一次后等待冷却
+                current_time = time.time()
+                if current_time - last_reel_click_time >= reel_cooldown:
+                    if self.click_reel(context):
+                        last_reel_click_time = time.time()
 
             # ===== 控制循环频率 =====
-            time.sleep(loop_interval)
+            elapsed = time.perf_counter() - loop_start_perf
+            time.sleep(max(0.0, loop_interval - elapsed))
 
         return False
-
-    @staticmethod
-    def check_if_reeling(context: Context, img: numpy.ndarray) -> bool:
-        """
-        检查当前是否在收线：
-        1. 钓到鱼鱼了：检测继续钓鱼按钮
-        2. 鱼鱼跑路了：检测是否在抛竿界面
-
-        Args:
-            context: 控制器上下文
-            img: 当前截图
-
-        Returns:
-            是否在收线中：True / False
-        """
-        recognition_task: RecognitionDetail | None = context.run_recognition("检测是否在抛竿界面", img)
-        is_continue_fishing: RecognitionDetail | None = context.run_recognition("检测继续钓鱼", img)
-
-        # 有任何一个检测到了说明就不在收线了
-        in_reel = True
-        if (recognition_task and recognition_task.hit) or (is_continue_fishing and is_continue_fishing.hit):
-            in_reel = False
-        del recognition_task, is_continue_fishing
-        return in_reel
 
     @staticmethod
     def get_bow_direction(context: Context, img: numpy.ndarray, score_threshold: float = 0.6,
@@ -729,6 +677,13 @@ class AutoFishingAction(CustomAction):
             bow_direction = "右"
         del bow_left_score, bow_right_score, bow_left_task, bow_right_task
         return bow_direction
+
+    def click_reel(self, context: Context) -> bool:
+        """
+        点击一次收线键
+        """
+        result = context.tasker.controller.post_click(1160, 585, self.REEL_IN_CONTACT, 1).wait()
+        return result.succeeded
 
     def start_reel_in(self, context: Context) -> bool:
         """
