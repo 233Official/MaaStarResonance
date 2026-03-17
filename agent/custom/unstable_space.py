@@ -4,7 +4,7 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context
 from maa.custom_action import CustomAction, RecognitionDetail
 
-from agent.constant.map_point import MAP_POINT_DATA
+from agent.constant.map_point import NAVIGATE_DATA
 from agent.custom.app_manage_action import wait_for_switch
 from agent.custom.general.general import ensure_main_page
 from agent.custom.general.move_battle import ensure_into_instance, auto_attack, attack_rotate_view, check_alive
@@ -24,7 +24,7 @@ class UnstableSpacePointAction(CustomAction):
         _,
     ) -> bool:
         # 先导航过去
-        teleport_or_navigate(context, "阿斯特里斯", "不稳定空间", "导航", MAP_POINT_DATA)
+        teleport_or_navigate(context, "阿斯特里斯", "不稳定空间", "导航", NAVIGATE_DATA)
         # 循环检测进入不稳定空间的按钮
         has_entry = ensure_space_entry(context)
         if not has_entry:
@@ -44,9 +44,11 @@ class UnstableSpacePointAction(CustomAction):
         ensure_into_instance(context)
 
         # 开始自动战斗
+        logger.info("打开自动战斗...")
         auto_attack(context, 1)
 
         # 旋转3次视角防止脱仇
+        logger.info("旋转3次视角防止脱仇然后继续战斗...")
         attack_rotate_view(context, 3, 1)
 
         # 开始检测副本状态和角色存活状态
@@ -55,8 +57,9 @@ class UnstableSpacePointAction(CustomAction):
             img = context.tasker.controller.post_screencap().wait().get()
             is_into_instance = context.run_recognition("图片识别副本退出按钮", img)
 
-            if not is_into_instance:  # 不在副本内
+            if is_into_instance and not is_into_instance.hit:  # 不在副本内
                 # 等待场景切换完成
+                logger.info("战斗完成，等待返回主界面...")
                 wait_for_switch(context)
                 return True  # 结束任务
 
@@ -82,8 +85,8 @@ def ensure_space_entry(context: Context, timeout: int = 120) -> bool:
             img,
             pipeline_override={
                 "通用文字识别": {
-                    "expected": "不稳定空间",
-                    "roi": [873, 330, 104, 30],
+                    "expected": "不稳定",
+                    "roi": [875, 330, 61, 30],
                 }
             },
         )

@@ -35,6 +35,14 @@
             }
         }
     },
+    "完成一次不稳定空间": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "UnstableSpacePoint"
+            }
+        }
+    },
     "检测今日不再弹出按钮": {
         "recognition": {
             "type": "OCR",

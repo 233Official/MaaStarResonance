@@ -116,7 +116,7 @@ def check_alive(context: Context, only_check: bool = False) -> bool:
 
     """
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-    detail: RecognitionDetail | None = context.run_recognition("图片识别复活按钮", img)  # TODO 识别复活按钮
+    detail: RecognitionDetail | None = context.run_recognition("点击就近复活按钮", img)
     if detail and not detail.hit:
         # 未识别到复活按钮 | 说明还活蹦乱跳的
         return True
@@ -124,7 +124,7 @@ def check_alive(context: Context, only_check: bool = False) -> bool:
     if only_check:
         return False
     else:
-        context.tasker.controller.post_click(0, 0).wait()   # TODO 点击复活
+        context.tasker.controller.post_click(1060, 615).wait()
         return True
 
 
