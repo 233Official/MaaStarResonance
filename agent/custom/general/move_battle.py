@@ -20,19 +20,19 @@ def mount_vehicle(context: Context, mount_type: int = 0) -> bool:
     # 首次识别
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
     entry = "图片识别上载具图标" if mount_type else "图片识别下载具图标"
-    detail: RecognitionDetail | None = context.run_recognition(entry, img)  # TODO 上下载具图标绿幕切片
+    detail: RecognitionDetail | None = context.run_recognition(entry, img)
     if detail and detail.hit:
-        context.tasker.controller.post_click(0, 0).wait()  # TODO 点击上下载具
+        context.tasker.controller.post_click(1097, 387).wait()
         return True
     # 第一次未识别到：可能是在战斗技能页面 | 点击按钮切换页面
     time.sleep(1)
-    context.tasker.controller.post_click(0, 0).wait()  # TODO 点击切换页面
+    context.tasker.controller.post_click(1208, 639).wait()
     # 再次识别
     time.sleep(1)
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-    detail: RecognitionDetail | None = context.run_recognition(entry, img)  # TODO 上下载具图标绿幕切片
+    detail: RecognitionDetail | None = context.run_recognition(entry, img)
     if detail and detail.hit:
-        context.tasker.controller.post_click(0, 0).wait()  # TODO 点击上下载具
+        context.tasker.controller.post_click(1097, 387).wait()
         return True
     # 确实没识别到
     logger.error("未识别到上/下载具的图标")
@@ -53,19 +53,19 @@ def auto_attack(context: Context, attack_type: int = 0) -> bool:
     # 首次识别
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
     entry = "图片识别开自动战斗" if attack_type else "图片识别关自动战斗"
-    detail: RecognitionDetail | None = context.run_recognition(entry, img)  # TODO 开关自动战斗图标绿幕切片
+    detail: RecognitionDetail | None = context.run_recognition(entry, img)
     if detail and detail.hit:
-        context.tasker.controller.post_click(0, 0).wait()  # TODO 点击开关自动战斗
+        context.tasker.controller.post_click(1196, 391).wait()
         return True
     # 第一次未识别到：可能是在战斗技能页面 | 点击按钮切换页面
     time.sleep(1)
-    context.tasker.controller.post_click(0, 0).wait()  # TODO 点击切换页面
+    context.tasker.controller.post_click(1208, 639).wait()
     # 再次识别
     time.sleep(1)
     img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
-    detail: RecognitionDetail | None = context.run_recognition(entry, img)  # TODO 开关自动战斗图标绿幕切片
+    detail: RecognitionDetail | None = context.run_recognition(entry, img)
     if detail and detail.hit:
-        context.tasker.controller.post_click(0, 0).wait()  # TODO 点击开关自动战斗
+        context.tasker.controller.post_click(1196, 391).wait()
         return True
     # 确实没识别到
     logger.error("未识别到开/关自动战斗的图标")
@@ -92,14 +92,14 @@ def attack_rotate_view(context: Context, rotate_times: int = 0, interval: int = 
     if rotate_times == 0:
         # 不限次数的情况下进行持续旋转
         while True:
-            # 滑动时间：1，触控点：1 TODO 滑动坐标
-            context.tasker.controller.post_swipe(0, 0, 0, 0, 1, 1, 1).wait()
+            # 滑动时间：1，触控点：1
+            context.tasker.controller.post_swipe(708, 273, 581, 273, 1, 1, 1).wait()
             time.sleep(interval)
     else:
         # 有限次数的旋转
         for _ in range(rotate_times):
-            # 滑动时间：1，触控点：1 TODO 滑动坐标
-            context.tasker.controller.post_swipe(0, 0, 0, 0, 1, 1, 1).wait()
+            # 滑动时间：1，触控点：1
+            context.tasker.controller.post_swipe(708, 273, 581, 273, 1, 1, 1).wait()
             time.sleep(interval)
     return True
 
