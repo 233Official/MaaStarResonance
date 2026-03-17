@@ -17,6 +17,15 @@
             }
         }
     },
+    "图片识别副本退出按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["副本退出按钮.png"],
+                "roi": [192, 21, 32, 33]
+            }
+        }
+    },
     "关闭所有弹窗广告": {
         "action": {
             "type": "Custom",

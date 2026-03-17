@@ -2,7 +2,7 @@ import time
 
 from maa.agent.agent_server import AgentServer
 from maa.context import Context
-from maa.custom_action import CustomAction
+from maa.custom_action import CustomAction, RecognitionDetail
 
 from agent.constant.map_point import MAP_POINT_DATA
 from agent.custom.app_manage_action import wait_for_switch
@@ -23,7 +23,7 @@ class UnstableSpacePointAction(CustomAction):
         context: Context,
         _,
     ) -> bool:
-        # 先导航过去 TODO 传送点数据未录入
+        # 先导航过去
         teleport_or_navigate(context, "阿斯特里斯", "不稳定空间", "导航", MAP_POINT_DATA)
         # 循环检测进入不稳定空间的按钮
         has_entry = ensure_space_entry(context)
@@ -31,13 +31,13 @@ class UnstableSpacePointAction(CustomAction):
             return False
 
         # 点击进入不稳定空间
-        context.tasker.controller.post_click(0, 0).wait()  # TODO 点击进入不稳定空间
+        context.tasker.controller.post_click(916, 345).wait()
         # 选择单双人挑战
         time.sleep(2)
-        context.tasker.controller.post_click(0, 0).wait()  # TODO 选择单双人挑战
+        context.tasker.controller.post_click(915, 591).wait()
         # 开始挑战
         time.sleep(2)
-        context.tasker.controller.post_click(0, 0).wait()  # TODO 开始挑战
+        context.tasker.controller.post_click(1170, 657).wait()
 
         # 等待加载完成
         time.sleep(2)
@@ -77,12 +77,21 @@ def ensure_space_entry(context: Context, timeout: int = 120) -> bool:
     while elapsed_time <= timeout and not context.tasker.stopping:
         elapsed_time = time.time() - start_time
         img = context.tasker.controller.post_screencap().wait().get()
-        is_arrive = context.run_recognition("检测是否到达不稳定空间的入口", img)
-        if is_arrive and is_arrive.hit:
-            del is_arrive, img
+        ocr_result: RecognitionDetail | None = context.run_recognition(
+            "通用文字识别",
+            img,
+            pipeline_override={
+                "通用文字识别": {
+                    "expected": "不稳定空间",
+                    "roi": [873, 330, 104, 30],
+                }
+            },
+        )
+        if ocr_result and ocr_result.hit:
+            del ocr_result, img
             logger.info(f"检测到已经到达不稳定空间的入口！")
             return True
-        del is_arrive, img
+        del ocr_result, img
         time.sleep(2)
     logger.error("超 120 秒未到达不稳定空间的入口！")
     return False
