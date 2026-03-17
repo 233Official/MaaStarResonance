@@ -102,3 +102,27 @@ def attach_rotate_view(context: Context, rotate_times: int = 0, interval: int = 
             context.tasker.controller.post_swipe(0, 0, 0, 0, 1, 1, 1).wait()
             time.sleep(interval)
     return True
+
+
+def check_alive(context: Context, only_check: bool = False) -> bool:
+    """
+    检测是否存活 | 一般10秒检测一次就行
+
+    Args:
+        context: 控制器上下文
+        only_check: 是否只检测而不复活，默认否
+
+    Returns: only_check=True时返回是否活着；only_check=False时返回无意义
+
+    """
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    detail: RecognitionDetail | None = context.run_recognition("图片识别复活按钮", img)  # TODO 识别复活按钮
+    if detail and not detail.hit:
+        # 未识别到复活按钮 | 说明还活蹦乱跳的
+        return True
+    # 死翘翘了 | 尝试点击复活，可能冷却未到所以复活不了，不过不要紧，等下一次吧
+    if only_check:
+        return False
+    else:
+        context.tasker.controller.post_click(0, 0).wait()   # TODO 点击复活
+        return True
