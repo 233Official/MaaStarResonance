@@ -39,7 +39,7 @@ def mount_vehicle(context: Context, mount_type: int = 0) -> bool:
     return False
 
 
-def auto_attach(context: Context, attack_type: int = 0) -> bool:
+def auto_attack(context: Context, attack_type: int = 0) -> bool:
     """
     如果识别到开/关自动战斗按钮就开/关自动战斗 | 其实如果不想识别直接按下 H 就行
 
@@ -72,7 +72,7 @@ def auto_attach(context: Context, attack_type: int = 0) -> bool:
     return False
 
 
-def attach_rotate_view(context: Context, rotate_times: int = 0, interval: int = 1) -> bool:
+def attack_rotate_view(context: Context, rotate_times: int = 0, interval: int = 1) -> bool:
     """
     战斗视角旋转
 
@@ -126,3 +126,31 @@ def check_alive(context: Context, only_check: bool = False) -> bool:
     else:
         context.tasker.controller.post_click(0, 0).wait()   # TODO 点击复活
         return True
+
+
+def ensure_into_instance(context: Context, timeout: int = 120) -> bool:
+    """
+    确保到已经进入副本
+
+    Args:
+        context: 控制器上下文
+        timeout: 超时时间
+
+    Returns: 是否成功
+
+    """
+    start_time = time.time()
+    elapsed_time = 0
+    # 循环检测是否已经进入副本
+    while elapsed_time <= timeout and not context.tasker.stopping:
+        elapsed_time = time.time() - start_time
+        img = context.tasker.controller.post_screencap().wait().get()
+        is_arrive = context.run_recognition("图片识别副本退出按钮", img)
+        if is_arrive and is_arrive.hit:
+            del is_arrive, img
+            logger.info(f"检测到已经进入副本！")
+            return True
+        del is_arrive, img
+        time.sleep(2)
+    logger.error("超 120 秒未进入副本！")
+    return False
