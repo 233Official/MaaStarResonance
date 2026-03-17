@@ -6,6 +6,7 @@ from maa.custom_action import CustomAction
 
 from agent.attach.common_attach import get_need_cocoon_name
 from agent.constant.map_point import NAVIGATE_DATA
+from agent.custom.general.move_battle import mount_vehicle, auto_attach
 from agent.custom.general.power_saving_mode import exit_power_saving_mode
 from agent.custom.general.world_line_switcher import switch_line
 from agent.custom.teleport_action import teleport_or_navigate
@@ -36,8 +37,8 @@ class CocoonActionAction(CustomAction):
         cocoon_name = get_need_cocoon_name(context)
         # 传送到目的位置
         teleport_or_navigate(context, None, cocoon_name, "导航", NAVIGATE_DATA)
-        # TODO 点击按钮下马
-        logger.debug("点击按钮下马代码占位符")
+        # 点击按钮下马
+        mount_vehicle(context, mount_type=0)
 
         # 确保到达茧的入口
         need_next = ensure_cocoon_entry(context)
@@ -47,8 +48,8 @@ class CocoonActionAction(CustomAction):
         # 尝试切换到一条靠前的分线
         switch_line(context, ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
 
-        # TODO 确保自动战斗关闭
-        logger.debug("自动战斗关闭代码占位符")
+        # 确保自动战斗关闭
+        auto_attach(context, attack_type=0)
 
         # 点击进入茧
         context.tasker.controller.post_click(0, 0)  # TODO 进茧按钮坐标
@@ -74,12 +75,10 @@ class CocoonActionAction(CustomAction):
 
             if ocr_result.hit:
                 # 有幻觉值，需要确保自动战斗还开着
-                # TODO 确保自动战斗开启
-                logger.debug("自动战斗开启代码占位符")
+                auto_attach(context, attack_type=1)
             else:
                 # 没有幻觉值，需要关闭自动战斗后识别进茧再开自动战斗
-                # TODO 确保自动战斗关闭
-                logger.debug("自动战斗关闭代码占位符")
+                auto_attach(context, attack_type=0)
                 # 检测还有没有按钮
                 has_entry = ensure_cocoon_entry(context, 10)
                 if has_entry:
@@ -95,8 +94,8 @@ class CocoonActionAction(CustomAction):
                     need_next = ensure_cocoon_entry(context)
                     if not need_next:
                         return False
-                    # TODO 点击按钮下马
-                    logger.debug("点击按钮下马代码占位符")
+                    # 击按钮下马
+                    mount_vehicle(context, mount_type=0)
                     # 点击进入茧
                     context.tasker.controller.post_click(0, 0)  # TODO 进茧按钮坐标
             # 10秒检查一次
