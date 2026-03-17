@@ -77,9 +77,9 @@
                 "--only-arch",
                 "x86_64",
                 "--maafw-version",
-                "v5.8.1",
+                "v5.9.1",
                 "--mfaa-version",
-                "v2.10.7"
+                "v2.10.9"
             ]
         },
         {
@@ -89,8 +89,8 @@
             "program": "${workspaceFolder}/scripts/build_all_platforms.py",
             "console": "integratedTerminal",
             "env": {
-                "MAAFW_VERSION": "v5.8.1",
-                "MFAA_VERSION": "v2.10.7",
+                "MAAFW_VERSION": "v5.9.1",
+                "MFAA_VERSION": "v2.10.9",
                 "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
             },
             "args": [
