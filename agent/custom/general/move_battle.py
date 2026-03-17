@@ -70,3 +70,35 @@ def auto_attach(context: Context, attack_type: int = 0) -> bool:
     # 确实没识别到
     logger.error("未识别到开/关自动战斗的图标")
     return False
+
+
+def attach_rotate_view(context: Context, rotate_times: int = 0, interval: int = 1) -> bool:
+    """
+    战斗视角旋转
+
+    Args:
+        context: 控制器上下文
+        rotate_times: 旋转次数，rotate_times >= 0，0为不限次数
+        interval: 每次旋转的间隔，interval >= 1
+
+    Returns: 是否成功
+
+    """
+    # 校验参数
+    rotate_times = 0 if rotate_times < 0 else rotate_times
+    interval = 1 if interval < 1 else interval
+
+    # 旋转视角
+    if rotate_times == 0:
+        # 不限次数的情况下进行持续旋转
+        while True:
+            # 滑动时间：1，触控点：1 TODO 滑动坐标
+            context.tasker.controller.post_swipe(0, 0, 0, 0, 1, 1, 1).wait()
+            time.sleep(interval)
+    else:
+        # 有限次数的旋转
+        for _ in range(rotate_times):
+            # 滑动时间：1，触控点：1 TODO 滑动坐标
+            context.tasker.controller.post_swipe(0, 0, 0, 0, 1, 1, 1).wait()
+            time.sleep(interval)
+    return True
