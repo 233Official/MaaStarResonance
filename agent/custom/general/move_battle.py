@@ -93,13 +93,13 @@ def attack_rotate_view(context: Context, rotate_times: int = 0, interval: int = 
         # 不限次数的情况下进行持续旋转
         while True:
             # 滑动时间：1，触控点：1
-            context.tasker.controller.post_swipe(708, 273, 581, 273, 1, 1, 1).wait()
+            context.tasker.controller.post_swipe(708, 273, 581, 273, 500, 1, 1).wait()
             time.sleep(interval)
     else:
         # 有限次数的旋转
         for _ in range(rotate_times):
             # 滑动时间：1，触控点：1
-            context.tasker.controller.post_swipe(708, 273, 581, 273, 1, 1, 1).wait()
+            context.tasker.controller.post_swipe(708, 273, 581, 273, 500, 1, 1).wait()
             time.sleep(interval)
     return True
 
