@@ -32,7 +32,8 @@
             "type": "TemplateMatch",
             "param": {
                 "template": ["副本退出按钮.png"],
-                "roi": [192, 21, 32, 33]
+                "roi": [192, 21, 32, 33],
+                "green_mask": true
             }
         },
         "action": "DoNothing",
@@ -70,7 +71,8 @@
             "type": "TemplateMatch",
             "param": {
                 "template": ["副本退出按钮.png"],
-                "roi": [192, 21, 32, 33]
+                "roi": [192, 21, 32, 33],
+                "green_mask": true
             }
         },
         "action": "Click"
