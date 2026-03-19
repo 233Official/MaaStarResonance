@@ -86,7 +86,7 @@ def teleport_or_navigate(context: Context, dest_map: str | None, dest_point: str
     area_change_timeout = get_area_change_timeout(context)
 
     # 1. 切换地图
-    need_next = switch_map(context, dest_map)
+    need_next = switch_map(context, dest_map)  # type: ignore
     if not need_next:
         return False
     time.sleep(2)
@@ -137,7 +137,7 @@ def teleport_or_navigate(context: Context, dest_map: str | None, dest_point: str
             ocr_result.all_results, key=lambda obj: obj.score, reverse=True  # type: ignore
         )
         item = sorted_items[0]
-        rect = Rect(*item.box)
+        rect = Rect(*item.box)  # type: ignore
         logger.info(f"目的地点： {rect}, {item.text}")  # type: ignore
         point_x = int(rect.x + rect.w / 2)
         point_y = int(rect.y + rect.h / 2)
