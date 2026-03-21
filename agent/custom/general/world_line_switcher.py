@@ -83,6 +83,9 @@ def switch_line(context: Context, line_list: list[str]) -> bool:
     # 切换失败
     if not is_trying:
         logger.error(f"分线列表中所有分线均切换失败！")
+        # 切换失败了需要再按一下 P 返回
+        context.tasker.controller.post_click_key(ANDROID_KEY_EVENT_DATA["KEYCODE_P"]).wait()
+        time.sleep(1)
         return False
 
     # 场景切换超时时间

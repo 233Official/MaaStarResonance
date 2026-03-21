@@ -94,6 +94,14 @@
             ]
         },
         {
+            "name": "游星岛暴打陈敏小活动",
+            "entry": "游星岛暴打陈敏小活动",
+            "description": "会自动导航到目标地点进行暴打陈敏",
+            "option": [
+                "需要的最大暴打陈敏次数"
+            ]
+        },
+        {
             "name": "自动挂Lv10茧",
             "entry": "自动挂Lv10茧"
         },
@@ -560,6 +568,28 @@
                 "获取参数-需要切换的世界分线ID列表": {
                     "attach": {
                         "line_ids": "{世界分线ID列表}"
+                    }
+                }
+            }
+        },
+        "需要的最大暴打陈敏次数": {
+            "type": "input",
+            "inputs": [
+                {
+                    "name": "需要的最大暴打陈敏次数",
+                    "description": "需要的最大暴打陈敏次数，默认设置0为无限暴打，暴打到足够次数就停止任务",
+                    "pipeline_type": "int",
+                    "default": "0"
+                }
+            ],
+            "pipeline_override": {
+                "游星岛暴打陈敏小活动": {
+                    "action": {
+                        "param": {
+                            "custom_action_param": {
+                                "max_beat_count": "{需要的最大暴打陈敏次数}"
+                            }
+                        }
                     }
                 }
             }

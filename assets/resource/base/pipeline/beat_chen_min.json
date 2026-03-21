@@ -1,0 +1,14 @@
+{
+    // 总入口
+    "游星岛暴打陈敏小活动": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "BeatChenMinPoint",
+                "custom_action_param": {
+                    "max_beat_count": 0
+                }
+            }
+        }
+    }
+}

@@ -205,7 +205,7 @@ def switch_map(context: Context, dest_map: str) -> bool:
         is_open_map: RecognitionDetail | None = context.run_recognition("图片识别是否已经打开地图", img)
         if not is_open_map or not is_open_map.hit:
             # 说明这里可能是游星岛
-            if dest_map != "游星岛":
+            if dest_map == "游星岛":
                 logger.info("无法检测地图左下角标识，且目的地点是游星岛，说明您已经在该地图，将尝试直接传送")
                 return True
             else:
