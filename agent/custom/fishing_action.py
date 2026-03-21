@@ -6,12 +6,15 @@ from maa.agent.agent_server import AgentServer
 from maa.context import Context, RecognitionDetail, Rect
 from maa.custom_action import CustomAction
 
-from agent.attach.common_attach import get_restart_for_except, get_max_restart_count, get_fish_equipment
+from agent.attach.common_attach import get_restart_for_except, get_max_restart_count, get_fish_equipment, \
+    get_fish_navigation
 from agent.constant.fish import FISH_LIST
+from agent.constant.map_point import NAVIGATE_DATA
 from agent.custom.app_manage_action import restart_and_login_xhgm, wait_for_switch
 from agent.custom.general.ad_close import close_ad
 from agent.custom.general.general import default_ensure_main_page
 from agent.custom.general.world_line_switcher import switch_line
+from agent.custom.teleport_action import teleport_or_navigate
 from agent.logger import logger
 from agent.utils.fuzzy_utils import get_best_match_single
 from agent.utils.other_utils import print_center_block
@@ -76,6 +79,16 @@ class AutoFishingAction(CustomAction):
         restart_for_except = get_restart_for_except(context)
         # 获取最大重启游戏次数限制参数
         max_restart_count = get_max_restart_count(context)
+        # 获取自动钓鱼去的导航位置
+        fish_navigation = get_fish_navigation(context)
+        if fish_navigation == "不导航":
+            logger.info(f"本次自动钓鱼不需要导航，即原地钓鱼")
+        else:
+            teleport_or_navigate(context, None, fish_navigation, "导航", NAVIGATE_DATA)  # TODO 钓鱼点位置未录入
+            # 确保到达钓鱼点入口
+            has_entry = self.ensure_fish_entry(context)
+            if not has_entry:
+                return False
         # 打印参数信息
         logger.info(f"本次任务设置的最大钓到的鱼鱼数量: {max_success_fishing_count if max_success_fishing_count != 0 else '无限'}")
         logger.info(f"如遇到不可恢复异常，是否重启游戏: {'是' if restart_for_except else '否'}")
@@ -228,6 +241,25 @@ class AutoFishingAction(CustomAction):
 
         logger.warning("[任务结束] 自动钓鱼已结束！")
         return True
+
+    @staticmethod
+    def ensure_fish_entry(context: Context, timeout: int = 120) -> bool:
+        """确保导航到达钓鱼点的入口"""
+        start_time = time.time()
+        elapsed_time = 0
+        # 循环检测是否到达不稳定空间的入口
+        while elapsed_time <= timeout and not context.tasker.stopping:
+            elapsed_time = time.time() - start_time
+            img = context.tasker.controller.post_screencap().wait().get()
+            fishing_result: RecognitionDetail | None = context.run_recognition("检测进入钓鱼按钮", img)
+            if fishing_result and fishing_result.hit:
+                del fishing_result, img
+                logger.info(f"检测到已经到达钓鱼点入口！")
+                return True
+            del fishing_result, img
+            time.sleep(2)
+        logger.error("超 120 秒未到达钓鱼点入口！")
+        return False
     
     def env_check(
         self,

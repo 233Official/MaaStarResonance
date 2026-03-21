@@ -1,0 +1,156 @@
+import time
+
+import numpy
+from maa.context import Context, RecognitionDetail
+
+from agent.logger import logger
+
+
+def mount_vehicle(context: Context, mount_type: int = 0) -> bool:
+    """
+    如果识别到上/下载具按钮就上/下载具 | 其实如果不想识别直接按下 G 就行
+
+    Args:
+        context: 控制器上下文
+        mount_type: 类型：0下载具，1上载具
+
+    Returns: 是否成功
+
+    """
+    # 首次识别
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    entry = "图片识别上载具图标" if mount_type else "图片识别下载具图标"
+    detail: RecognitionDetail | None = context.run_recognition(entry, img)
+    if detail and detail.hit:
+        context.tasker.controller.post_click(1097, 387).wait()
+        return True
+    # 第一次未识别到：可能是在战斗技能页面 | 点击按钮切换页面
+    time.sleep(1)
+    context.tasker.controller.post_click(1208, 639).wait()
+    # 再次识别
+    time.sleep(1)
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    detail: RecognitionDetail | None = context.run_recognition(entry, img)
+    if detail and detail.hit:
+        context.tasker.controller.post_click(1097, 387).wait()
+        return True
+    # 确实没识别到
+    logger.error("未识别到上/下载具的图标")
+    return False
+
+
+def auto_attack(context: Context, attack_type: int = 0) -> bool:
+    """
+    如果识别到开/关自动战斗按钮就开/关自动战斗 | 其实如果不想识别直接按下 H 就行
+
+    Args:
+        context: 控制器上下文
+        attack_type: 类型：0关自动战斗，1开自动战斗
+
+    Returns: 是否成功
+
+    """
+    # 首次识别
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    entry = "图片识别开自动战斗" if attack_type else "图片识别关自动战斗"
+    detail: RecognitionDetail | None = context.run_recognition(entry, img)
+    if detail and detail.hit:
+        context.tasker.controller.post_click(1196, 391).wait()
+        return True
+    # 第一次未识别到：可能是在战斗技能页面 | 点击按钮切换页面
+    time.sleep(1)
+    context.tasker.controller.post_click(1208, 639).wait()
+    # 再次识别
+    time.sleep(1)
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    detail: RecognitionDetail | None = context.run_recognition(entry, img)
+    if detail and detail.hit:
+        context.tasker.controller.post_click(1196, 391).wait()
+        return True
+    # 确实没识别到
+    logger.error("未识别到开/关自动战斗的图标")
+    return False
+
+
+def attack_rotate_view(context: Context, rotate_times: int = 0, interval: int = 1) -> bool:
+    """
+    战斗视角旋转
+
+    Args:
+        context: 控制器上下文
+        rotate_times: 旋转次数，rotate_times >= 0，0为不限次数
+        interval: 每次旋转的间隔，interval >= 1
+
+    Returns: 是否成功
+
+    """
+    # 校验参数
+    rotate_times = 0 if rotate_times < 0 else rotate_times
+    interval = 1 if interval < 1 else interval
+
+    # 旋转视角
+    if rotate_times == 0:
+        # 不限次数的情况下进行持续旋转
+        while True:
+            # 滑动时间：1，触控点：1
+            context.tasker.controller.post_swipe(708, 273, 581, 273, 500, 1, 1).wait()
+            time.sleep(interval)
+    else:
+        # 有限次数的旋转
+        for _ in range(rotate_times):
+            # 滑动时间：1，触控点：1
+            context.tasker.controller.post_swipe(708, 273, 581, 273, 500, 1, 1).wait()
+            time.sleep(interval)
+    return True
+
+
+def check_alive(context: Context, only_check: bool = False) -> bool:
+    """
+    检测是否存活 | 一般10秒检测一次就行
+
+    Args:
+        context: 控制器上下文
+        only_check: 是否只检测而不复活，默认否
+
+    Returns: only_check=True时返回是否活着；only_check=False时返回无意义
+
+    """
+    img: numpy.ndarray = context.tasker.controller.post_screencap().wait().get()
+    detail: RecognitionDetail | None = context.run_recognition("点击就近复活按钮", img)
+    if detail and not detail.hit:
+        # 未识别到复活按钮 | 说明还活蹦乱跳的
+        return True
+    # 死翘翘了 | 尝试点击复活，可能冷却未到所以复活不了，不过不要紧，等下一次吧
+    if only_check:
+        return False
+    else:
+        context.tasker.controller.post_click(1060, 615).wait()
+        return True
+
+
+def ensure_into_instance(context: Context, timeout: int = 120) -> bool:
+    """
+    确保到已经进入副本
+
+    Args:
+        context: 控制器上下文
+        timeout: 超时时间
+
+    Returns: 是否成功
+
+    """
+    start_time = time.time()
+    elapsed_time = 0
+    # 循环检测是否已经进入副本
+    while elapsed_time <= timeout and not context.tasker.stopping:
+        elapsed_time = time.time() - start_time
+        img = context.tasker.controller.post_screencap().wait().get()
+        is_arrive = context.run_recognition("图片识别副本退出按钮", img)
+        if is_arrive and is_arrive.hit:
+            del is_arrive, img
+            logger.info(f"检测到已经进入副本！")
+            return True
+        del is_arrive, img
+        time.sleep(2)
+    logger.error("超 120 秒未进入副本！")
+    return False

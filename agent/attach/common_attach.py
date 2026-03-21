@@ -3,6 +3,17 @@ from maa.context import Context
 from agent.logger import logger
 
 
+def get_fish_navigation(context: Context) -> str:
+    """获取钓鱼导航位置参数"""
+    fish_navigation_node = context.get_node_data(f"获取参数-自动钓鱼去的导航位置")
+    fish_navigation = (fish_navigation_node
+                     .get("attach", {})
+                     .get("target", "不导航")
+                     ) if fish_navigation_node else "不导航"
+    logger.info("自动钓鱼去的导航位置: {}", fish_navigation)
+    return str(fish_navigation)
+
+
 def get_fish_equipment(context: Context, type_str: str) -> str:
     """获取钓鱼配件参数"""
     fish_equipment_node = context.get_node_data(f"获取参数-需要购买的{type_str}配件")

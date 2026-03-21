@@ -17,11 +17,29 @@
             }
         }
     },
+    "图片识别副本退出按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["副本退出按钮.png"],
+                "green_mask": true,
+                "roi": [192, 21, 32, 33]
+            }
+        }
+    },
     "关闭所有弹窗广告": {
         "action": {
             "type": "Custom",
             "param": {
                 "custom_action": "CloseAd"
+            }
+        }
+    },
+    "完成一次不稳定空间": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "UnstableSpacePoint"
             }
         }
     },
@@ -234,6 +252,46 @@
         },
         "attach": {
             "line_ids": ""
+        }
+    },
+    "图片识别上载具图标": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/上载具按钮.png"],
+                "green_mask": true,
+                "roi": [1073, 362, 50, 53]
+            }
+        }
+    },
+    "图片识别下载具图标": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/下载具按钮.png"],
+                "green_mask": true,
+                "roi": [1073, 362, 50, 53]
+            }
+        }
+    },
+    "图片识别开自动战斗": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/开启自动战斗按钮.png"],
+                "green_mask": true,
+                "roi": [1171, 369, 48, 40]
+            }
+        }
+    },
+    "图片识别关自动战斗": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["general/关闭自动战斗按钮.png"],
+                "green_mask": true,
+                "roi": [1171, 369, 48, 40]
+            }
         }
     }
 }
