@@ -36,7 +36,7 @@ class BeatChenMinPointAction(CustomAction):
         logger.info(f"本次任务设置的最大暴打次数: {max_beat_count if max_beat_count != 0 else '无限'}")
 
         while not context.tasker.stopping:
-            # 检查是否已经钓到足够数量的鱼鱼了
+            # 检查是否已经暴打足够次数了
             if max_beat_count != 0 and max_beat_count <= self.beat_count:
                 logger.info(f"已成功暴打了您所配置的{self.beat_count}次陈敏，暴打结束！")
                 return True
@@ -75,6 +75,8 @@ class BeatChenMinPointAction(CustomAction):
             while wait_count < 11 and not context.tasker.stopping:
                 wait_count += 1
                 time.sleep(5)
+            
+            self.beat_count += 1
 
         logger.warning("暴打陈敏已结束！")
         return True
