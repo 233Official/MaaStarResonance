@@ -66,6 +66,7 @@ def teleport_or_navigate(context: Context, dest_map: str | None, dest_point: str
     Returns:
         是否成功
     """
+    logger.warning("传送导航前请注意位置，处于游星岛内传送导航不支持切换地图！")
     # 0. 基本参数判断
     if not point_data:
         logger.error(f"地点数据缺失！")
@@ -194,7 +195,7 @@ def switch_map(context: Context, dest_map: str) -> bool:
     img = context.tasker.controller.post_screencap().wait().get()
     is_open_map: RecognitionDetail | None = context.run_recognition("图片识别是否已经打开地图", img)
     if not is_open_map or not is_open_map.hit:
-        logger.warning("无法打开地图，开始尝试先回到主界面...")
+        logger.warning("无法检测地图左下角标识，开始尝试先回到主界面...")
         default_ensure_main_page(context, strict=True)
         # 再次打开地图
         context.tasker.controller.post_click_key(ANDROID_KEY_EVENT_DATA["KEYCODE_M"]).wait()
@@ -203,8 +204,13 @@ def switch_map(context: Context, dest_map: str) -> bool:
         img = context.tasker.controller.post_screencap().wait().get()
         is_open_map: RecognitionDetail | None = context.run_recognition("图片识别是否已经打开地图", img)
         if not is_open_map or not is_open_map.hit:
-            logger.error("仍然无法打开地图，请检查是否在剧情中或其他异常情况！")
-            return False
+            # 说明这里可能是游星岛
+            if dest_map != "游星岛":
+                logger.info("无法检测地图左下角标识，且目的地点是游星岛，说明您已经在该地图，将尝试直接传送")
+                return True
+            else:
+                logger.error("仍然无法检测地图左下角标识，请检查是否在剧情中或其他异常情况！")
+                return False
 
     # 3. 点击左下角按钮展开地图
     context.tasker.controller.post_click(150, 666).wait()
