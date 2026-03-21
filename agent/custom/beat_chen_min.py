@@ -21,6 +21,8 @@ class BeatChenMinPointAction(CustomAction):
     def __init__(self):
         super().__init__()
         self.beat_count = None
+        self.tried_count = None
+        self.is_first = None
 
     @exit_power_saving_mode()
     @ensure_main_page()
@@ -31,6 +33,8 @@ class BeatChenMinPointAction(CustomAction):
     ) -> bool:
         # 获取参数
         self.beat_count = 0
+        self.tried_count = 0
+        self.is_first = True
         params = CustomActionParam(argv.custom_action_param)
         max_beat_count = int(params.data["max_beat_count"]) if params.data["max_beat_count"] else 0
         logger.info(f"本次任务设置的最大暴打次数: {max_beat_count if max_beat_count != 0 else '无限'}")
@@ -50,7 +54,7 @@ class BeatChenMinPointAction(CustomAction):
                 return False
 
             # 循环检测是否可进去暴打，不能就切线
-            ensure_can_beat_chen(context)
+            self.ensure_can_beat_chen(context)
 
             # 向前走几步
             logger.info("向前走几步靠近陈敏，等待10秒后开始暴打3次")
@@ -81,6 +85,60 @@ class BeatChenMinPointAction(CustomAction):
         logger.warning("暴打陈敏已结束！")
         return True
 
+    def ensure_can_beat_chen(self, context: Context) -> bool:
+        """
+        循环检测是否可进入暴打陈敏，不可进入则切线。
+        30~49 线全部尝试一轮，若都失败则返回 False。
+        """
+        line_list = [
+            "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
+            "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
+            "50", "51", "52", "53", "54", "55", "56", "57", "58", "59"
+        ]
+
+        total_lines = len(line_list)
+
+        while self.tried_count < total_lines:
+            if context.tasker.stopping:
+                logger.warning("暴打陈敏检测已被手动停止")
+                return False
+
+            # 获取当前索引 和 尝试的分线
+            index = self.tried_count % total_lines
+            if self.is_first:
+                current_line = "初始"
+                self.is_first = False
+            else:
+                current_line = line_list[index]
+            logger.info(f"准备在 {current_line} 分线尝试暴打陈敏")
+
+            # 先点击进入按钮，并等待 6 秒看是否进入小游戏
+            context.tasker.controller.post_click(895, 344).wait()
+            time.sleep(6)
+
+            # 检测是否已经进入暴打陈敏游戏
+            if check_can_beat_chen(context):
+                logger.info(f"检测到当前线路 {current_line} 已经进入暴打陈敏游戏")
+                return True
+            else:
+                logger.info(f"当前线路 {current_line} 不可进入暴打陈敏，准备切线...")
+
+            # 当前的分线列表
+            need_switch_list = line_list[index:] + line_list[:index]
+            # 尝试切换分线
+            has_next = switch_line(context, need_switch_list)
+            # 切换失败，通常表示已经在这条线了
+            if not has_next:
+                break
+
+            # 等待场景切换完成
+            wait_for_switch(context)
+            # 尝试次数 + 1
+            self.tried_count += 1
+
+        logger.error("分线 30 至 49 线均无法进入暴打陈敏！")
+        return False
+
 
 def ensure_chen_entry(context: Context, timeout: int = 120) -> bool:
     """确保到达暴打陈敏的入口"""
@@ -107,58 +165,6 @@ def ensure_chen_entry(context: Context, timeout: int = 120) -> bool:
         del ocr_result, img
         time.sleep(2)
     logger.error("超 120 秒未到达暴打陈敏的入口！")
-    return False
-
-
-def ensure_can_beat_chen(context: Context) -> bool:
-    """
-    循环检测是否可进入暴打陈敏，不可进入则切线。
-    30~49 线全部尝试一轮，若都失败则返回 False。
-    """
-    line_list = [
-        "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
-        "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
-        "50", "51", "52", "53", "54", "55", "56", "57", "58", "59"
-    ]
-
-    tried_count = 0
-    total_lines = len(line_list)
-
-    while tried_count < total_lines:
-        if context.tasker.stopping:
-            logger.warning("暴打陈敏检测已被手动停止")
-            return False
-
-        # 获取当前索引 和 尝试的分线
-        index = tried_count % total_lines
-        current_line = line_list[index]
-        logger.info(f"准备在 {current_line} 分线尝试暴打陈敏")
-
-        # 先点击进入按钮，并等待 6 秒看是否进入小游戏
-        context.tasker.controller.post_click(895, 344).wait()
-        time.sleep(6)
-
-        # 检测是否已经进入暴打陈敏游戏
-        if check_can_beat_chen(context):
-            logger.info(f"检测到当前线路 {current_line} 已经进入暴打陈敏游戏")
-            return True
-        else:
-            logger.info(f"当前线路 {current_line} 不可进入暴打陈敏，准备切线...")
-
-        # 当前的分线列表
-        need_switch_list = line_list[index:] + line_list[:index]
-        # 尝试切换分线
-        has_next = switch_line(context, need_switch_list)
-        # 切换失败，通常表示已经在这条线了
-        if not has_next:
-            break
-
-        # 等待场景切换完成
-        wait_for_switch(context)
-        # 尝试次数 + 1
-        tried_count += 1
-
-    logger.error("分线 30 至 49 线均无法进入暴打陈敏！")
     return False
 
 
