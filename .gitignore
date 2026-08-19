@@ -10,6 +10,9 @@ resource
 # MaaDebuger
 .nicegui
 
+.bitfun/
+/.bitfun/search/flashgrep-index/
+
 # docs
 docs/node_modules
 docs/.vuepress/.temp
