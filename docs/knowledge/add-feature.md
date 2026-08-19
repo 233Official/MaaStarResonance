@@ -290,33 +290,65 @@ key_code = ANDROID_KEY_EVENT_DATA["KEYCODE_F"]       # 34
 
 在 `agent/attach/` 下创建或编辑文件，文件名与功能对应（如 `my_feature_attach.py`）。
 
-### 模板
+### 装饰器方式（推荐）
+
+项目提供了 `@attach_param` 和 `@attach_param_list` 装饰器，消除重复的模板代码：
+
+```python
+from maa.context import Context
+from agent.attach import attach_param, attach_param_list
+
+
+@attach_param("获取参数-我的参数", "my_key", "默认值")
+def get_my_param(context: Context) -> str:
+    """获取我的参数"""
+    ...
+
+
+@attach_param("获取参数-我的数值", "my_number", 0, int)
+def get_my_number(context: Context) -> int:
+    """获取我的数值参数"""
+    ...
+
+
+@attach_param("获取参数-是否开启", "enabled", True, bool)
+def get_is_enabled(context: Context) -> bool:
+    """获取是否开启参数"""
+    ...
+
+
+@attach_param_list("获取参数-ID列表", "line_ids")
+def get_id_list(context: Context) -> list[str]:
+    """获取ID列表参数（逗号分隔，如 "1,201,302"）"""
+    ...
+```
+
+**装饰器参数说明**：
+
+| 参数 | 说明 |
+|------|------|
+| 第1个 | pipeline 节点名（与 pipeline JSON 中的 key 一致） |
+| 第2个 | attach 字典中的键名（snake_case 英文） |
+| 第3个 | 默认值（节点不存在时的 fallback） |
+| 第4个 | 类型转换函数（`str`/`int`/`bool`），可省略（默认 `str`） |
+
+**`@attach_param_list` 专用于逗号分隔的列表参数**，自动做 `split(",")` 处理。
+
+### 手动方式（仅用于动态节点名）
+
+当节点名需要动态拼接时（如 `f"获取参数-需要购买的{type_str}配件"`），无法使用装饰器，需手动编写：
 
 ```python
 from maa.context import Context
 from agent.logger import logger
 
 
-def get_my_param(context: Context) -> str:
-    """获取我的参数"""
-    node = context.get_node_data("获取参数-我的参数")
-    value = (node
-             .get("attach", {})
-             .get("my_key", "默认值")
-             ) if node else "默认值"
-    logger.info("我的参数: {}", value)
+def get_fish_equipment(context: Context, type_str: str) -> str:
+    """获取钓鱼配件参数（动态节点名，无法用装饰器）"""
+    node = context.get_node_data(f"获取参数-需要购买的{type_str}配件")
+    value = (node.get("attach", {}).get("item_name", f"普通{type_str}")) if node else f"普通{type_str}"
+    logger.info("需要购买的{}: {}", type_str, value)
     return str(value)
-
-
-def get_my_number(context: Context) -> int:
-    """获取我的数值参数"""
-    node = context.get_node_data("获取参数-我的数值")
-    value = (node
-             .get("attach", {})
-             .get("my_number", 0)
-             ) if node else 0
-    logger.info("我的数值参数: {}", value)
-    return int(value)
 ```
 
 **命名规范**：

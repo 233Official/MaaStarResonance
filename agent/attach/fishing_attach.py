@@ -1,47 +1,43 @@
 from maa.context import Context
 
-from agent.logger import logger
+from agent.attach import attach_param
 
 
+@attach_param("获取参数-自动钓鱼去的导航位置", "target", "不导航")
 def get_fish_navigation(context: Context) -> str:
     """获取钓鱼导航位置参数"""
-    fish_navigation_node = context.get_node_data(f"获取参数-自动钓鱼去的导航位置")
-    fish_navigation = (fish_navigation_node
-                     .get("attach", {})
-                     .get("target", "不导航")
-                     ) if fish_navigation_node else "不导航"
-    logger.info("自动钓鱼去的导航位置: {}", fish_navigation)
-    return str(fish_navigation)
+    ...
+
+
+@attach_param("获取参数-需要购买的鱼竿配件", "item_name", "普通鱼竿")
+def get_fish_rod(context: Context) -> str:
+    """获取钓鱼鱼竿配件参数"""
+    ...
+
+
+@attach_param("获取参数-需要购买的鱼饵配件", "item_name", "普通鱼饵")
+def get_fish_bait(context: Context) -> str:
+    """获取钓鱼鱼饵配件参数"""
+    ...
+
+
+@attach_param("获取参数-是否重启游戏", "restart_for_except", True, bool)
+def get_restart_for_except(context: Context) -> bool:
+    """获取是否重启游戏参数"""
+    ...
+
+
+@attach_param("获取参数-最大重启游戏次数限制", "max_restart_count", 5, int)
+def get_max_restart_count(context: Context) -> int:
+    """获取最大重启游戏次数限制参数"""
+    ...
 
 
 def get_fish_equipment(context: Context, type_str: str) -> str:
-    """获取钓鱼配件参数"""
-    fish_equipment_node = context.get_node_data(f"获取参数-需要购买的{type_str}配件")
-    fish_equipment = (fish_equipment_node
-                     .get("attach", {})
-                     .get("item_name", f"普通{type_str}")
-                     ) if fish_equipment_node else f"普通{type_str}"
-    logger.info("需要购买的{}: {}", type_str, fish_equipment)
-    return str(fish_equipment)
+    """获取钓鱼配件参数（动态节点名，无法用装饰器）"""
+    from agent.logger import logger
 
-
-def get_restart_for_except(context: Context) -> bool:
-    """获取是否重启游戏参数"""
-    restart_for_except_node = context.get_node_data("获取参数-是否重启游戏")
-    restart_for_except = (restart_for_except_node
-                          .get("attach", {})
-                          .get("restart_for_except", True)
-                          ) if restart_for_except_node else True
-    logger.info("是否重启游戏参数: {}", restart_for_except)
-    return bool(restart_for_except)
-
-
-def get_max_restart_count(context: Context) -> int:
-    """获取最大重启游戏次数限制参数"""
-    max_restart_count_node = context.get_node_data("获取参数-最大重启游戏次数限制")
-    max_restart_count = (max_restart_count_node
-                         .get("attach", {})
-                         .get("max_restart_count", 5)
-                         ) if max_restart_count_node else 5
-    logger.info("最大重启游戏次数限制: {}", max_restart_count)
-    return int(max_restart_count)
+    node = context.get_node_data(f"获取参数-需要购买的{type_str}配件")
+    value = (node.get("attach", {}).get("item_name", f"普通{type_str}")) if node else f"普通{type_str}"
+    logger.info("需要购买的{}: {}", type_str, value)
+    return str(value)

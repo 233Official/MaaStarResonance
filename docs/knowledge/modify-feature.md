@@ -155,14 +155,18 @@ max_tension = 90  # 提高张力阈值
 }
 ```
 
-2. **attach 辅助函数**：添加读取函数
+2. **attach 辅助函数**：添加读取函数（使用装饰器）
 
 ```python
 # agent/attach/my_attach.py
+from maa.context import Context
+from agent.attach import attach_param
+
+
+@attach_param("获取参数-我的新参数", "my_new_param", "默认值")
 def get_my_new_param(context: Context) -> str:
-    node = context.get_node_data("获取参数-我的新参数")
-    value = (node.get("attach", {}).get("my_new_param", "默认值")) if node else "默认值"
-    return str(value)
+    """获取我的新参数"""
+    ...
 ```
 
 3. **CustomAction**：在 `run()` 中读取并使用参数
