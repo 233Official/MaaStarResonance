@@ -9,7 +9,7 @@
 **MaaStarResonance** 是基于 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 的**星痕共鸣**（Blue Protocol: Star Resonance）游戏自动化工具。
 
 - **语言**: Python >= 3.11
-- **框架**: MaaFramework (maafw 5.12.1) — 图像识别 + ADB 自动化
+- **框架**: MaaFramework — 图像识别 + ADB 自动化
 - **UI**: MFAAvalonia（独立前端，非本项目代码）
 - **包管理**: uv
 - **许可**: AGPL-3.0
