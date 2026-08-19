@@ -482,3 +482,7 @@ scripts/config.toml
 
 # 插件目录
 agent/plugins/*
+
+# superpowers
+/.superpowers
+/docs/superpowers
