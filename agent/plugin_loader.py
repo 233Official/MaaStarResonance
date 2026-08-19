@@ -318,6 +318,15 @@ class PluginLoader:
                 },
             )
 
+            # 自动调用插件的 start() 方法（如果存在）
+            start_fn = getattr(module, "start", None)
+            if callable(start_fn):
+                try:
+                    start_fn()
+                    logger.debug(f"插件 {metadata.name} 的 start() 已自动调用")
+                except Exception as e:
+                    logger.error(f"插件 {metadata.name} 的 start() 调用失败: {e}")
+
             logger.info(
                 f"插件加载成功: {metadata.display_name} v{metadata.version}"
             )

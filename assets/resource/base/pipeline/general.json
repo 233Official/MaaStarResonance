@@ -257,5 +257,20 @@
                 "roi": [339, 589, 18, 17]
             }
         }
+    },
+    "获取坐标": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "get_player_position"
+    },
+    "监听坐标": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "watch_player_position"
+    },
+    "获取玩家信息": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "get_player_info"
     }
 }
