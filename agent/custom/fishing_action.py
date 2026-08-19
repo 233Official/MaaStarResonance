@@ -19,7 +19,7 @@ from agent.logger import logger
 from agent.utils.fuzzy_utils import get_best_match_single
 from agent.utils.other_utils import print_center_block
 from agent.utils.param_utils import CustomActionParam
-from agent.utils.time_utlls import format_seconds_to_hms
+from agent.utils.time_utils import format_seconds_to_hms
 
 
 # 自动钓鱼任务

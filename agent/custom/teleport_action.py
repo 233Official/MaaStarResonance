@@ -6,11 +6,10 @@ from maa.context import Context, RecognitionDetail, Rect
 from maa.custom_action import CustomAction
 from rapidfuzz import fuzz
 
-from agent.attach.common_attach import get_dest_tele_map, get_dest_navigate_point, get_dest_tele_point, \
-    get_dest_navi_map
+from agent.attach.common_attach import get_area_change_timeout, get_dest_navi_map, get_dest_navigate_point, \
+    get_dest_tele_map, get_dest_tele_point
 from agent.constant.key_event import ANDROID_KEY_EVENT_DATA
 from agent.constant.map_point import MAP_POINT_DATA, NAVIGATE_DATA
-from agent.custom.app_manage_action import get_area_change_timeout
 from agent.custom.general.power_saving_mode import exit_power_saving_mode
 from agent.logger import logger
 
